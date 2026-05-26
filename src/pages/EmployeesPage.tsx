@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
+import type { FormEvent } from "react";
 import {
   IndianRupee,
   Loader2,
   Plus,
   RefreshCcw,
   Search,
+  Upload,
   User,
   X,
 } from "lucide-react";
@@ -42,16 +44,25 @@ const initialForm: EmployeeForm = {
   salaryInHand: "",
 };
 
+const initialBulkText =
+  "employeeCode,name,email,phone,salaryInHand\nEMP-1002,Rahul Sharma,rahul@example.com,9999999997,35000\nEMP-1003,Priya Das,priya@example.com,9999999996,42000";
+
 export function EmployeesPage() {
   const authUser = getAuthUser();
 
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
+  const [bulkCreating, setBulkCreating] = useState(false);
+
   const [modalOpen, setModalOpen] = useState(false);
+  const [bulkModalOpen, setBulkModalOpen] = useState(false);
 
   const [form, setForm] = useState<EmployeeForm>(initialForm);
+  const [bulkText, setBulkText] = useState(initialBulkText);
+
   const [formError, setFormError] = useState("");
+  const [bulkError, setBulkError] = useState("");
   const [success, setSuccess] = useState("");
 
   const [search, setSearch] = useState("");
@@ -89,7 +100,7 @@ export function EmployeesPage() {
     fetchEmployees();
   }, []);
 
-  async function handleCreateEmployee(event: React.FormEvent<HTMLFormElement>) {
+  async function handleCreateEmployee(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setFormError("");
     setSuccess("");
@@ -141,6 +152,90 @@ export function EmployeesPage() {
       setFormError(Array.isArray(message) ? message[0] : message);
     } finally {
       setCreating(false);
+    }
+  }
+
+  async function handleBulkCreateEmployees(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setBulkError("");
+    setSuccess("");
+
+    if (!authUser?.employerId) {
+      setBulkError("Employer ID not found. Please login again.");
+      return;
+    }
+
+    const rows = bulkText
+      .split("\n")
+      .map((row) => row.trim())
+      .filter(Boolean);
+
+    if (rows.length <= 1) {
+      setBulkError("Please add at least one employee row.");
+      return;
+    }
+
+    const dataRows = rows[0].toLowerCase().includes("employeecode")
+      ? rows.slice(1)
+      : rows;
+
+    const employeesPayload = dataRows.map((row) => {
+      const [employeeCode, name, email, phone, salaryInHand] = row
+        .split(",")
+        .map((item) => item.trim());
+
+      return {
+        employerId: authUser.employerId,
+        employeeCode,
+        name,
+        email,
+        phone: phone || undefined,
+        salaryInHand: Number(salaryInHand),
+      };
+    });
+
+    const invalidRow = employeesPayload.find(
+      (item) =>
+        !item.employeeCode ||
+        !item.name ||
+        !item.email ||
+        !item.salaryInHand ||
+        item.salaryInHand <= 0
+    );
+
+    if (invalidRow) {
+      setBulkError(
+        "Invalid data found. Required format: employeeCode,name,email,phone,salaryInHand"
+      );
+      return;
+    }
+
+    setBulkCreating(true);
+
+    try {
+      const response = await api.post("/employees/bulk", {
+        employees: employeesPayload,
+      });
+
+      const result = response.data?.data || response.data;
+
+      setSuccess(
+        `Bulk upload completed. Success: ${
+          result?.success ?? employeesPayload.length
+        }, Failed: ${result?.failed ?? 0}`
+      );
+
+      setBulkModalOpen(false);
+      await fetchEmployees();
+    } catch (err: any) {
+      const message =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Unable to bulk add employees";
+
+      setBulkError(Array.isArray(message) ? message[0] : message);
+    } finally {
+      setBulkCreating(false);
     }
   }
 
@@ -235,6 +330,18 @@ export function EmployeesPage() {
           >
             <Plus size={16} />
             Add Employee
+          </button>
+
+          <button
+            onClick={() => {
+              setBulkError("");
+              setSuccess("");
+              setBulkModalOpen(true);
+            }}
+            className="inline-flex items-center justify-center gap-2 rounded-full border border-primary bg-blue-50 px-4 py-2 text-sm font-bold text-primary hover:bg-blue-100"
+          >
+            <Upload size={16} />
+            Bulk Add
           </button>
         </div>
       </section>
@@ -493,6 +600,78 @@ export function EmployeesPage() {
               >
                 {creating && <Loader2 className="animate-spin" size={16} />}
                 {creating ? "Adding..." : "Add Employee"}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {bulkModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4">
+          <form
+            onSubmit={handleBulkCreateEmployees}
+            className="w-full max-w-3xl rounded-[2rem] bg-white p-6 shadow-soft"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h3 className="text-2xl font-black">Bulk Add Employees</h3>
+                <p className="mt-1 text-sm text-slate-500">
+                  Paste employee data in CSV format. First row can be header.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setBulkModalOpen(false)}
+                className="rounded-full p-2 hover:bg-slate-100"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {bulkError && (
+              <div className="mt-5 rounded-2xl border border-red-100 bg-red-50 p-3 text-sm font-semibold text-red-700">
+                {bulkError}
+              </div>
+            )}
+
+            <div className="mt-5 rounded-2xl bg-slate-50 p-4">
+              <p className="text-xs font-black uppercase tracking-wide text-slate-500">
+                Format
+              </p>
+              <code className="mt-2 block text-sm text-slate-700">
+                employeeCode,name,email,phone,salaryInHand
+              </code>
+            </div>
+
+            <label className="mt-5 block">
+              <span className="text-sm font-bold text-slate-700">
+                Employee CSV
+              </span>
+              <textarea
+                value={bulkText}
+                onChange={(event) => setBulkText(event.target.value)}
+                rows={10}
+                className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 font-mono text-sm outline-none focus:border-primary focus:bg-white focus:ring-4 focus:ring-blue-50"
+              />
+            </label>
+
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={() => setBulkModalOpen(false)}
+                className="rounded-2xl border border-slate-200 px-5 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="submit"
+                disabled={bulkCreating}
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-3 text-sm font-black text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {bulkCreating && <Loader2 className="animate-spin" size={16} />}
+                {bulkCreating ? "Uploading..." : "Upload Employees"}
               </button>
             </div>
           </form>
