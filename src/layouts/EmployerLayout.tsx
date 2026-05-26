@@ -9,7 +9,7 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { removeToken } from "../services/auth";
+import { getAuthUser, removeToken } from "../services/auth";
 
 const navItems = [
   { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
@@ -22,6 +22,7 @@ export function EmployerLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const authUser = getAuthUser();
 
   const currentPage = useMemo(() => {
     const active = navItems.find(
@@ -35,7 +36,7 @@ export function EmployerLayout() {
 
   function handleLogout() {
     removeToken();
-    navigate("/login");
+    navigate("/login", { replace: true });
   }
 
   return (
@@ -89,6 +90,17 @@ export function EmployerLayout() {
             );
           })}
         </nav>
+
+        <div className="absolute bottom-0 left-0 right-0 border-t border-slate-200 p-4">
+          <div className="rounded-2xl bg-slate-50 p-4">
+            <p className="text-sm font-black text-slate-900">
+              {authUser?.name || "Employer User"}
+            </p>
+            <p className="mt-1 truncate text-xs font-semibold text-slate-500">
+              {authUser?.email || "Logged in"}
+            </p>
+          </div>
+        </div>
       </aside>
 
       {sidebarOpen && (

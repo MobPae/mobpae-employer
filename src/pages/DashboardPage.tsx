@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import type { ElementType } from "react";
 import {
   ClipboardList,
   IndianRupee,
@@ -9,6 +10,12 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { api } from "../services/api";
+import { getAuthUser } from "../services/auth";
+
+type Employer = {
+  id: string;
+  companyName?: string;
+};
 
 type Employee = {
   id: string;
@@ -45,20 +52,32 @@ type Repayment = {
 };
 
 export function DashboardPage() {
+  const authUser = getAuthUser();
+
+  const [employer, setEmployer] = useState<Employer | null>(null);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [requests, setRequests] = useState<AdvanceRequest[]>([]);
   const [repayments, setRepayments] = useState<Repayment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const dashboardTitle = employer?.companyName
+    ? `${employer.companyName} Dashboard`
+    : "Company Dashboard";
+
   function unwrap(response: any) {
     return (
-      response.data?.data?.data ||
-      response.data?.data?.items ||
-      response.data?.data ||
-      response.data ||
-      []
+      response?.data?.data?.data ||
+      response?.data?.data?.items ||
+      response?.data?.data ||
+      response?.data ||
+      null
     );
+  }
+
+  function unwrapList(response: any) {
+    const data = unwrap(response);
+    return Array.isArray(data) ? data : [];
   }
 
   async function fetchDashboard() {
@@ -66,19 +85,22 @@ export function DashboardPage() {
     setError("");
 
     try {
-      const [employeesRes, requestsRes, repaymentsRes] = await Promise.all([
-        api.get("/employees"),
-        api.get("/advance-requests"),
-        api.get("/repayments"),
-      ]);
+      const [employeesRes, requestsRes, repaymentsRes, employerRes] =
+        await Promise.all([
+          api.get("/employees"),
+          api.get("/advance-requests"),
+          api.get("/repayments"),
+          authUser?.employerId
+            ? api.get(`/employers/${authUser.employerId}`)
+            : Promise.resolve(null),
+        ]);
 
-      const employeesData = unwrap(employeesRes);
-      const requestsData = unwrap(requestsRes);
-      const repaymentsData = unwrap(repaymentsRes);
+      setEmployees(unwrapList(employeesRes));
+      setRequests(unwrapList(requestsRes));
+      setRepayments(unwrapList(repaymentsRes));
 
-      setEmployees(Array.isArray(employeesData) ? employeesData : []);
-      setRequests(Array.isArray(requestsData) ? requestsData : []);
-      setRepayments(Array.isArray(repaymentsData) ? repaymentsData : []);
+      const employerData = employerRes ? unwrap(employerRes) : null;
+      setEmployer(employerData);
     } catch {
       setError("Unable to load dashboard");
     } finally {
@@ -158,7 +180,7 @@ export function DashboardPage() {
             <p className="text-sm font-semibold text-blue-200">
               Employer Overview
             </p>
-            <h2 className="mt-2 text-3xl font-black">Company Dashboard</h2>
+            <h2 className="mt-2 text-3xl font-black">{dashboardTitle}</h2>
             <p className="mt-3 max-w-2xl leading-7 text-slate-300">
               Track your employees, salary advance requests, available limits,
               and repayment status from one place.
@@ -268,18 +290,18 @@ function SummaryCard({
   label: string;
   value: number;
   helper: string;
-  icon: any;
+  icon: ElementType;
   to: string;
 }) {
   return (
     <Link
       to={to}
-      className="rounded-[1.5rem] bg-white p-6 shadow-soft transition hover:-translate-y-0.5 hover:shadow-lg"
+      className="rounded-[1.5rem] bg-white p-5 shadow-soft transition hover:-translate-y-0.5 hover:shadow-lg"
     >
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-sm font-semibold text-slate-500">{label}</p>
-          <h3 className="mt-3 text-3xl font-black">{value}</h3>
+          <h3 className="mt-3 text-3xl font-black text-slate-950">{value}</h3>
           <p className="mt-2 text-sm text-slate-500">{helper}</p>
         </div>
 
@@ -310,32 +332,31 @@ function DashboardList({
 }) {
   return (
     <div className="rounded-[1.5rem] bg-white p-6 shadow-soft">
-      <h3 className="text-xl font-black">{title}</h3>
-      <p className="mt-1 text-sm text-slate-500">{description}</p>
+      <div>
+        <h3 className="text-xl font-black text-slate-950">{title}</h3>
+        <p className="mt-1 text-sm text-slate-500">{description}</p>
+      </div>
 
-      <div className="mt-6 grid gap-3">
-        {items.length === 0 && (
-          <div className="rounded-2xl bg-slate-50 p-4 text-sm font-semibold text-slate-500">
-            {empty}
-          </div>
-        )}
-
+      <div className="mt-5 grid gap-3">
         {items.map((item) => (
           <Link
             key={item.id}
             to={item.to}
-            className="flex items-center justify-between gap-4 rounded-2xl border border-slate-100 bg-slate-50 p-4 hover:border-primary hover:bg-white"
+            className="rounded-2xl border border-slate-100 bg-slate-50 p-4 transition hover:border-primary hover:bg-white"
           >
-            <div>
-              <p className="font-bold text-slate-900">{item.title}</p>
-              <p className="mt-1 text-sm text-slate-500">{item.subtitle}</p>
-            </div>
-
-            <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-slate-600">
+            <p className="font-bold text-slate-900">{item.title}</p>
+            <p className="mt-1 text-sm text-slate-500">{item.subtitle}</p>
+            <p className="mt-2 text-xs font-black uppercase tracking-wide text-primary">
               {item.meta}
-            </span>
+            </p>
           </Link>
         ))}
+
+        {items.length === 0 && (
+          <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center text-sm font-semibold text-slate-500">
+            {empty}
+          </div>
+        )}
       </div>
     </div>
   );
