@@ -4,6 +4,7 @@ import { LoginPage } from "./pages/LoginPage";
 import { isAuthenticated } from "./services/auth";
 import { DashboardPage } from "./pages/DashboardPage";
 import { EmployeesPage } from "./pages/EmployeesPage";
+import { RequestsPage } from "./pages/RequestsPage";
 
 function ProtectedRoute() {
   if (!isAuthenticated()) {
@@ -11,12 +12,6 @@ function ProtectedRoute() {
   }
 
   return <EmployerLayout />;
-}
-
-function RequestsPage() {
-  return (
-    <div className="rounded-[1.5rem] bg-white p-6 shadow-soft">Requests</div>
-  );
 }
 
 function RepaymentsPage() {
