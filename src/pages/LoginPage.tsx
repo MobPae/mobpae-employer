@@ -23,7 +23,7 @@ type LoginResponse = {
 export function LoginPage() {
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState("employer@mobpae.com");
+  const [email, setEmail] = useState("ltm@example.com");
   const [password, setPassword] = useState("password123");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -65,11 +65,13 @@ export function LoginPage() {
 
       setToken(token);
       navigate("/dashboard", { replace: true });
-    } catch (err: unknown) {
+    } catch (err: any) {
       const message =
-        err instanceof Error ? err.message : "Invalid email or password";
+        err?.response?.data?.message ||
+        err?.message ||
+        "Invalid email or password";
 
-      setError(message);
+      setError(Array.isArray(message) ? message[0] : message);
     } finally {
       setLoading(false);
     }
