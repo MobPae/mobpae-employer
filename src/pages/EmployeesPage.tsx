@@ -1,6 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
-import { IndianRupee, Loader2, RefreshCcw, Search, User } from "lucide-react";
+import {
+  IndianRupee,
+  Loader2,
+  Plus,
+  RefreshCcw,
+  Search,
+  User,
+  X,
+} from "lucide-react";
 import { api } from "../services/api";
+import { getAuthUser } from "../services/auth";
 
 type EmployeeStatus = "ACTIVE" | "INACTIVE";
 type ActivationStatus = "PENDING" | "ACTIVATED";
@@ -17,9 +26,34 @@ type Employee = {
   activationStatus?: ActivationStatus;
 };
 
+type EmployeeForm = {
+  employeeCode: string;
+  name: string;
+  email: string;
+  phone: string;
+  salaryInHand: string;
+};
+
+const initialForm: EmployeeForm = {
+  employeeCode: "",
+  name: "",
+  email: "",
+  phone: "",
+  salaryInHand: "",
+};
+
 export function EmployeesPage() {
+  const authUser = getAuthUser();
+
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
+  const [creating, setCreating] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  const [form, setForm] = useState<EmployeeForm>(initialForm);
+  const [formError, setFormError] = useState("");
+  const [success, setSuccess] = useState("");
+
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"ALL" | EmployeeStatus>(
     "ALL"
@@ -54,6 +88,61 @@ export function EmployeesPage() {
   useEffect(() => {
     fetchEmployees();
   }, []);
+
+  async function handleCreateEmployee(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setFormError("");
+    setSuccess("");
+
+    if (!authUser?.employerId) {
+      setFormError("Employer ID not found. Please login again.");
+      return;
+    }
+
+    if (
+      !form.employeeCode.trim() ||
+      !form.name.trim() ||
+      !form.email.trim() ||
+      !form.salaryInHand.trim()
+    ) {
+      setFormError("Employee code, name, email and salary are required.");
+      return;
+    }
+
+    const salary = Number(form.salaryInHand);
+
+    if (!salary || salary <= 0) {
+      setFormError("Salary in hand must be greater than 0.");
+      return;
+    }
+
+    setCreating(true);
+
+    try {
+      await api.post("/employees", {
+        employerId: authUser.employerId,
+        employeeCode: form.employeeCode.trim(),
+        name: form.name.trim(),
+        email: form.email.trim(),
+        phone: form.phone.trim() || undefined,
+        salaryInHand: salary,
+      });
+
+      setSuccess("Employee added successfully.");
+      setForm(initialForm);
+      setModalOpen(false);
+      await fetchEmployees();
+    } catch (err: any) {
+      const message =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Unable to add employee";
+
+      setFormError(Array.isArray(message) ? message[0] : message);
+    } finally {
+      setCreating(false);
+    }
+  }
 
   const filteredEmployees = useMemo(() => {
     return employees.filter((employee) => {
@@ -121,19 +210,40 @@ export function EmployeesPage() {
           <p className="text-sm font-semibold text-primary">Employees</p>
           <h2 className="mt-2 text-2xl font-black">Company Employees</h2>
           <p className="mt-1 text-sm text-slate-500">
-            View employees linked to your company, their salary advance limits,
-            and app activation status.
+            Add employees, view salary advance limits, and track app activation
+            status.
           </p>
         </div>
 
-        <button
-          onClick={fetchEmployees}
-          className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50"
-        >
-          <RefreshCcw size={16} />
-          Refresh
-        </button>
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <button
+            onClick={fetchEmployees}
+            className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50"
+          >
+            <RefreshCcw size={16} />
+            Refresh
+          </button>
+
+          <button
+            onClick={() => {
+              setForm(initialForm);
+              setFormError("");
+              setSuccess("");
+              setModalOpen(true);
+            }}
+            className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-bold text-white hover:bg-blue-700"
+          >
+            <Plus size={16} />
+            Add Employee
+          </button>
+        </div>
       </section>
+
+      {success && (
+        <div className="rounded-[1.5rem] border border-emerald-100 bg-emerald-50 p-4 text-sm font-semibold text-emerald-700">
+          {success}
+        </div>
+      )}
 
       <section className="grid gap-4 md:grid-cols-4">
         <SummaryCard label="Total Employees" value={summary.total} />
@@ -277,8 +387,8 @@ export function EmployeesPage() {
                       colSpan={5}
                       className="px-5 py-12 text-center text-slate-500"
                     >
-                      No employees found. Employees will appear here once they
-                      are added/imported for your company.
+                      No employees found. Add your first employee to start
+                      managing salary advance access.
                     </td>
                   </tr>
                 )}
@@ -286,6 +396,107 @@ export function EmployeesPage() {
             </table>
           </div>
         </section>
+      )}
+
+      {modalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4">
+          <form
+            onSubmit={handleCreateEmployee}
+            className="w-full max-w-2xl rounded-[2rem] bg-white p-6 shadow-soft"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h3 className="text-2xl font-black">Add Employee</h3>
+                <p className="mt-1 text-sm text-slate-500">
+                  Add an employee under your company. Salary limit will be
+                  calculated automatically by backend rules.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setModalOpen(false)}
+                className="rounded-full p-2 hover:bg-slate-100"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {formError && (
+              <div className="mt-5 rounded-2xl border border-red-100 bg-red-50 p-3 text-sm font-semibold text-red-700">
+                {formError}
+              </div>
+            )}
+
+            <div className="mt-6 grid gap-4 md:grid-cols-2">
+              <Input
+                label="Employee Code"
+                value={form.employeeCode}
+                onChange={(value) =>
+                  setForm((prev) => ({ ...prev, employeeCode: value }))
+                }
+                placeholder="EMP-1001"
+              />
+
+              <Input
+                label="Full Name"
+                value={form.name}
+                onChange={(value) =>
+                  setForm((prev) => ({ ...prev, name: value }))
+                }
+                placeholder="Employee name"
+              />
+
+              <Input
+                label="Email"
+                type="email"
+                value={form.email}
+                onChange={(value) =>
+                  setForm((prev) => ({ ...prev, email: value }))
+                }
+                placeholder="employee@example.com"
+              />
+
+              <Input
+                label="Phone"
+                value={form.phone}
+                onChange={(value) =>
+                  setForm((prev) => ({ ...prev, phone: value }))
+                }
+                placeholder="Optional"
+              />
+
+              <Input
+                label="Salary In Hand"
+                type="number"
+                value={form.salaryInHand}
+                onChange={(value) =>
+                  setForm((prev) => ({ ...prev, salaryInHand: value }))
+                }
+                placeholder="30000"
+              />
+            </div>
+
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={() => setModalOpen(false)}
+                className="rounded-2xl border border-slate-200 px-5 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="submit"
+                disabled={creating}
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-3 text-sm font-black text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {creating && <Loader2 className="animate-spin" size={16} />}
+                {creating ? "Adding..." : "Add Employee"}
+              </button>
+            </div>
+          </form>
+        </div>
       )}
     </div>
   );
@@ -297,5 +508,32 @@ function SummaryCard({ label, value }: { label: string; value: number }) {
       <p className="text-sm text-slate-500">{label}</p>
       <h3 className="mt-2 text-2xl font-black text-slate-900">{value}</h3>
     </div>
+  );
+}
+
+function Input({
+  label,
+  value,
+  onChange,
+  placeholder,
+  type = "text",
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  type?: string;
+}) {
+  return (
+    <label>
+      <span className="text-sm font-bold text-slate-700">{label}</span>
+      <input
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        type={type}
+        placeholder={placeholder}
+        className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-primary focus:bg-white focus:ring-4 focus:ring-blue-50"
+      />
+    </label>
   );
 }

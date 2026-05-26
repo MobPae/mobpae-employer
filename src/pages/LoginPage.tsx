@@ -3,20 +3,28 @@ import type { FormEvent } from "react";
 import { Building2, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../services/api";
-import { setToken } from "../services/auth";
+import { setAuthUser, setToken } from "../services/auth";
 
 type LoginResponse = {
   data?: {
     accessToken?: string;
     token?: string;
     user?: {
+      id?: string;
+      name?: string;
+      email?: string;
       role?: string;
+      employerId?: string;
     };
   };
   accessToken?: string;
   token?: string;
   user?: {
+    id?: string;
+    name?: string;
+    email?: string;
     role?: string;
+    employerId?: string;
   };
 };
 
@@ -59,11 +67,20 @@ export function LoginPage() {
         throw new Error("Login token not found");
       }
 
-      if (user?.role && user.role !== "EMPLOYER") {
+      if (!user) {
+        throw new Error("User details not found");
+      }
+
+      if (user.role !== "EMPLOYER") {
         throw new Error("Only employer users can access this portal");
       }
 
+      if (!user.employerId) {
+        throw new Error("Employer ID not found for this user");
+      }
+
       setToken(token);
+      setAuthUser(user);
       navigate("/dashboard", { replace: true });
     } catch (err: any) {
       const message =
