@@ -5,9 +5,12 @@ import ProtectedRoute from "./auth/ProtectedRoute";
 
 import DashboardPage from "./pages/dashboard/DashboardPage";
 import EmployeesPage from "./pages/employees/EmployeesPage";
-import SalaryLimitsPage from "./pages/salary-limits/SalaryLimitsPage";
-import RequestsPage from "./pages/requests/RequestsPage";
 import ReportsPage from "./pages/reports/ReportsPage";
+
+import SalaryRequestsPage from "./pages/salary-requests/SalaryRequestsPage";
+import PayrollSettingsPage from "./pages/payroll-settings/PayrollSettingsPage";
+import CompanyProfilePage from "./pages/company-profile/CompanyProfilePage";
+import EmployerLayout from "./layouts/EmployerLayout";
 
 export default function App() {
   return (
@@ -16,51 +19,28 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
 
         <Route
-          path="/dashboard"
           element={
             <ProtectedRoute>
-              <DashboardPage />
+              <EmployerLayout />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route path="/dashboard" element={<DashboardPage />} />
 
-        <Route
-          path="/employees"
-          element={
-            <ProtectedRoute>
-              <EmployeesPage />
-            </ProtectedRoute>
-          }
-        />
+          <Route path="/employees" element={<EmployeesPage />} />
 
-        <Route
-          path="/salary-limits"
-          element={
-            <ProtectedRoute>
-              <SalaryLimitsPage />
-            </ProtectedRoute>
-          }
-        />
+          <Route path="/salary-requests" element={<SalaryRequestsPage />} />
 
-        <Route
-          path="/requests"
-          element={
-            <ProtectedRoute>
-              <RequestsPage />
-            </ProtectedRoute>
-          }
-        />
+          <Route path="/payroll-settings" element={<PayrollSettingsPage />} />
 
-        <Route
-          path="/reports"
-          element={
-            <ProtectedRoute>
-              <ReportsPage />
-            </ProtectedRoute>
-          }
-        />
+          <Route path="/company-profile" element={<CompanyProfilePage />} />
 
-        <Route path="*" element={<Navigate to="/login" />} />
+          <Route path="/reports" element={<ReportsPage />} />
+        </Route>
+
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </BrowserRouter>
   );
