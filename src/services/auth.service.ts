@@ -5,6 +5,19 @@ import { httpClient } from "./http-client";
 const TOKEN_KEY = "mobpae_employer_token";
 const USER_KEY = "mobpae_employer_user";
 
+const decodeJwtPayload = (token: string): Record<string, unknown> => {
+  try {
+    const [, payload] = token.split(".");
+    if (!payload) return {};
+
+    const normalizedPayload = payload.replace(/-/g, "+").replace(/_/g, "/");
+    const decoded = JSON.parse(atob(normalizedPayload));
+    return decoded && typeof decoded === "object" ? decoded : {};
+  } catch {
+    return {};
+  }
+};
+
 export const authService = {
   async login(credentials: LoginCredentials): Promise<LoginResponse> {
     const { data } = await httpClient.post("/auth/login", credentials);
@@ -17,7 +30,11 @@ export const authService = {
 
     localStorage.setItem(TOKEN_KEY, token);
 
-    const userSource = responseData.user ?? responseData.profile ?? responseData;
+    const tokenPayload = decodeJwtPayload(token);
+    const userSource = {
+      ...tokenPayload,
+      ...((responseData.user ?? responseData.profile ?? responseData) as Record<string, unknown>)
+    };
     let user: AuthUser = mapAuthUser(userSource);
 
     try {

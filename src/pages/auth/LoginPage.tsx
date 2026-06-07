@@ -13,7 +13,8 @@ export function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const from = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ?? "/dashboard";
+  const routeState = location.state as { from?: { pathname?: string }; roleError?: string } | null;
+  const from = routeState?.from?.pathname ?? "/dashboard";
 
   if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />;
@@ -120,6 +121,11 @@ export function LoginPage() {
                 required
               />
               {error ? <p className="rounded-md bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700">{error}</p> : null}
+              {routeState?.roleError ? (
+                <p className="rounded-md bg-amber-50 px-3 py-2 text-sm font-semibold text-amber-700">
+                  This portal is available for EMPLOYER users only.
+                </p>
+              ) : null}
               <Button type="submit" className="min-h-11 w-full" disabled={loading} icon={!loading ? <ArrowRight size={16} /> : undefined}>
                 {loading ? "Signing in..." : "Sign in"}
               </Button>

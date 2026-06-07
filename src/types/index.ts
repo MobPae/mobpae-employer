@@ -10,12 +10,14 @@ export type SalaryRequestStatus =
 
 export type RepaymentStatus = "PENDING" | "PAID" | "OVERDUE";
 
+export type UserRole = "ADMIN" | "EMPLOYER" | "EMPLOYEE";
+
 export interface AuthUser {
   id: string;
   employerId?: string;
   name: string;
   email: string;
-  role: "EMPLOYER_ADMIN" | "HR_MANAGER";
+  role: UserRole;
   companyName: string;
   companyCode: string;
 }

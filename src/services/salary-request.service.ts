@@ -1,12 +1,18 @@
 import type { SalaryRequest } from "../types";
 import { isForbidden } from "./api-errors";
 import { mapSalaryRequest, unwrapItem, unwrapList } from "./api-mappers";
+import { authService } from "./auth.service";
 import { httpClient } from "./http-client";
 
 export const salaryRequestService = {
   async getSalaryRequests(): Promise<SalaryRequest[]> {
     try {
-      const { data } = await httpClient.get("/salary-requests");
+      const currentUser = await authService.getCurrentUser();
+      const endpoint =
+        currentUser?.role === "EMPLOYER" && currentUser.employerId
+          ? `/salary-requests/employer/${currentUser.employerId}/pending`
+          : "/salary-requests";
+      const { data } = await httpClient.get(endpoint);
       return unwrapList(data, ["salaryRequests", "requests"]).map(mapSalaryRequest);
     } catch (error) {
       if (isForbidden(error)) return [];

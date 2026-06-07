@@ -1,12 +1,13 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { authService } from "../services/auth.service";
-import type { AuthUser, LoginCredentials } from "../types";
+import type { AuthUser, LoginCredentials, UserRole } from "../types";
 
 interface AuthContextValue {
   user: AuthUser | null;
   loading: boolean;
   login: (credentials: LoginCredentials) => Promise<void>;
   logout: () => Promise<void>;
+  hasRole: (roles: UserRole[]) => boolean;
   isAuthenticated: boolean;
 }
 
@@ -28,6 +29,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       loading,
       isAuthenticated: Boolean(user) && authService.isAuthenticated(),
+      hasRole: (roles) => (user ? roles.includes(user.role) : false),
       login: async (credentials) => {
         const response = await authService.login(credentials);
         setUser(response.user);

@@ -9,7 +9,8 @@ import type {
   Repayment,
   RepaymentStatus,
   SalaryRequest,
-  SalaryRequestStatus
+  SalaryRequestStatus,
+  UserRole
 } from "../types";
 
 type ApiRecord = Record<string, unknown>;
@@ -64,16 +65,23 @@ const normalizeRepaymentStatus = (value: unknown): RepaymentStatus => {
   return allowed.includes(normalized as RepaymentStatus) ? (normalized as RepaymentStatus) : "PENDING";
 };
 
+const normalizeUserRole = (value: unknown): UserRole => {
+  const normalized = String(value ?? "EMPLOYER").toUpperCase();
+  if (normalized === "ADMIN") return "ADMIN";
+  if (normalized === "EMPLOYEE") return "EMPLOYEE";
+  return "EMPLOYER";
+};
+
 export const mapAuthUser = (value: unknown): AuthUser => {
   const record = asRecord(value);
   const employer = asRecord(record.employer ?? record.company);
 
   return {
     id: text(record.id ?? record.userId ?? record.sub, "current-user"),
-    employerId: text(record.employerId ?? employer.id ?? record.companyId, ""),
+    employerId: text(record.employerId ?? record.employer_id ?? employer.id ?? record.companyId, ""),
     name: text(record.name ?? record.fullName ?? record.email, "Employer User"),
     email: text(record.email, ""),
-    role: String(record.role ?? "EMPLOYER_ADMIN").includes("HR") ? "HR_MANAGER" : "EMPLOYER_ADMIN",
+    role: normalizeUserRole(record.role),
     companyName: text(record.companyName ?? employer.companyName ?? employer.name, "MobPae Employer"),
     companyCode: text(record.companyCode ?? employer.companyCode ?? employer.code, "EMPLOYER")
   };
