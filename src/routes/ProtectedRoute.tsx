@@ -6,7 +6,7 @@ export function ProtectedRoute() {
   const location = useLocation();
 
   if (loading) {
-    return <div className="grid min-h-screen place-items-center bg-slate-50 text-sm font-semibold text-slate-500">Loading MobPae...</div>;
+    return <div className="grid min-h-screen place-items-center bg-blue-50 text-sm font-semibold text-blue-700">Loading MobPae...</div>;
   }
 
   if (!isAuthenticated) {

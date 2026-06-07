@@ -15,24 +15,24 @@ interface DataTableProps<T> {
 
 export function DataTable<T>({ columns, data, emptyMessage = "No records found." }: DataTableProps<T>) {
   return (
-    <div className="overflow-hidden rounded-lg border border-slate-200 bg-white">
+    <div className="overflow-hidden rounded-lg border border-blue-100 bg-white">
       <div className="overflow-x-auto scrollbar-soft">
         <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
-          <thead className="bg-slate-50">
+          <thead className="bg-blue-50/70">
             <tr>
               {columns.map((column) => (
-                <th key={column.key} className={`px-4 py-3 text-xs font-semibold uppercase text-slate-500 ${column.className ?? ""}`}>
+                <th key={column.key} className={`px-4 py-3 text-xs font-semibold uppercase text-blue-700/70 ${column.className ?? ""}`}>
                   {column.header}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-blue-50">
             {data.length ? (
               data.map((item, index) => (
-                <tr key={index} className="hover:bg-slate-50/70">
+                <tr key={index} className="hover:bg-blue-50/45">
                   {columns.map((column) => (
-                    <td key={column.key} className={`px-4 py-3 text-slate-700 ${column.className ?? ""}`}>
+                    <td key={column.key} className={`px-4 py-3 text-blue-950/80 ${column.className ?? ""}`}>
                       {column.render(item)}
                     </td>
                   ))}

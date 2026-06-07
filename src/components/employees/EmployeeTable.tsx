@@ -49,7 +49,7 @@ export function EmployeeTable({
           header: "Employee",
           render: (employee) => (
             <div>
-              <p className="font-semibold text-slate-950">{employee.name}</p>
+              <p className="font-semibold text-blue-950">{employee.name}</p>
               <p className="text-xs text-slate-500">{employee.employeeCode} · {employee.department}</p>
             </div>
           )
@@ -62,8 +62,8 @@ export function EmployeeTable({
           key: "access",
           header: "App Access",
           render: (employee) => (
-            <button className="flex items-center gap-2 text-sm font-semibold text-slate-700" onClick={() => onToggleAccess(employee)}>
-              {employee.appActivated ? <ToggleRight className="text-teal-600" size={24} /> : <ToggleLeft className="text-slate-400" size={24} />}
+            <button className="flex items-center gap-2 text-sm font-semibold text-blue-900" onClick={() => onToggleAccess(employee)}>
+              {employee.appActivated ? <ToggleRight className="text-blue-600" size={24} /> : <ToggleLeft className="text-blue-300" size={24} />}
               {employee.appActivated ? "Activated" : "Not active"}
             </button>
           )

@@ -20,20 +20,20 @@ export function LoginPage() {
   }
 
   return (
-    <main className="grid min-h-screen place-items-center bg-slate-50 px-4 py-10">
-      <section className="w-full max-w-md rounded-lg border border-slate-200 bg-white p-6 shadow-fintech">
+    <main className="grid min-h-screen place-items-center bg-blue-50/60 px-4 py-10">
+      <section className="w-full max-w-md rounded-lg border border-blue-100 bg-white p-6 shadow-fintech">
         <div className="flex items-center gap-3">
-          <div className="grid h-11 w-11 place-items-center rounded-lg bg-slate-950 text-white">
+          <div className="grid h-11 w-11 place-items-center rounded-lg bg-blue-600 text-white shadow-sm shadow-blue-600/25">
             <WalletCards size={22} />
           </div>
           <div>
-            <p className="text-sm font-bold text-slate-950">MobPae</p>
-            <p className="text-xs font-semibold text-slate-500">Employer Portal</p>
+            <p className="text-sm font-bold text-blue-950">MobPae</p>
+            <p className="text-xs font-semibold text-blue-700/70">Employer Portal</p>
           </div>
         </div>
         <div className="mt-8">
-          <h1 className="text-2xl font-bold text-slate-950">Sign in</h1>
-          <p className="mt-2 text-sm leading-6 text-slate-500">Access salary requests, employee activation, repayments and payroll recovery workflows.</p>
+          <h1 className="text-2xl font-bold text-blue-950">Sign in</h1>
+          <p className="mt-2 text-sm leading-6 text-blue-900/65">Access salary requests, employee activation, repayments and payroll recovery workflows.</p>
         </div>
         <form
           className="mt-6 grid gap-4"
@@ -58,7 +58,7 @@ export function LoginPage() {
             {loading ? "Signing in..." : "Sign in"}
           </Button>
         </form>
-        <div className="mt-5 rounded-lg bg-slate-50 p-3 text-xs leading-5 text-slate-500">
+        <div className="mt-5 rounded-lg bg-blue-50 p-3 text-xs leading-5 text-blue-700/70">
           Demo credentials: employer@mobpae.com / MobPae@123
         </div>
       </section>

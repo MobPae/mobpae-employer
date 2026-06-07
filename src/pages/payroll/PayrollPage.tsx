@@ -22,17 +22,17 @@ export function PayrollPage() {
     <>
       <PageHeader eyebrow="Payroll cycle" title="Payroll Overview" description="Prepare recovery schedules before payroll cutoff and keep deductions traceable." />
 
-      <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <MetricCard label="Payroll Date" value={summary ? formatDate(summary.payrollDate) : "-"} icon={<CalendarDays size={19} />} />
         <MetricCard label="Payroll Cutoff Date" value={summary ? formatDate(summary.payrollCutoffDate) : "-"} icon={<Scissors size={19} />} />
         <MetricCard label="Employees Due" value={summary?.employeesDue ?? "-"} icon={<UsersRound size={19} />} />
         <MetricCard label="Total Recovery Amount" value={formatCurrency(summary?.totalRecoveryAmount ?? 0)} icon={<CircleDollarSign size={19} />} />
       </section>
 
-      <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <section className="rounded-lg border border-blue-100 bg-white p-5 shadow-sm shadow-blue-950/5">
         <div className="mb-4">
-          <h2 className="text-base font-bold text-slate-950">Repayment Schedule</h2>
-          <p className="mt-1 text-sm text-slate-500">Upcoming recoveries to include in the current payroll file.</p>
+          <h2 className="text-base font-bold text-blue-950">Repayment Schedule</h2>
+          <p className="mt-1 text-sm text-blue-900/65">Upcoming recoveries to include in the current payroll file.</p>
         </div>
         <RecoveryTable recoveries={recoveries} />
       </section>

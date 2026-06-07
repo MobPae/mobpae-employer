@@ -33,7 +33,7 @@ export function RepaymentsPage() {
     <>
       <PageHeader eyebrow="Recovery ledger" title="Repayments" description="Track payroll-linked recovery amounts by employee, request and due date." />
 
-      <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <section className="rounded-lg border border-blue-100 bg-white p-5 shadow-sm shadow-blue-950/5">
         <div className="grid gap-3 lg:grid-cols-[1fr_180px]">
           <Input icon={<Search size={16} />} placeholder="Search repayments" value={query} onChange={(event) => setQuery(event.target.value)} />
           <Select
@@ -52,7 +52,7 @@ export function RepaymentsPage() {
           <DataTable
             data={filteredRepayments}
             columns={[
-              { key: "employee", header: "Employee", render: (repayment) => <span className="font-semibold text-slate-950">{repayment.employeeName}</span> },
+              { key: "employee", header: "Employee", render: (repayment) => <span className="font-semibold text-blue-950">{repayment.employeeName}</span> },
               { key: "request", header: "Salary Request", render: (repayment) => repayment.salaryRequestId },
               { key: "amount", header: "Amount", render: (repayment) => formatCurrency(repayment.amount) },
               { key: "due", header: "Due Date", render: (repayment) => formatDate(repayment.dueDate) },

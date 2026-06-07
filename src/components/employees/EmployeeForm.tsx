@@ -67,7 +67,7 @@ export function EmployeeForm({
           ]}
         />
       </div>
-      <label className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700">
+      <label className="flex items-center justify-between rounded-lg border border-blue-100 bg-blue-50/70 px-4 py-3 text-sm font-semibold text-blue-900">
         App access activated
         <input
           className="h-5 w-5 accent-slate-950"

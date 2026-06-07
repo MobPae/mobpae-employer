@@ -33,7 +33,7 @@ export function SettingsPage() {
     <>
       <PageHeader eyebrow="Employer profile" title="Settings" description="Maintain company identity, payroll cycle details and HR contact information." />
 
-      <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+      <section className="rounded-lg border border-blue-100 bg-white p-5 shadow-sm shadow-blue-950/5">
         <form
           className="grid max-w-3xl gap-4"
           onSubmit={async (event) => {

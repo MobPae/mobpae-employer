@@ -7,12 +7,12 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 
 export function Input({ label, icon, className = "", ...props }: InputProps) {
   return (
-    <label className="grid gap-1.5 text-sm font-medium text-slate-700">
+    <label className="grid gap-1.5 text-sm font-medium text-blue-900">
       {label}
       <span className="relative">
         {icon ? <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">{icon}</span> : null}
         <input
-          className={`h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-slate-400 focus:ring-4 focus:ring-slate-100 ${icon ? "pl-9" : ""} ${className}`}
+          className={`h-10 w-full rounded-md border border-blue-100 bg-white px-3 text-sm text-blue-950 shadow-sm transition placeholder:text-blue-300 focus:border-blue-300 focus:ring-4 focus:ring-blue-100 ${icon ? "pl-9" : ""} ${className}`}
           {...props}
         />
       </span>

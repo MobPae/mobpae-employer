@@ -49,7 +49,7 @@ export function EmployeesPage() {
         actions={<Button icon={<Plus size={16} />} onClick={() => setDrawerMode("CREATE")}>Add Employee</Button>}
       />
 
-      <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <section className="rounded-lg border border-blue-100 bg-white p-5 shadow-sm shadow-blue-950/5">
         <div className="grid gap-3 lg:grid-cols-[1fr_180px_180px]">
           <Input icon={<Search size={16} />} placeholder="Search employees" value={query} onChange={(event) => setQuery(event.target.value)} />
           <Select
@@ -72,7 +72,7 @@ export function EmployeesPage() {
           />
         </div>
 
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-600">
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg bg-blue-50/70 px-3 py-2 text-sm text-blue-800">
           <div className="flex items-center gap-2 font-semibold">
             <Filter size={16} />
             {filteredEmployees.length} employees shown · {selectedIds.length} selected
