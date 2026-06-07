@@ -111,6 +111,10 @@ export function EmployeesPage() {
               setEditingEmployee(employee);
               setDrawerMode("EDIT");
             }}
+            onStatusChange={async (employee, employmentStatus) => {
+              await employeeService.updateEmployee(employee.id, { employmentStatus });
+              refresh();
+            }}
             onToggleAccess={async (employee) => {
               await employeeService.activateEmployee(employee.id, !employee.appActivated);
               refresh();

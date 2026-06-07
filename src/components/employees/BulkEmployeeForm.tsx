@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { AlertCircle, CheckCircle2 } from "lucide-react";
+import { AlertCircle, CheckCircle2, UploadCloud } from "lucide-react";
 import { Button } from "../ui/Button";
 import { DataTable } from "../ui/DataTable";
 import { StatusBadge } from "../ui/StatusBadge";
@@ -68,6 +68,7 @@ export function BulkEmployeeForm({
   onSubmit: (payloads: EmployeePayload[]) => Promise<void>;
 }) {
   const [rawRows, setRawRows] = useState(sampleRows);
+  const [uploadedFileName, setUploadedFileName] = useState("");
   const [saving, setSaving] = useState(false);
   const parsedRows = useMemo(() => parseRows(rawRows), [rawRows]);
   const validRows = parsedRows.filter((row) => row.errors.length === 0);
@@ -88,14 +89,39 @@ export function BulkEmployeeForm({
       }}
     >
       <div className="rounded-lg border border-blue-100 bg-blue-50/70 p-4">
-        <p className="text-sm font-semibold text-slate-950">Paste employees as CSV rows</p>
+        <p className="text-sm font-semibold text-slate-950">Upload a CSV or paste employee rows</p>
         <p className="mt-1 text-sm leading-5 text-slate-500">
           Format: employeeCode, name, email, phone, salaryInHand, employmentStatus, appActivated, department
         </p>
       </div>
 
+      <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-blue-200 bg-white px-4 py-6 text-center transition hover:bg-blue-50/60">
+        <UploadCloud className="text-blue-600" size={24} />
+        <span className="text-sm font-semibold text-slate-950">
+          {uploadedFileName || "Choose CSV file"}
+        </span>
+        <span className="text-xs text-slate-500">CSV content will populate the rows below for review before import.</span>
+        <input
+          className="sr-only"
+          type="file"
+          accept=".csv,text/csv"
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+
+            if (!file) {
+              return;
+            }
+
+            setUploadedFileName(file.name);
+            const reader = new FileReader();
+            reader.onload = () => setRawRows(String(reader.result ?? ""));
+            reader.readAsText(file);
+          }}
+        />
+      </label>
+
       <label className="grid gap-1.5 text-sm font-medium text-slate-700">
-        Employee rows
+        Employee CSV rows
         <textarea
           className="min-h-40 w-full rounded-md border border-blue-100 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-100"
           value={rawRows}
