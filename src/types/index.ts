@@ -75,10 +75,17 @@ export interface Repayment {
 }
 
 export interface PayrollSummary {
-  payrollDate: string;
-  payrollCutoffDate: string;
+  payrollDate: number | null;
+  payrollCutoffDate: number | null;
   employeesDue: number;
+  pendingRecoveries: number;
+  completedRecoveries: number;
   totalRecoveryAmount: number;
+}
+
+export interface PayrollSettingsPayload {
+  payrollDate: number;
+  payrollCutoffDate: number;
 }
 
 export interface EmployerProfile {

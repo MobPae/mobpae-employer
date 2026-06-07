@@ -195,9 +195,11 @@ export const repayments: Repayment[] = [
 ];
 
 export const payrollSummary: PayrollSummary = {
-  payrollDate: "2026-06-30",
-  payrollCutoffDate: "2026-06-25",
+  payrollDate: 30,
+  payrollCutoffDate: 25,
   employeesDue: 3,
+  pendingRecoveries: 3,
+  completedRecoveries: 1,
   totalRecoveryAmount: 33200
 };
 

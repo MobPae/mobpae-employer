@@ -186,10 +186,15 @@ export const mapDashboardStats = (value: unknown): Partial<DashboardStats> => {
 
 export const mapPayrollSummary = (value: unknown): PayrollSummary => {
   const record = asRecord(value);
+  const payrollDate = record.payrollDate ?? record.payrollDay;
+  const payrollCutoffDate = record.payrollCutoffDate ?? record.cutoffDate ?? record.cutoffDay;
+
   return {
-    payrollDate: text(record.payrollDate, ""),
-    payrollCutoffDate: text(record.payrollCutoffDate, ""),
+    payrollDate: payrollDate === null || payrollDate === undefined || payrollDate === "" ? null : numberValue(payrollDate),
+    payrollCutoffDate: payrollCutoffDate === null || payrollCutoffDate === undefined || payrollCutoffDate === "" ? null : numberValue(payrollCutoffDate),
     employeesDue: numberValue(record.employeesDue),
+    pendingRecoveries: numberValue(record.pendingRecoveries),
+    completedRecoveries: numberValue(record.completedRecoveries),
     totalRecoveryAmount: numberValue(record.totalRecoveryAmount ?? record.recoveryAmount)
   };
 };

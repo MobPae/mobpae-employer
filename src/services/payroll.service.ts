@@ -1,25 +1,20 @@
-import type { PayrollSummary, Repayment } from "../types";
-import { employerService } from "./employer.service";
-import { repaymentService } from "./repayment.service";
+import type { PayrollSettingsPayload, PayrollSummary, Repayment } from "../types";
+import { mapPayrollSummary, mapRepayment, unwrapItem, unwrapList } from "./api-mappers";
+import { httpClient } from "./http-client";
 
 export const payrollService = {
   async getPayrollSummary(): Promise<PayrollSummary> {
-    const [profile, repayments] = await Promise.all([
-      employerService.getEmployerProfile(),
-      repaymentService.getRepayments()
-    ]);
-    const pendingRecoveries = repayments.filter((repayment) => repayment.status !== "PAID");
-
-    return {
-      payrollDate: profile.payrollDate,
-      payrollCutoffDate: profile.payrollCutoffDate,
-      employeesDue: new Set(pendingRecoveries.map((repayment) => repayment.employeeId)).size,
-      totalRecoveryAmount: pendingRecoveries.reduce((total, repayment) => total + repayment.amount, 0)
-    };
+    const { data } = await httpClient.get("/payroll/employer/summary");
+    return mapPayrollSummary(unwrapItem(data, ["summary"]));
   },
 
   async getUpcomingRecoveries(): Promise<Repayment[]> {
-    const repayments = await repaymentService.getRepayments();
-    return repayments.filter((repayment) => repayment.status !== "PAID");
+    const { data } = await httpClient.get("/payroll/employer/recoveries");
+    return unwrapList(data, ["recoveries"]).map(mapRepayment);
+  },
+
+  async updatePayrollSettings(payload: PayrollSettingsPayload): Promise<PayrollSummary> {
+    await httpClient.put("/payroll/employer/settings", payload);
+    return this.getPayrollSummary();
   }
 };

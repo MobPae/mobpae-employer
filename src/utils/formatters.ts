@@ -18,4 +18,11 @@ export const formatDate = (date?: string | null) => {
   }).format(parsedDate);
 };
 
+export const formatPayrollDay = (day?: number | null) => {
+  if (!day || day < 1 || day > 31) return "-";
+
+  const suffix = day % 10 === 1 && day % 100 !== 11 ? "st" : day % 10 === 2 && day % 100 !== 12 ? "nd" : day % 10 === 3 && day % 100 !== 13 ? "rd" : "th";
+  return `${day}${suffix} of month`;
+};
+
 export const readableStatus = (status: string) => status.replaceAll("_", " ");
