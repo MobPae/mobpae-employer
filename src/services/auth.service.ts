@@ -18,6 +18,11 @@ const decodeJwtPayload = (token: string): Record<string, unknown> => {
   }
 };
 
+const getStoredUser = (): AuthUser | null => {
+  const stored = localStorage.getItem(USER_KEY);
+  return stored ? (JSON.parse(stored) as AuthUser) : null;
+};
+
 export const authService = {
   async login(credentials: LoginCredentials): Promise<LoginResponse> {
     const { data } = await httpClient.post("/auth/login", credentials);
@@ -38,7 +43,7 @@ export const authService = {
     let user: AuthUser = mapAuthUser(userSource);
 
     try {
-      const profile = await this.getCurrentUser();
+      const profile = await this.refreshCurrentUser();
       if (profile) user = profile;
     } catch {
       // Keep the user returned by login when /auth/me is not available for this token.
@@ -61,6 +66,19 @@ export const authService = {
       return null;
     }
 
+    const storedUser = getStoredUser();
+    if (storedUser) {
+      return storedUser;
+    }
+
+    return this.refreshCurrentUser();
+  },
+
+  async refreshCurrentUser(): Promise<AuthUser | null> {
+    if (!localStorage.getItem(TOKEN_KEY)) {
+      return null;
+    }
+
     try {
       const { data } = await httpClient.get("/auth/me");
       const user = mapAuthUser(unwrapItem(data, ["user", "profile"]));
@@ -70,8 +88,7 @@ export const authService = {
       // Fall back to cached user so refreshes do not log users out on transient API failures.
     }
 
-    const stored = localStorage.getItem(USER_KEY);
-    return stored ? (JSON.parse(stored) as AuthUser) : null;
+    return getStoredUser();
   },
 
   isAuthenticated(): boolean {
