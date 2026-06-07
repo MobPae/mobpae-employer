@@ -20,13 +20,8 @@ const mapNotification = (value: unknown): NotificationItem => {
 
 export const dashboardService = {
   async getDashboardStats(): Promise<DashboardStats> {
-    const currentUser = await authService.getCurrentUser();
-
     const employees = await employeeService.getEmployees();
-    const salaryRequests =
-      currentUser?.role === "EMPLOYER"
-        ? []
-        : await salaryRequestService.getSalaryRequests().catch(() => []);
+    const salaryRequests = await salaryRequestService.getSalaryRequests().catch(() => []);
 
     return {
       totalEmployees: employees.length,
@@ -50,13 +45,10 @@ export const dashboardService = {
   },
 
   async getRecentNotifications(): Promise<NotificationItem[]> {
-    const currentUser = await authService.getCurrentUser();
-
-    if (!currentUser?.id || currentUser.role === "EMPLOYER") {
-      return [];
-    }
-
     try {
+      const currentUser = await authService.getCurrentUser();
+      if (!currentUser?.id) return [];
+
       const { data } = await httpClient.get(`/notifications/user/${currentUser.id}`);
       return unwrapList(data, ["notifications"]).map(mapNotification).slice(0, 5);
     } catch {

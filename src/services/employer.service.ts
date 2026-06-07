@@ -19,16 +19,6 @@ export const employerService = {
     const currentUser = await authService.getCurrentUser();
 
     try {
-      if (currentUser?.role === "EMPLOYER") {
-        return {
-          ...emptyProfile,
-          companyName: currentUser.companyName,
-          companyCode: currentUser.companyCode,
-          contactPerson: currentUser.name,
-          email: currentUser.email
-        };
-      }
-
       const { data } = await httpClient.get("/settings");
       const settings = unwrapList(data, ["settings"]);
       return mapEmployerProfile(settings.length ? settings[0] : unwrapItem(data, ["settings"]));
