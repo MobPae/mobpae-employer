@@ -1,11 +1,17 @@
 import type { SalaryRequest } from "../types";
+import { isForbidden } from "./api-errors";
 import { mapSalaryRequest, unwrapItem, unwrapList } from "./api-mappers";
 import { httpClient } from "./http-client";
 
 export const salaryRequestService = {
   async getSalaryRequests(): Promise<SalaryRequest[]> {
-    const { data } = await httpClient.get("/salary-requests");
-    return unwrapList(data, ["salaryRequests", "requests"]).map(mapSalaryRequest);
+    try {
+      const { data } = await httpClient.get("/salary-requests");
+      return unwrapList(data, ["salaryRequests", "requests"]).map(mapSalaryRequest);
+    } catch (error) {
+      if (isForbidden(error)) return [];
+      throw error;
+    }
   },
 
   async getSalaryRequestById(id: string): Promise<SalaryRequest | undefined> {
