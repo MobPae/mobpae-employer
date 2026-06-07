@@ -23,6 +23,17 @@ export const employeeService = {
     return employee;
   },
 
+  async bulkCreateEmployees(payloads: EmployeePayload[]): Promise<Employee[]> {
+    const createdEmployees = payloads.map((payload, index) => ({
+      ...payload,
+      id: `emp_${Date.now()}_${index}`,
+      joinedAt: payload.joinedAt ?? new Date().toISOString().slice(0, 10)
+    }));
+
+    employees = [...createdEmployees, ...employees];
+    return createdEmployees;
+  },
+
   async updateEmployee(id: string, payload: Partial<EmployeePayload>): Promise<Employee> {
     let updatedEmployee: Employee | undefined;
 

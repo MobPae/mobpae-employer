@@ -1,5 +1,6 @@
-import { Filter, Plus, Search, Zap } from "lucide-react";
+import { Filter, Plus, Search, UploadCloud, Zap } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { BulkEmployeeForm } from "../../components/employees/BulkEmployeeForm";
 import { EmployeeForm } from "../../components/employees/EmployeeForm";
 import { EmployeeTable } from "../../components/employees/EmployeeTable";
 import { Button } from "../../components/ui/Button";
@@ -16,7 +17,7 @@ export function EmployeesPage() {
   const [status, setStatus] = useState<"ALL" | EmploymentStatus>("ALL");
   const [activation, setActivation] = useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [drawerMode, setDrawerMode] = useState<"CREATE" | "EDIT" | null>(null);
+  const [drawerMode, setDrawerMode] = useState<"CREATE" | "EDIT" | "BULK_CREATE" | null>(null);
   const [editingEmployee, setEditingEmployee] = useState<Employee | undefined>();
 
   const refresh = () => employeeService.getEmployees().then(setEmployees);
@@ -46,7 +47,16 @@ export function EmployeesPage() {
         eyebrow="Workforce"
         title="Employees"
         description="Manage employee eligibility, app activation and salary access controls."
-        actions={<Button icon={<Plus size={16} />} onClick={() => setDrawerMode("CREATE")}>Add Employee</Button>}
+        actions={
+          <>
+            <Button variant="secondary" icon={<UploadCloud size={16} />} onClick={() => setDrawerMode("BULK_CREATE")}>
+              Bulk Add
+            </Button>
+            <Button icon={<Plus size={16} />} onClick={() => setDrawerMode("CREATE")}>
+              Add Employee
+            </Button>
+          </>
+        }
       />
 
       <section className="rounded-lg border border-blue-100 bg-white p-5 shadow-sm shadow-blue-950/5">
@@ -110,7 +120,7 @@ export function EmployeesPage() {
       </section>
 
       <Drawer
-        open={Boolean(drawerMode)}
+        open={drawerMode === "CREATE" || drawerMode === "EDIT"}
         title={drawerMode === "EDIT" ? "Edit Employee" : "Add Employee"}
         description="Employee records are served from the dummy service and can be swapped to API calls later."
         onClose={closeDrawer}
@@ -123,6 +133,21 @@ export function EmployeesPage() {
             } else {
               await employeeService.createEmployee(payload);
             }
+            await refresh();
+            closeDrawer();
+          }}
+        />
+      </Drawer>
+
+      <Drawer
+        open={drawerMode === "BULK_CREATE"}
+        title="Bulk Add Employees"
+        description="Paste employee rows and import them through the employee service."
+        onClose={closeDrawer}
+      >
+        <BulkEmployeeForm
+          onSubmit={async (payloads: EmployeePayload[]) => {
+            await employeeService.bulkCreateEmployees(payloads);
             await refresh();
             closeDrawer();
           }}
