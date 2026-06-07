@@ -19,11 +19,6 @@ export const employerService = {
     const currentUser = await authService.getCurrentUser();
 
     try {
-      if (currentUser?.role === "EMPLOYER" && currentUser.employerId) {
-        const { data } = await httpClient.get(`/employers/${currentUser.employerId}`);
-        return mapEmployerProfile(unwrapItem(data, ["employer"]));
-      }
-
       if (currentUser?.role === "EMPLOYER") {
         return {
           ...emptyProfile,

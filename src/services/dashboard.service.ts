@@ -1,7 +1,7 @@
 import { employeeService } from "./employee.service";
 import { salaryRequestService } from "./salary-request.service";
 import type { DashboardStats, NotificationItem, SalaryRequest } from "../types";
-import { mapDashboardStats, unwrapItem, unwrapList } from "./api-mappers";
+import { unwrapList } from "./api-mappers";
 import { authService } from "./auth.service";
 import { httpClient } from "./http-client";
 
@@ -22,21 +22,11 @@ export const dashboardService = {
   async getDashboardStats(): Promise<DashboardStats> {
     const currentUser = await authService.getCurrentUser();
 
-    if (currentUser?.employerId) {
-      try {
-        const { data } = await httpClient.get(`/dashboard/employer/${currentUser.employerId}`);
-        const dashboardStats = mapDashboardStats(unwrapItem(data, ["dashboard", "stats"]));
-
-        if (Object.values(dashboardStats).every((value) => Number.isFinite(value))) {
-          return dashboardStats as DashboardStats;
-        }
-      } catch {
-        // Fall through to local aggregation from API resources.
-      }
-    }
-
     const employees = await employeeService.getEmployees();
-    const salaryRequests = await salaryRequestService.getSalaryRequests().catch(() => []);
+    const salaryRequests =
+      currentUser?.role === "EMPLOYER"
+        ? []
+        : await salaryRequestService.getSalaryRequests().catch(() => []);
 
     return {
       totalEmployees: employees.length,
@@ -62,7 +52,7 @@ export const dashboardService = {
   async getRecentNotifications(): Promise<NotificationItem[]> {
     const currentUser = await authService.getCurrentUser();
 
-    if (!currentUser?.id) {
+    if (!currentUser?.id || currentUser.role === "EMPLOYER") {
       return [];
     }
 

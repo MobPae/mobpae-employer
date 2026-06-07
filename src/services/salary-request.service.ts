@@ -8,8 +8,12 @@ export const salaryRequestService = {
   async getSalaryRequests(): Promise<SalaryRequest[]> {
     try {
       const currentUser = await authService.getCurrentUser();
+      if (currentUser?.role === "EMPLOYER" && !currentUser.employerId) {
+        return [];
+      }
+
       const endpoint =
-        currentUser?.role === "EMPLOYER" && currentUser.employerId
+        currentUser?.role === "EMPLOYER"
           ? `/salary-requests/employer/${currentUser.employerId}/pending`
           : "/salary-requests";
       const { data } = await httpClient.get(endpoint);
