@@ -1,62 +1,25 @@
-import { salaryRequests as salaryRequestSeed } from "./mock-data";
 import type { SalaryRequest } from "../types";
-
-let salaryRequests: SalaryRequest[] = [...salaryRequestSeed];
+import { mapSalaryRequest, unwrapItem, unwrapList } from "./api-mappers";
+import { httpClient } from "./http-client";
 
 export const salaryRequestService = {
   async getSalaryRequests(): Promise<SalaryRequest[]> {
-    return [...salaryRequests];
+    const { data } = await httpClient.get("/salary-requests");
+    return unwrapList(data, ["salaryRequests", "requests"]).map(mapSalaryRequest);
   },
 
   async getSalaryRequestById(id: string): Promise<SalaryRequest | undefined> {
-    return salaryRequests.find((request) => request.id === id);
+    const requests = await this.getSalaryRequests();
+    return requests.find((request) => request.id === id || request.requestId === id);
   },
 
   async approveRequest(id: string, approvedAmount?: number): Promise<SalaryRequest> {
-    let updatedRequest: SalaryRequest | undefined;
-
-    salaryRequests = salaryRequests.map((request) => {
-      if (request.id !== id) {
-        return request;
-      }
-
-      updatedRequest = {
-        ...request,
-        approvedAmount: approvedAmount ?? request.requestedAmount,
-        status: "APPROVED",
-        reviewerNote: "Approved by employer admin"
-      };
-      return updatedRequest;
-    });
-
-    if (!updatedRequest) {
-      throw new Error("Salary request not found");
-    }
-
-    return updatedRequest;
+    const { data } = await httpClient.post(`/salary-requests/${id}/approve`, { approvedAmount });
+    return mapSalaryRequest(unwrapItem(data, ["salaryRequest", "request"]));
   },
 
   async rejectRequest(id: string): Promise<SalaryRequest> {
-    let updatedRequest: SalaryRequest | undefined;
-
-    salaryRequests = salaryRequests.map((request) => {
-      if (request.id !== id) {
-        return request;
-      }
-
-      updatedRequest = {
-        ...request,
-        approvedAmount: 0,
-        status: "REJECTED",
-        reviewerNote: "Rejected by employer admin"
-      };
-      return updatedRequest;
-    });
-
-    if (!updatedRequest) {
-      throw new Error("Salary request not found");
-    }
-
-    return updatedRequest;
+    const { data } = await httpClient.post(`/salary-requests/${id}/reject`);
+    return mapSalaryRequest(unwrapItem(data, ["salaryRequest", "request"]));
   }
 };

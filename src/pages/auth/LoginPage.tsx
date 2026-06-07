@@ -9,8 +9,8 @@ export function LoginPage() {
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [email, setEmail] = useState("employer@mobpae.com");
-  const [password, setPassword] = useState("MobPae@123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const from = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ?? "/dashboard";
@@ -59,7 +59,7 @@ export function LoginPage() {
           </Button>
         </form>
         <div className="mt-5 rounded-lg bg-blue-50 p-3 text-xs leading-5 text-slate-500">
-          Demo credentials: employer@mobpae.com / MobPae@123
+          Use the employer credentials provisioned in the MobPae backend.
         </div>
       </section>
     </main>

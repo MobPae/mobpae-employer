@@ -1,29 +1,15 @@
-import { repayments as repaymentSeed } from "./mock-data";
 import type { Repayment } from "../types";
-
-let repayments: Repayment[] = [...repaymentSeed];
+import { mapRepayment, unwrapItem, unwrapList } from "./api-mappers";
+import { httpClient } from "./http-client";
 
 export const repaymentService = {
   async getRepayments(): Promise<Repayment[]> {
-    return [...repayments];
+    const { data } = await httpClient.get("/repayments");
+    return unwrapList(data, ["repayments"]).map(mapRepayment);
   },
 
   async markPaid(id: string): Promise<Repayment> {
-    let updatedRepayment: Repayment | undefined;
-
-    repayments = repayments.map((repayment) => {
-      if (repayment.id !== id) {
-        return repayment;
-      }
-
-      updatedRepayment = { ...repayment, status: "PAID" };
-      return updatedRepayment;
-    });
-
-    if (!updatedRepayment) {
-      throw new Error("Repayment not found");
-    }
-
-    return updatedRepayment;
+    const { data } = await httpClient.post(`/repayments/${id}/pay`);
+    return mapRepayment(unwrapItem(data, ["repayment"]));
   }
 };

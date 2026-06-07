@@ -1,10 +1,40 @@
 import { employeeService } from "./employee.service";
-import { notifications } from "./mock-data";
 import { salaryRequestService } from "./salary-request.service";
 import type { DashboardStats, NotificationItem, SalaryRequest } from "../types";
+import { mapDashboardStats, unwrapItem, unwrapList } from "./api-mappers";
+import { authService } from "./auth.service";
+import { httpClient } from "./http-client";
+
+type NotificationApiRecord = Record<string, unknown>;
+
+const mapNotification = (value: unknown): NotificationItem => {
+  const record = value && typeof value === "object" ? (value as NotificationApiRecord) : {};
+  return {
+    id: String(record.id ?? record._id ?? ""),
+    title: String(record.title ?? record.type ?? "Notification"),
+    description: String(record.description ?? record.message ?? ""),
+    createdAt: String(record.createdAt ?? new Date().toISOString()),
+    type: "EMPLOYEE"
+  };
+};
 
 export const dashboardService = {
   async getDashboardStats(): Promise<DashboardStats> {
+    const currentUser = await authService.getCurrentUser();
+
+    if (currentUser?.employerId) {
+      try {
+        const { data } = await httpClient.get(`/dashboard/employer/${currentUser.employerId}`);
+        const dashboardStats = mapDashboardStats(unwrapItem(data, ["dashboard", "stats"]));
+
+        if (Object.values(dashboardStats).every((value) => Number.isFinite(value))) {
+          return dashboardStats as DashboardStats;
+        }
+      } catch {
+        // Fall through to local aggregation from API resources.
+      }
+    }
+
     const [employees, salaryRequests] = await Promise.all([
       employeeService.getEmployees(),
       salaryRequestService.getSalaryRequests()
@@ -32,6 +62,13 @@ export const dashboardService = {
   },
 
   async getRecentNotifications(): Promise<NotificationItem[]> {
-    return [...notifications];
+    const currentUser = await authService.getCurrentUser();
+
+    if (!currentUser?.id) {
+      return [];
+    }
+
+    const { data } = await httpClient.get(`/notifications/user/${currentUser.id}`);
+    return unwrapList(data, ["notifications"]).map(mapNotification).slice(0, 5);
   }
 };

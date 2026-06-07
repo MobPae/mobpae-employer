@@ -1,67 +1,48 @@
-import { employees as employeeSeed } from "./mock-data";
 import type { Employee, EmployeePayload } from "../types";
-
-let employees: Employee[] = [...employeeSeed];
+import { mapEmployee, toEmployeeApiPayload, unwrapItem, unwrapList } from "./api-mappers";
+import { httpClient } from "./http-client";
 
 export const employeeService = {
   async getEmployees(): Promise<Employee[]> {
-    return [...employees];
+    const { data } = await httpClient.get("/employees");
+    return unwrapList(data, ["employees"]).map(mapEmployee);
   },
 
   async getEmployeeById(id: string): Promise<Employee | undefined> {
-    return employees.find((employee) => employee.id === id);
+    const { data } = await httpClient.get(`/employees/${id}`);
+    return mapEmployee(unwrapItem(data, ["employee"]));
   },
 
   async createEmployee(payload: EmployeePayload): Promise<Employee> {
-    const employee: Employee = {
-      ...payload,
-      id: `emp_${Date.now()}`,
-      joinedAt: payload.joinedAt ?? new Date().toISOString().slice(0, 10)
-    };
-
-    employees = [employee, ...employees];
-    return employee;
+    const { data } = await httpClient.post("/employees", toEmployeeApiPayload(payload));
+    return mapEmployee(unwrapItem(data, ["employee"]));
   },
 
   async bulkCreateEmployees(payloads: EmployeePayload[]): Promise<Employee[]> {
-    const createdEmployees = payloads.map((payload, index) => ({
-      ...payload,
-      id: `emp_${Date.now()}_${index}`,
-      joinedAt: payload.joinedAt ?? new Date().toISOString().slice(0, 10)
-    }));
-
-    employees = [...createdEmployees, ...employees];
-    return createdEmployees;
+    const responses = await Promise.all(payloads.map((payload) => this.createEmployee(payload)));
+    return responses;
   },
 
   async updateEmployee(id: string, payload: Partial<EmployeePayload>): Promise<Employee> {
-    let updatedEmployee: Employee | undefined;
-
-    employees = employees.map((employee) => {
-      if (employee.id !== id) {
-        return employee;
-      }
-
-      updatedEmployee = { ...employee, ...payload };
-      return updatedEmployee;
-    });
-
-    if (!updatedEmployee) {
-      throw new Error("Employee not found");
-    }
-
-    return updatedEmployee;
+    const { data } = await httpClient.patch(`/employees/${id}`, payload);
+    return mapEmployee(unwrapItem(data, ["employee"]));
   },
 
   async activateEmployee(id: string, appActivated = true): Promise<Employee> {
-    return this.updateEmployee(id, { appActivated });
+    const { data } = await httpClient.patch(`/employees/${id}/activation`, {
+      appActivated,
+      isAppActivated: appActivated
+    });
+    return mapEmployee(unwrapItem(data, ["employee"]));
   },
 
   async bulkActivateEmployees(ids: string[]): Promise<Employee[]> {
-    employees = employees.map((employee) =>
-      ids.includes(employee.id) ? { ...employee, appActivated: true } : employee
-    );
-
-    return employees.filter((employee) => ids.includes(employee.id));
+    const { data } = await httpClient.patch("/employees/bulk-activation", {
+      employeeIds: ids,
+      ids,
+      appActivated: true,
+      isAppActivated: true
+    });
+    return unwrapList(data, ["employees"]).map(mapEmployee);
   }
 };
