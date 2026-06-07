@@ -7,7 +7,6 @@ export const salaryRequestService = {
   async getSalaryRequests(): Promise<SalaryRequest[]> {
     try {
       const { data } = await httpClient.get("/salary-requests/employer");
-      console.log(data);
       return unwrapList(data, ["salaryRequests", "requests"]).map(
         mapSalaryRequest
       );

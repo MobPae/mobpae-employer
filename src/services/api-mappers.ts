@@ -137,8 +137,8 @@ export const mapSalaryRequest = (value: unknown): SalaryRequest => {
 
 export const mapRepayment = (value: unknown): Repayment => {
   const record = asRecord(value);
-  const employee = asRecord(record.employee);
   const request = asRecord(record.salaryRequest ?? record.request);
+  const employee = asRecord(record.employee ?? request.employee);
 
   return {
     id: text(record.id ?? record._id, ""),
