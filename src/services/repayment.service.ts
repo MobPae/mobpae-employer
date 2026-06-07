@@ -6,7 +6,7 @@ import { httpClient } from "./http-client";
 export const repaymentService = {
   async getRepayments(): Promise<Repayment[]> {
     try {
-      const { data } = await httpClient.get("/repayments");
+      const { data } = await httpClient.get("/repayments/employer");
       return unwrapList(data, ["repayments"]).map(mapRepayment);
     } catch (error) {
       if (isForbidden(error)) return [];
@@ -17,5 +17,5 @@ export const repaymentService = {
   async markPaid(id: string): Promise<Repayment> {
     const { data } = await httpClient.post(`/repayments/${id}/pay`);
     return mapRepayment(unwrapItem(data, ["repayment"]));
-  }
+  },
 };
