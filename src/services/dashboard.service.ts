@@ -28,9 +28,11 @@ export const dashboardService = {
       activeEmployees: employees.filter((employee) => employee.employmentStatus === "ACTIVE").length,
       appActivatedEmployees: employees.filter((employee) => employee.appActivated).length,
       pendingSalaryRequests: salaryRequests.filter((request) =>
-        ["SUBMITTED", "UNDER_REVIEW"].includes(request.status)
+        ["PENDING", "SUBMITTED", "UNDER_REVIEW"].includes(request.status)
       ).length,
-      approvedRequests: salaryRequests.filter((request) => request.status === "APPROVED").length,
+      approvedRequests: salaryRequests.filter((request) =>
+        ["APPROVED", "DISBURSED", "REPAID"].includes(request.status)
+      ).length,
       outstandingAmount: salaryRequests
         .filter((request) => ["APPROVED", "DISBURSED"].includes(request.status))
         .reduce((total, request) => total + request.approvedAmount, 0)

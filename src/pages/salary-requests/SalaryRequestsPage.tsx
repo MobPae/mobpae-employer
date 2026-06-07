@@ -32,7 +32,7 @@ export function SalaryRequestsPage() {
     [query, requests, status]
   );
 
-  const canReview = selectedRequest && ["SUBMITTED", "UNDER_REVIEW"].includes(selectedRequest.status);
+  const canReview = selectedRequest && ["PENDING", "SUBMITTED", "UNDER_REVIEW"].includes(selectedRequest.status);
 
   return (
     <>
@@ -50,6 +50,7 @@ export function SalaryRequestsPage() {
             onChange={(event) => setStatus(event.target.value as "ALL" | SalaryRequestStatus)}
             options={[
               { label: "All statuses", value: "ALL" },
+              { label: "Pending", value: "PENDING" },
               { label: "Submitted", value: "SUBMITTED" },
               { label: "Under review", value: "UNDER_REVIEW" },
               { label: "Approved", value: "APPROVED" },

@@ -1,6 +1,7 @@
 export type EmploymentStatus = "ACTIVE" | "INACTIVE";
 
 export type SalaryRequestStatus =
+  | "PENDING"
   | "SUBMITTED"
   | "UNDER_REVIEW"
   | "APPROVED"

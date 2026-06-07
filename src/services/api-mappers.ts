@@ -55,7 +55,7 @@ const normalizeEmploymentStatus = (value: unknown): EmploymentStatus =>
 
 const normalizeSalaryRequestStatus = (value: unknown): SalaryRequestStatus => {
   const normalized = String(value ?? "SUBMITTED").toUpperCase();
-  const allowed: SalaryRequestStatus[] = ["SUBMITTED", "UNDER_REVIEW", "APPROVED", "REJECTED", "DISBURSED", "REPAID"];
+  const allowed: SalaryRequestStatus[] = ["PENDING", "SUBMITTED", "UNDER_REVIEW", "APPROVED", "REJECTED", "DISBURSED", "REPAID"];
   return allowed.includes(normalized as SalaryRequestStatus) ? (normalized as SalaryRequestStatus) : "SUBMITTED";
 };
 
@@ -119,6 +119,12 @@ export const toEmployeeApiPayload = (payload: EmployeePayload) => ({
 export const mapSalaryRequest = (value: unknown): SalaryRequest => {
   const record = asRecord(value);
   const employee = asRecord(record.employee);
+  const requestedAmount = numberValue(record.requestedAmount ?? record.amount);
+  const status = normalizeSalaryRequestStatus(record.status);
+  const approvedAmount = numberValue(
+    record.approvedAmount ?? record.approved_amount,
+    ["APPROVED", "DISBURSED", "REPAID"].includes(status) ? requestedAmount : 0
+  );
 
   return {
     id: text(record.id ?? record._id, ""),
@@ -126,10 +132,10 @@ export const mapSalaryRequest = (value: unknown): SalaryRequest => {
     employeeId: text(record.employeeId ?? employee.id, ""),
     employeeName: text(record.employeeName ?? employee.name ?? employee.fullName, "Employee"),
     employeeCode: text(record.employeeCode ?? employee.employeeCode, ""),
-    requestedAmount: numberValue(record.requestedAmount ?? record.amount),
-    approvedAmount: numberValue(record.approvedAmount ?? record.approved_amount),
-    status: normalizeSalaryRequestStatus(record.status),
-    createdDate: text(record.createdDate ?? record.createdAt, new Date().toISOString()),
+    requestedAmount,
+    approvedAmount,
+    status,
+    createdDate: text(record.createdDate ?? record.requestedAt ?? record.createdAt, new Date().toISOString()),
     purpose: text(record.purpose ?? record.reason, "Salary advance"),
     reviewerNote: text(record.reviewerNote ?? record.reviewNote)
   };
