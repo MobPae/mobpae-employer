@@ -50,7 +50,7 @@ const boolValue = (value: unknown, fallback = false) => {
 };
 
 const normalizeEmploymentStatus = (value: unknown): EmploymentStatus =>
-  String(value ?? "ACTIVE").toUpperCase() === "INACTIVE" ? "INACTIVE" : "ACTIVE";
+  ["INACTIVE", "DISABLED", "TERMINATED", "FALSE"].includes(String(value ?? "ACTIVE").toUpperCase()) ? "INACTIVE" : "ACTIVE";
 
 const normalizeSalaryRequestStatus = (value: unknown): SalaryRequestStatus => {
   const normalized = String(value ?? "SUBMITTED").toUpperCase();
@@ -89,7 +89,7 @@ export const mapEmployee = (value: unknown): Employee => {
     email: text(record.email, ""),
     phone: text(record.phone ?? record.mobile, ""),
     salaryInHand: numberValue(record.salaryInHand ?? record.netSalary ?? record.salary),
-    employmentStatus: normalizeEmploymentStatus(record.employmentStatus ?? record.status),
+    employmentStatus: normalizeEmploymentStatus(record.employmentStatus ?? record.employment_status ?? record.status ?? record.isActive),
     appActivated: boolValue(record.appActivated ?? record.isAppActivated ?? record.activationStatus),
     department: text(record.department, "General"),
     joinedAt: text(record.joinedAt ?? record.createdAt, new Date().toISOString())

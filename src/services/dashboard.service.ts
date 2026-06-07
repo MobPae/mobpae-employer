@@ -35,10 +35,8 @@ export const dashboardService = {
       }
     }
 
-    const [employees, salaryRequests] = await Promise.all([
-      employeeService.getEmployees(),
-      salaryRequestService.getSalaryRequests()
-    ]);
+    const employees = await employeeService.getEmployees();
+    const salaryRequests = await salaryRequestService.getSalaryRequests().catch(() => []);
 
     return {
       totalEmployees: employees.length,
@@ -55,7 +53,7 @@ export const dashboardService = {
   },
 
   async getRecentSalaryRequests(): Promise<SalaryRequest[]> {
-    const salaryRequests = await salaryRequestService.getSalaryRequests();
+    const salaryRequests = await salaryRequestService.getSalaryRequests().catch(() => []);
     return salaryRequests
       .sort((a, b) => new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime())
       .slice(0, 5);
@@ -68,7 +66,11 @@ export const dashboardService = {
       return [];
     }
 
-    const { data } = await httpClient.get(`/notifications/user/${currentUser.id}`);
-    return unwrapList(data, ["notifications"]).map(mapNotification).slice(0, 5);
+    try {
+      const { data } = await httpClient.get(`/notifications/user/${currentUser.id}`);
+      return unwrapList(data, ["notifications"]).map(mapNotification).slice(0, 5);
+    } catch {
+      return [];
+    }
   }
 };
