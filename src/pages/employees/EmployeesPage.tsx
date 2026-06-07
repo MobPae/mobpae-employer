@@ -1,239 +1,133 @@
-import { Plus, Upload, Search } from "lucide-react";
+import { Filter, Plus, Search, Zap } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { EmployeeForm } from "../../components/employees/EmployeeForm";
+import { EmployeeTable } from "../../components/employees/EmployeeTable";
+import { Button } from "../../components/ui/Button";
+import { Drawer } from "../../components/ui/Drawer";
+import { Input } from "../../components/ui/Input";
+import { PageHeader } from "../../components/ui/PageHeader";
+import { Select } from "../../components/ui/Select";
+import { employeeService } from "../../services/employee.service";
+import type { Employee, EmployeePayload, EmploymentStatus } from "../../types";
 
-export default function EmployeesPage() {
-  return (
-    <div className="space-y-5">
-      {/* Overview */}
-      <div className="flex flex-wrap gap-3">
-        <StatChip label="Total Employees" value="124" color="blue" />
+export function EmployeesPage() {
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [query, setQuery] = useState("");
+  const [status, setStatus] = useState<"ALL" | EmploymentStatus>("ALL");
+  const [activation, setActivation] = useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [drawerMode, setDrawerMode] = useState<"CREATE" | "EDIT" | null>(null);
+  const [editingEmployee, setEditingEmployee] = useState<Employee | undefined>();
 
-        <StatChip label="Active" value="118" color="green" />
+  const refresh = () => employeeService.getEmployees().then(setEmployees);
 
-        <StatChip label="Inactive" value="6" color="red" />
+  useEffect(() => {
+    refresh();
+  }, []);
 
-        <StatChip label="Outstanding" value="₹42K" color="indigo" />
-      </div>
+  const filteredEmployees = useMemo(() => {
+    return employees.filter((employee) => {
+      const searchable = `${employee.employeeCode} ${employee.name} ${employee.email} ${employee.phone}`.toLowerCase();
+      const matchesQuery = searchable.includes(query.toLowerCase());
+      const matchesStatus = status === "ALL" || employee.employmentStatus === status;
+      const matchesActivation = activation === "ALL" || employee.appActivated === (activation === "ACTIVE");
+      return matchesQuery && matchesStatus && matchesActivation;
+    });
+  }, [activation, employees, query, status]);
 
-      {/* Toolbar */}
-      <div className="bg-white border border-slate-200 rounded-3xl p-3">
-        <div className="flex items-center justify-between gap-4">
-          <div className="relative w-full max-w-sm">
-            <Search
-              size={16}
-              className="absolute left-3 top-3 text-slate-400"
-            />
-
-            <input
-              type="text"
-              placeholder="Search employee..."
-              className="
-                w-full
-                pl-10
-                pr-4
-                py-2
-                text-sm
-                border
-                border-slate-200
-                rounded-xl
-                focus:outline-none
-                focus:ring-2
-                focus:ring-blue-100
-              "
-            />
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              className="
-                flex items-center gap-2
-                px-4 py-2
-                border border-slate-200
-                rounded-xl
-                text-sm
-                hover:bg-slate-50
-              "
-            >
-              <Upload size={16} />
-              Import CSV
-            </button>
-
-            <button
-              className="
-                flex items-center gap-2
-                px-4 py-2
-                bg-blue-600
-                text-white
-                rounded-xl
-                text-sm
-                hover:bg-blue-700
-              "
-            >
-              <Plus size={16} />
-              Add Employee
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Table */}
-      <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-slate-50 border-b border-slate-200">
-            <tr>
-              <th className="text-left text-xs font-medium text-slate-500 px-4 py-3">
-                ID
-              </th>
-
-              <th className="text-left text-xs font-medium text-slate-500 px-4 py-3">
-                Employee
-              </th>
-
-              <th className="text-left text-xs font-medium text-slate-500 px-4 py-3">
-                Salary
-              </th>
-
-              <th className="text-left text-xs font-medium text-slate-500 px-4 py-3">
-                Limit
-              </th>
-
-              <th className="text-left text-xs font-medium text-slate-500 px-4 py-3">
-                Outstanding
-              </th>
-
-              <th className="text-left text-xs font-medium text-slate-500 px-4 py-3">
-                Status
-              </th>
-
-              <th className="text-right text-xs font-medium text-slate-500 px-4 py-3">
-                Action
-              </th>
-            </tr>
-          </thead>
-
-          <tbody>
-            <EmployeeRow
-              employeeId="EMP001"
-              name="Rahul Sharma"
-              email="rahul@xyz.com"
-              salary="₹25,000"
-              limit="₹10,000"
-              outstanding="₹2,500"
-              status="ACTIVE"
-            />
-
-            <EmployeeRow
-              employeeId="EMP002"
-              name="Priya Verma"
-              email="priya@xyz.com"
-              salary="₹30,000"
-              limit="₹12,000"
-              outstanding="-"
-              status="ACTIVE"
-            />
-
-            <EmployeeRow
-              employeeId="EMP003"
-              name="Amit Singh"
-              email="amit@xyz.com"
-              salary="₹18,000"
-              limit="₹7,200"
-              outstanding="-"
-              status="INACTIVE"
-            />
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
-
-function StatChip({
-  label,
-  value,
-  color,
-}: {
-  label: string;
-  value: string;
-  color: string;
-}) {
-  const styles: Record<string, string> = {
-    blue: "bg-blue-50 text-blue-700",
-    green: "bg-green-50 text-green-700",
-    red: "bg-red-50 text-red-700",
-    indigo: "bg-indigo-50 text-indigo-700",
+  const closeDrawer = () => {
+    setDrawerMode(null);
+    setEditingEmployee(undefined);
   };
 
   return (
-    <div
-      className={`
-        flex items-center gap-2
-        px-3 py-1.5
-        rounded-full
-        text-sm
-        font-medium
-        ${styles[color]}
-      `}
-    >
-      <span>{label}</span>
-      <span>{value}</span>
-    </div>
-  );
-}
+    <>
+      <PageHeader
+        eyebrow="Workforce"
+        title="Employees"
+        description="Manage employee eligibility, app activation and salary access controls."
+        actions={<Button icon={<Plus size={16} />} onClick={() => setDrawerMode("CREATE")}>Add Employee</Button>}
+      />
 
-function EmployeeRow({
-  employeeId,
-  name,
-  email,
-  salary,
-  limit,
-  outstanding,
-  status,
-}: {
-  employeeId: string;
-  name: string;
-  email: string;
-  salary: string;
-  limit: string;
-  outstanding: string;
-  status: string;
-}) {
-  return (
-    <tr className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-      <td className="px-4 py-3">
-        <span className="text-xs font-medium text-slate-500">{employeeId}</span>
-      </td>
-
-      <td className="px-4 py-3">
-        <div>
-          <div className="text-sm font-medium text-slate-900">{name}</div>
-
-          <div className="text-[11px] text-slate-500">{email}</div>
+      <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="grid gap-3 lg:grid-cols-[1fr_180px_180px]">
+          <Input icon={<Search size={16} />} placeholder="Search employees" value={query} onChange={(event) => setQuery(event.target.value)} />
+          <Select
+            value={status}
+            onChange={(event) => setStatus(event.target.value as "ALL" | EmploymentStatus)}
+            options={[
+              { label: "All statuses", value: "ALL" },
+              { label: "Active", value: "ACTIVE" },
+              { label: "Inactive", value: "INACTIVE" }
+            ]}
+          />
+          <Select
+            value={activation}
+            onChange={(event) => setActivation(event.target.value as "ALL" | "ACTIVE" | "INACTIVE")}
+            options={[
+              { label: "All access", value: "ALL" },
+              { label: "Activated", value: "ACTIVE" },
+              { label: "Not activated", value: "INACTIVE" }
+            ]}
+          />
         </div>
-      </td>
 
-      <td className="px-4 py-3 text-sm font-medium text-slate-900">{salary}</td>
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-600">
+          <div className="flex items-center gap-2 font-semibold">
+            <Filter size={16} />
+            {filteredEmployees.length} employees shown · {selectedIds.length} selected
+          </div>
+          <Button
+            variant="secondary"
+            icon={<Zap size={15} />}
+            disabled={!selectedIds.length}
+            onClick={async () => {
+              await employeeService.bulkActivateEmployees(selectedIds);
+              setSelectedIds([]);
+              refresh();
+            }}
+          >
+            Bulk Activation
+          </Button>
+        </div>
 
-      <td className="px-4 py-3 text-sm text-slate-700">{limit}</td>
+        <div className="mt-4">
+          <EmployeeTable
+            employees={filteredEmployees}
+            selectedIds={selectedIds}
+            onSelect={(id, selected) => setSelectedIds((current) => (selected ? [...current, id] : current.filter((value) => value !== id)))}
+            onSelectAll={(selected) => setSelectedIds(selected ? filteredEmployees.map((employee) => employee.id) : [])}
+            onEdit={(employee) => {
+              setEditingEmployee(employee);
+              setDrawerMode("EDIT");
+            }}
+            onToggleAccess={async (employee) => {
+              await employeeService.activateEmployee(employee.id, !employee.appActivated);
+              refresh();
+            }}
+          />
+        </div>
+      </section>
 
-      <td className="px-4 py-3 text-sm text-slate-700">{outstanding}</td>
-
-      <td className="px-4 py-3">
-        <span
-          className={
-            status === "ACTIVE"
-              ? "inline-flex px-2 py-1 rounded-full text-[11px] font-medium bg-green-100 text-green-700"
-              : "inline-flex px-2 py-1 rounded-full text-[11px] font-medium bg-red-100 text-red-700"
-          }
-        >
-          {status}
-        </span>
-      </td>
-
-      <td className="px-4 py-3 text-right">
-        <button className="text-sm font-medium text-blue-600 hover:text-blue-700">
-          View
-        </button>
-      </td>
-    </tr>
+      <Drawer
+        open={Boolean(drawerMode)}
+        title={drawerMode === "EDIT" ? "Edit Employee" : "Add Employee"}
+        description="Employee records are served from the dummy service and can be swapped to API calls later."
+        onClose={closeDrawer}
+      >
+        <EmployeeForm
+          employee={editingEmployee}
+          onSubmit={async (payload: EmployeePayload) => {
+            if (editingEmployee) {
+              await employeeService.updateEmployee(editingEmployee.id, payload);
+            } else {
+              await employeeService.createEmployee(payload);
+            }
+            await refresh();
+            closeDrawer();
+          }}
+        />
+      </Drawer>
+    </>
   );
 }
