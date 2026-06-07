@@ -15,16 +15,20 @@ export function AppRoutes() {
     <AuthProvider>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
-        <Route element={<ProtectedRoute allowedRoles={["EMPLOYER"]} />}>
-          <Route element={<EmployerLayout />}>
-            <Route index element={<Navigate to="/dashboard" replace />} />
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/employees" element={<EmployeesPage />} />
-            <Route path="/salary-requests" element={<SalaryRequestsPage />} />
-            <Route path="/repayments" element={<RepaymentsPage />} />
-            <Route path="/payroll" element={<PayrollPage />} />
-            <Route path="/settings" element={<SettingsPage />} />
-          </Route>
+        <Route
+          element={
+            <ProtectedRoute>
+              <EmployerLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<Navigate to="/dashboard" replace />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/employees" element={<EmployeesPage />} />
+          <Route path="/salary-requests" element={<SalaryRequestsPage />} />
+          <Route path="/repayments" element={<RepaymentsPage />} />
+          <Route path="/payroll" element={<PayrollPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>

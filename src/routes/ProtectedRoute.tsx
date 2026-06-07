@@ -1,10 +1,21 @@
-import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { useEffect, type ReactNode } from "react";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
-import type { UserRole } from "../types";
 
-export function ProtectedRoute({ allowedRoles }: { allowedRoles?: UserRole[] }) {
-  const { hasRole, isAuthenticated, loading, logout } = useAuth();
+interface ProtectedRouteProps {
+  children: ReactNode;
+}
+
+export function ProtectedRoute({ children }: ProtectedRouteProps) {
+  const { isAuthenticated, loading, logout, user } = useAuth();
   const location = useLocation();
+  const isWrongRole = Boolean(user) && user?.role !== "EMPLOYER";
+
+  useEffect(() => {
+    if (isWrongRole) {
+      void logout();
+    }
+  }, [isWrongRole, logout]);
 
   if (loading) {
     return <div className="grid min-h-screen place-items-center bg-blue-50 text-sm font-semibold text-blue-700">Loading MobPae...</div>;
@@ -14,10 +25,9 @@ export function ProtectedRoute({ allowedRoles }: { allowedRoles?: UserRole[] }) 
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
-  if (allowedRoles && !hasRole(allowedRoles)) {
-    void logout();
-    return <Navigate to="/login" replace state={{ from: location, roleError: allowedRoles.join(", ") }} />;
+  if (isWrongRole) {
+    return <Navigate to="/login" replace state={{ from: location, roleError: "EMPLOYER" }} />;
   }
 
-  return <Outlet />;
+  return <>{children}</>;
 }
