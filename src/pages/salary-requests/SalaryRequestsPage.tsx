@@ -64,8 +64,8 @@ export function SalaryRequestsPage() {
           <DataTable
             data={filteredRequests}
             columns={[
-              { key: "id", header: "Request ID", render: (request) => <span className="font-semibold text-blue-950">{request.requestId}</span> },
-              { key: "employee", header: "Employee", render: (request) => <div><p className="font-semibold text-blue-950">{request.employeeName}</p><p className="text-xs text-blue-700/60">{request.employeeCode}</p></div> },
+              { key: "id", header: "Request ID", render: (request) => <span className="font-semibold text-slate-950">{request.requestId}</span> },
+              { key: "employee", header: "Employee", render: (request) => <div><p className="font-semibold text-slate-950">{request.employeeName}</p><p className="text-xs text-slate-500">{request.employeeCode}</p></div> },
               { key: "requested", header: "Requested Amount", render: (request) => formatCurrency(request.requestedAmount) },
               { key: "approved", header: "Approved Amount", render: (request) => formatCurrency(request.approvedAmount) },
               { key: "status", header: "Status", render: (request) => <StatusBadge status={request.status} /> },
@@ -88,15 +88,15 @@ export function SalaryRequestsPage() {
         {selectedRequest ? (
           <div className="grid gap-4">
             <div className="rounded-lg border border-blue-100 bg-blue-50/70 p-4">
-              <p className="text-sm font-bold text-blue-950">{selectedRequest.employeeName}</p>
-              <p className="mt-1 text-sm text-blue-700/60">{selectedRequest.employeeCode}</p>
+              <p className="text-sm font-bold text-slate-950">{selectedRequest.employeeName}</p>
+              <p className="mt-1 text-sm text-slate-500">{selectedRequest.employeeCode}</p>
               <div className="mt-4"><StatusBadge status={selectedRequest.status} /></div>
             </div>
             <dl className="grid gap-3 text-sm">
-              <div className="flex justify-between gap-3"><dt className="text-blue-700/65">Requested</dt><dd className="font-semibold text-blue-950">{formatCurrency(selectedRequest.requestedAmount)}</dd></div>
-              <div className="flex justify-between gap-3"><dt className="text-blue-700/65">Approved</dt><dd className="font-semibold text-blue-950">{formatCurrency(selectedRequest.approvedAmount)}</dd></div>
-              <div className="flex justify-between gap-3"><dt className="text-blue-700/65">Purpose</dt><dd className="font-semibold text-blue-950">{selectedRequest.purpose}</dd></div>
-              <div className="flex justify-between gap-3"><dt className="text-blue-700/65">Created</dt><dd className="font-semibold text-blue-950">{formatDate(selectedRequest.createdDate)}</dd></div>
+              <div className="flex justify-between gap-3"><dt className="text-slate-500">Requested</dt><dd className="font-semibold text-slate-950">{formatCurrency(selectedRequest.requestedAmount)}</dd></div>
+              <div className="flex justify-between gap-3"><dt className="text-slate-500">Approved</dt><dd className="font-semibold text-slate-950">{formatCurrency(selectedRequest.approvedAmount)}</dd></div>
+              <div className="flex justify-between gap-3"><dt className="text-slate-500">Purpose</dt><dd className="font-semibold text-slate-950">{selectedRequest.purpose}</dd></div>
+              <div className="flex justify-between gap-3"><dt className="text-slate-500">Created</dt><dd className="font-semibold text-slate-950">{formatDate(selectedRequest.createdDate)}</dd></div>
             </dl>
             {canReview ? (
               <div className="grid grid-cols-2 gap-3 border-t border-blue-100 pt-4">

@@ -49,8 +49,8 @@ export function EmployerLayout() {
               <WalletCards size={21} />
             </div>
             <div>
-              <p className="text-sm font-bold text-blue-950">MobPae</p>
-              <p className="text-xs font-medium text-blue-700/70">Employer Portal</p>
+              <p className="text-sm font-bold text-slate-950">MobPae</p>
+              <p className="text-xs font-medium text-slate-500">Employer Portal</p>
             </div>
           </div>
           <button className="grid h-9 w-9 place-items-center rounded-md text-blue-700 hover:bg-blue-50 lg:hidden" onClick={() => setSidebarOpen(false)}>
@@ -84,7 +84,7 @@ export function EmployerLayout() {
             <Building2 size={16} />
             <span className="text-xs font-bold uppercase tracking-normal">{user?.companyCode}</span>
           </div>
-          <p className="mt-2 text-sm font-semibold text-blue-950">{user?.companyName}</p>
+          <p className="mt-2 text-sm font-semibold text-slate-950">{user?.companyName}</p>
           <button className="mt-4 flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm font-semibold text-rose-600 hover:bg-rose-50" onClick={handleLogout}>
             <LogOut size={16} />
             Logout
@@ -101,8 +101,8 @@ export function EmployerLayout() {
               <Menu size={18} />
             </button>
             <div>
-              <p className="text-xs font-semibold text-blue-700/70">Company</p>
-              <p className="text-sm font-bold text-blue-950">{user?.companyName}</p>
+              <p className="text-xs font-semibold text-slate-500">Company</p>
+              <p className="text-sm font-bold text-slate-950">{user?.companyName}</p>
             </div>
           </div>
 
@@ -111,7 +111,7 @@ export function EmployerLayout() {
               <Bell size={17} />
               <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-cyan-500" />
             </button>
-            <button className="flex min-h-9 items-center gap-2 rounded-md border border-blue-100 bg-white px-2 text-sm font-semibold text-blue-900 hover:bg-blue-50">
+            <button className="flex min-h-9 items-center gap-2 rounded-md border border-blue-100 bg-white px-2 text-sm font-semibold text-slate-700 hover:bg-blue-50">
               <span className="grid h-7 w-7 place-items-center rounded-md bg-blue-700 text-xs text-white">AM</span>
               <span className="hidden sm:inline">{user?.name}</span>
               <ChevronDown size={15} />

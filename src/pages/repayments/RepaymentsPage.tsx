@@ -52,7 +52,7 @@ export function RepaymentsPage() {
           <DataTable
             data={filteredRepayments}
             columns={[
-              { key: "employee", header: "Employee", render: (repayment) => <span className="font-semibold text-blue-950">{repayment.employeeName}</span> },
+              { key: "employee", header: "Employee", render: (repayment) => <span className="font-semibold text-slate-950">{repayment.employeeName}</span> },
               { key: "request", header: "Salary Request", render: (repayment) => repayment.salaryRequestId },
               { key: "amount", header: "Amount", render: (repayment) => formatCurrency(repayment.amount) },
               { key: "due", header: "Due Date", render: (repayment) => formatDate(repayment.dueDate) },

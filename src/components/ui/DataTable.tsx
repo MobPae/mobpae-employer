@@ -32,7 +32,7 @@ export function DataTable<T>({ columns, data, emptyMessage = "No records found."
               data.map((item, index) => (
                 <tr key={index} className="hover:bg-blue-50/45">
                   {columns.map((column) => (
-                    <td key={column.key} className={`px-4 py-3 text-blue-950/80 ${column.className ?? ""}`}>
+                    <td key={column.key} className={`px-4 py-3 text-slate-700 ${column.className ?? ""}`}>
                       {column.render(item)}
                     </td>
                   ))}

@@ -8,7 +8,7 @@ export function RecoveryTable({ recoveries }: { recoveries: Repayment[] }) {
     <DataTable
       data={recoveries}
       columns={[
-        { key: "employee", header: "Employee", render: (recovery) => <span className="font-semibold text-blue-950">{recovery.employeeName}</span> },
+        { key: "employee", header: "Employee", render: (recovery) => <span className="font-semibold text-slate-950">{recovery.employeeName}</span> },
         { key: "request", header: "Salary Request", render: (recovery) => recovery.salaryRequestId },
         { key: "amount", header: "Recovery Amount", render: (recovery) => formatCurrency(recovery.amount) },
         { key: "due", header: "Due Date", render: (recovery) => formatDate(recovery.dueDate) },

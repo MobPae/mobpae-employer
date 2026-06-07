@@ -27,13 +27,13 @@ export function LoginPage() {
             <WalletCards size={22} />
           </div>
           <div>
-            <p className="text-sm font-bold text-blue-950">MobPae</p>
-            <p className="text-xs font-semibold text-blue-700/70">Employer Portal</p>
+            <p className="text-sm font-bold text-slate-950">MobPae</p>
+            <p className="text-xs font-semibold text-slate-500">Employer Portal</p>
           </div>
         </div>
         <div className="mt-8">
-          <h1 className="text-2xl font-bold text-blue-950">Sign in</h1>
-          <p className="mt-2 text-sm leading-6 text-blue-900/65">Access salary requests, employee activation, repayments and payroll recovery workflows.</p>
+          <h1 className="text-2xl font-bold text-slate-950">Sign in</h1>
+          <p className="mt-2 text-sm leading-6 text-slate-500">Access salary requests, employee activation, repayments and payroll recovery workflows.</p>
         </div>
         <form
           className="mt-6 grid gap-4"
@@ -58,7 +58,7 @@ export function LoginPage() {
             {loading ? "Signing in..." : "Sign in"}
           </Button>
         </form>
-        <div className="mt-5 rounded-lg bg-blue-50 p-3 text-xs leading-5 text-blue-700/70">
+        <div className="mt-5 rounded-lg bg-blue-50 p-3 text-xs leading-5 text-slate-500">
           Demo credentials: employer@mobpae.com / MobPae@123
         </div>
       </section>

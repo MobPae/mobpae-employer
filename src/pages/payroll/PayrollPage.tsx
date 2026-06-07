@@ -31,8 +31,8 @@ export function PayrollPage() {
 
       <section className="rounded-lg border border-blue-100 bg-white p-5 shadow-sm shadow-blue-950/5">
         <div className="mb-4">
-          <h2 className="text-base font-bold text-blue-950">Repayment Schedule</h2>
-          <p className="mt-1 text-sm text-blue-900/65">Upcoming recoveries to include in the current payroll file.</p>
+          <h2 className="text-base font-bold text-slate-950">Repayment Schedule</h2>
+          <p className="mt-1 text-sm text-slate-500">Upcoming recoveries to include in the current payroll file.</p>
         </div>
         <RecoveryTable recoveries={recoveries} />
       </section>
