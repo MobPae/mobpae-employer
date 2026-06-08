@@ -8,6 +8,8 @@ import { Drawer } from "../../components/ui/Drawer";
 import { Input } from "../../components/ui/Input";
 import { PageHeader } from "../../components/ui/PageHeader";
 import { Select } from "../../components/ui/Select";
+import { useToast } from "../../hooks/useToast";
+import { getApiErrorMessage } from "../../services/api-errors";
 import { employeeService } from "../../services/employee.service";
 import type { Employee, EmployeePayload, EmploymentStatus } from "../../types";
 
@@ -33,19 +35,25 @@ const upsertEmployeesByStableOrder = (currentEmployees: Employee[], nextEmployee
 };
 
 export function EmployeesPage() {
+  const toast = useToast();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<"ALL" | EmploymentStatus>("ALL");
   const [activation, setActivation] = useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [bulkActivating, setBulkActivating] = useState(false);
+  const [actionEmployeeId, setActionEmployeeId] = useState<string | null>(null);
   const [drawerMode, setDrawerMode] = useState<"CREATE" | "EDIT" | "BULK_CREATE" | null>(null);
   const [editingEmployee, setEditingEmployee] = useState<Employee | undefined>();
 
   const refresh = () => {
-    employeeService.getEmployees().then((nextEmployees) => {
-      setEmployees((currentEmployees) => mergeEmployeesByStableOrder(currentEmployees, nextEmployees));
-      setSelectedIds((currentIds) => currentIds.filter((id) => nextEmployees.some((employee) => employee.id === id)));
-    });
+    employeeService
+      .getEmployees()
+      .then((nextEmployees) => {
+        setEmployees((currentEmployees) => mergeEmployeesByStableOrder(currentEmployees, nextEmployees));
+        setSelectedIds((currentIds) => currentIds.filter((id) => nextEmployees.some((employee) => employee.id === id)));
+      })
+      .catch((error) => toast.error("Unable to load employees", getApiErrorMessage(error)));
   };
 
   const upsertEmployees = (nextEmployees: Employee[]) => {
@@ -120,24 +128,33 @@ export function EmployeesPage() {
           <Button
             variant="secondary"
             icon={<Zap size={15} />}
-            disabled={!selectedIds.length}
+            disabled={!selectedIds.length || bulkActivating}
             onClick={async () => {
-              const updatedEmployees = await employeeService.bulkActivateEmployees(selectedIds);
-              const updatedEmployeeIds = new Set(updatedEmployees.map((employee) => employee.id));
-              setEmployees((currentEmployees) =>
-                upsertEmployeesByStableOrder(
-                  currentEmployees.map((employee) =>
-                    selectedIds.includes(employee.id) && !updatedEmployeeIds.has(employee.id)
-                      ? { ...employee, appActivated: true }
-                      : employee
-                  ),
-                  updatedEmployees
-                )
-              );
-              setSelectedIds([]);
+              const idsToActivate = [...selectedIds];
+              setBulkActivating(true);
+              try {
+                const updatedEmployees = await employeeService.bulkActivateEmployees(idsToActivate);
+                const updatedEmployeeIds = new Set(updatedEmployees.map((employee) => employee.id));
+                setEmployees((currentEmployees) =>
+                  upsertEmployeesByStableOrder(
+                    currentEmployees.map((employee) =>
+                      idsToActivate.includes(employee.id) && !updatedEmployeeIds.has(employee.id)
+                        ? { ...employee, appActivated: true }
+                        : employee
+                    ),
+                    updatedEmployees
+                  )
+                );
+                setSelectedIds([]);
+                toast.success("Employees activated", `${idsToActivate.length} employee${idsToActivate.length === 1 ? "" : "s"} updated.`);
+              } catch (error) {
+                toast.error("Bulk activation failed", getApiErrorMessage(error));
+              } finally {
+                setBulkActivating(false);
+              }
             }}
           >
-            Activate selected
+            {bulkActivating ? "Activating..." : "Activate selected"}
           </Button>
         </div>
 
@@ -152,9 +169,18 @@ export function EmployeesPage() {
               setDrawerMode("EDIT");
             }}
             onToggleAccess={async (employee) => {
-              const updatedEmployee = await employeeService.activateEmployee(employee.id, !employee.appActivated);
-              upsertEmployees([updatedEmployee]);
+              setActionEmployeeId(employee.id);
+              try {
+                const updatedEmployee = await employeeService.activateEmployee(employee.id, !employee.appActivated);
+                upsertEmployees([updatedEmployee]);
+                toast.success("App access updated", `${employee.name} is now ${updatedEmployee.appActivated ? "activated" : "inactive"}.`);
+              } catch (error) {
+                toast.error("Unable to update app access", getApiErrorMessage(error));
+              } finally {
+                setActionEmployeeId(null);
+              }
             }}
+            actionEmployeeId={actionEmployeeId}
           />
         </div>
       </section>
@@ -168,24 +194,30 @@ export function EmployeesPage() {
         <EmployeeForm
           employee={editingEmployee}
           onSubmit={async (payload: EmployeePayload) => {
-            let updatedEmployee: Employee;
-            if (editingEmployee) {
-              const { appActivated, ...employeeDetails } = payload;
-              updatedEmployee = await employeeService.updateEmployee(editingEmployee.id, employeeDetails);
-              updatedEmployee = { ...updatedEmployee, appActivated: editingEmployee.appActivated };
+            try {
+              let updatedEmployee: Employee;
+              if (editingEmployee) {
+                const { appActivated, ...employeeDetails } = payload;
+                updatedEmployee = await employeeService.updateEmployee(editingEmployee.id, employeeDetails);
+                updatedEmployee = { ...updatedEmployee, appActivated: editingEmployee.appActivated };
 
-              if (appActivated !== editingEmployee.appActivated) {
-                updatedEmployee = await employeeService.activateEmployee(editingEmployee.id, appActivated);
-              }
-            } else {
-              updatedEmployee = await employeeService.createEmployee(payload);
+                if (appActivated !== editingEmployee.appActivated) {
+                  updatedEmployee = await employeeService.activateEmployee(editingEmployee.id, appActivated);
+                }
+              } else {
+                updatedEmployee = await employeeService.createEmployee(payload);
 
-              if (updatedEmployee.appActivated !== payload.appActivated) {
-                updatedEmployee = await employeeService.activateEmployee(updatedEmployee.id, payload.appActivated);
+                if (updatedEmployee.appActivated !== payload.appActivated) {
+                  updatedEmployee = await employeeService.activateEmployee(updatedEmployee.id, payload.appActivated);
+                }
               }
+              upsertEmployees([updatedEmployee]);
+              toast.success(editingEmployee ? "Employee updated" : "Employee created", updatedEmployee.name);
+              closeDrawer();
+            } catch (error) {
+              toast.error(editingEmployee ? "Unable to update employee" : "Unable to create employee", getApiErrorMessage(error));
+              throw error;
             }
-            upsertEmployees([updatedEmployee]);
-            closeDrawer();
           }}
         />
       </Drawer>
@@ -198,9 +230,15 @@ export function EmployeesPage() {
       >
         <BulkEmployeeForm
           onSubmit={async (payloads: EmployeePayload[]) => {
-            const createdEmployees = await employeeService.bulkCreateEmployees(payloads);
-            upsertEmployees(createdEmployees);
-            closeDrawer();
+            try {
+              const createdEmployees = await employeeService.bulkCreateEmployees(payloads);
+              upsertEmployees(createdEmployees);
+              toast.success("Employees imported", `${createdEmployees.length} employee${createdEmployees.length === 1 ? "" : "s"} created.`);
+              closeDrawer();
+            } catch (error) {
+              toast.error("Unable to import employees", getApiErrorMessage(error));
+              throw error;
+            }
           }}
         />
       </Drawer>

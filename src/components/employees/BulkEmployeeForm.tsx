@@ -84,8 +84,11 @@ export function BulkEmployeeForm({
         }
 
         setSaving(true);
-        await onSubmit(validRows.map((row) => row.payload));
-        setSaving(false);
+        try {
+          await onSubmit(validRows.map((row) => row.payload));
+        } finally {
+          setSaving(false);
+        }
       }}
     >
       <div className="rounded-lg border border-blue-100 bg-blue-50/70 p-4">

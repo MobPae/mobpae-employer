@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
 import { PageHeader } from "../../components/ui/PageHeader";
+import { useToast } from "../../hooks/useToast";
+import { getApiErrorMessage } from "../../services/api-errors";
 import { employerService } from "../../services/employer.service";
 import type { EmployerProfile } from "../../types";
 
@@ -17,12 +19,20 @@ const fallbackProfile: EmployerProfile = {
 };
 
 export function SettingsPage() {
+  const toast = useToast();
   const [profile, setProfile] = useState<EmployerProfile>(fallbackProfile);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    employerService.getEmployerProfile().then(setProfile).catch(() => setProfile(fallbackProfile));
+    employerService
+      .getEmployerProfile()
+      .then(setProfile)
+      .catch((error) => {
+        setProfile(fallbackProfile);
+        toast.error("Unable to load employer profile", getApiErrorMessage(error));
+      });
   }, []);
 
   const setField = <K extends keyof EmployerProfile>(key: K, value: EmployerProfile[K]) => {
@@ -42,6 +52,7 @@ export function SettingsPage() {
             event.preventDefault();
             setError("");
             try {
+              setSaving(true);
               const updatedProfile = await employerService.updateEmployerProfile({
                 companyName: profile.companyName,
                 contactPerson: profile.contactPerson,
@@ -50,9 +61,14 @@ export function SettingsPage() {
               });
               setProfile(updatedProfile);
               setSaved(true);
-            } catch {
+              toast.success("Employer profile updated");
+            } catch (error) {
               setSaved(false);
-              setError("Unable to update employer profile. Please verify the details and try again.");
+              const message = getApiErrorMessage(error, "Unable to update employer profile. Please try again.");
+              setError(message);
+              toast.error("Unable to update employer profile", message);
+            } finally {
+              setSaving(false);
             }
           }}
         >
@@ -70,8 +86,8 @@ export function SettingsPage() {
           {saved ? <p className="rounded-md bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700">Employer profile updated.</p> : null}
           {error ? <p className="rounded-md bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700">{error}</p> : null}
           <div>
-            <Button icon={<Save size={16} />} type="submit">
-              Save Settings
+            <Button icon={<Save size={16} />} type="submit" disabled={saving}>
+              {saving ? "Saving..." : "Save Settings"}
             </Button>
           </div>
         </form>

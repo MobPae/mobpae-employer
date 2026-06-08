@@ -6,15 +6,24 @@ import { Input } from "../../components/ui/Input";
 import { PageHeader } from "../../components/ui/PageHeader";
 import { Select } from "../../components/ui/Select";
 import { StatusBadge } from "../../components/ui/StatusBadge";
+import { useToast } from "../../hooks/useToast";
+import { getApiErrorMessage } from "../../services/api-errors";
 import { repaymentService } from "../../services/repayment.service";
 import type { Repayment, RepaymentStatus } from "../../types";
 import { formatCurrency, formatDate } from "../../utils/formatters";
 
 export function RepaymentsPage() {
+  const toast = useToast();
   const [repayments, setRepayments] = useState<Repayment[]>([]);
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<"ALL" | RepaymentStatus>("ALL");
-  const refresh = () => repaymentService.getRepayments().then(setRepayments);
+  const [payingId, setPayingId] = useState<string | null>(null);
+  const refresh = () => {
+    repaymentService
+      .getRepayments()
+      .then(setRepayments)
+      .catch((error) => toast.error("Unable to load repayments", getApiErrorMessage(error)));
+  };
 
   useEffect(() => {
     refresh();
@@ -64,13 +73,21 @@ export function RepaymentsPage() {
                   <Button
                     variant="secondary"
                     icon={<CheckCircle2 size={15} />}
-                    disabled={repayment.status === "PAID"}
+                    disabled={repayment.status === "PAID" || payingId === repayment.id}
                     onClick={async () => {
-                      await repaymentService.markPaid(repayment.id);
-                      refresh();
+                      setPayingId(repayment.id);
+                      try {
+                        await repaymentService.markPaid(repayment.id);
+                        await refresh();
+                        toast.success("Repayment marked paid", repayment.employeeName);
+                      } catch (error) {
+                        toast.error("Unable to mark repayment paid", getApiErrorMessage(error));
+                      } finally {
+                        setPayingId(null);
+                      }
                     }}
                   >
-                    Mark Paid
+                    {payingId === repayment.id ? "Saving..." : "Mark Paid"}
                   </Button>
                 )
               }

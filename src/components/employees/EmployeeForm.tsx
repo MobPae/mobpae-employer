@@ -35,8 +35,11 @@ export function EmployeeForm({
       onSubmit={async (event) => {
         event.preventDefault();
         setSaving(true);
-        await onSubmit(payload);
-        setSaving(false);
+        try {
+          await onSubmit(payload);
+        } finally {
+          setSaving(false);
+        }
       }}
     >
       <div className="grid gap-4 sm:grid-cols-2">

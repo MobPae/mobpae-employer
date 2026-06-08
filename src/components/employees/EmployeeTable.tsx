@@ -11,7 +11,8 @@ export function EmployeeTable({
   onSelect,
   onSelectAll,
   onEdit,
-  onToggleAccess
+  onToggleAccess,
+  actionEmployeeId
 }: {
   employees: Employee[];
   selectedIds: string[];
@@ -19,6 +20,7 @@ export function EmployeeTable({
   onSelectAll: (selected: boolean) => void;
   onEdit: (employee: Employee) => void;
   onToggleAccess: (employee: Employee) => void;
+  actionEmployeeId?: string | null;
 }) {
   return (
     <DataTable
@@ -66,9 +68,13 @@ export function EmployeeTable({
           key: "access",
           header: "App Access",
           render: (employee) => (
-            <button className="flex items-center gap-2 text-sm font-semibold text-slate-700" onClick={() => onToggleAccess(employee)}>
+            <button
+              className="flex items-center gap-2 text-sm font-semibold text-slate-700 disabled:cursor-not-allowed disabled:text-slate-400"
+              disabled={actionEmployeeId === employee.id}
+              onClick={() => onToggleAccess(employee)}
+            >
               {employee.appActivated ? <ToggleRight className="text-blue-600" size={24} /> : <ToggleLeft className="text-blue-300" size={24} />}
-              {employee.appActivated ? "Activated" : "Inactive"}
+              {actionEmployeeId === employee.id ? "Updating..." : employee.appActivated ? "Activated" : "Inactive"}
             </button>
           )
         },

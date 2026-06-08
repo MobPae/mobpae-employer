@@ -7,17 +7,26 @@ import { Input } from "../../components/ui/Input";
 import { PageHeader } from "../../components/ui/PageHeader";
 import { Select } from "../../components/ui/Select";
 import { StatusBadge } from "../../components/ui/StatusBadge";
+import { useToast } from "../../hooks/useToast";
+import { getApiErrorMessage } from "../../services/api-errors";
 import { salaryRequestService } from "../../services/salary-request.service";
 import type { SalaryRequest, SalaryRequestStatus } from "../../types";
 import { formatCurrency, formatDate } from "../../utils/formatters";
 
 export function SalaryRequestsPage() {
+  const toast = useToast();
   const [requests, setRequests] = useState<SalaryRequest[]>([]);
   const [selectedRequest, setSelectedRequest] = useState<SalaryRequest | null>(null);
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<"ALL" | SalaryRequestStatus>("ALL");
+  const [reviewAction, setReviewAction] = useState<"APPROVE" | "REJECT" | null>(null);
 
-  const refresh = () => salaryRequestService.getSalaryRequests().then(setRequests);
+  const refresh = () => {
+    salaryRequestService
+      .getSalaryRequests()
+      .then(setRequests)
+      .catch((error) => toast.error("Unable to load salary requests", getApiErrorMessage(error)));
+  };
 
   useEffect(() => {
     refresh();
@@ -103,24 +112,42 @@ export function SalaryRequestsPage() {
               <div className="grid grid-cols-2 gap-3 border-t border-blue-100 pt-4">
                 <Button
                   icon={<Check size={16} />}
+                  disabled={Boolean(reviewAction)}
                   onClick={async () => {
-                    await salaryRequestService.approveRequest(selectedRequest.id);
-                    await refresh();
-                    setSelectedRequest(null);
+                    setReviewAction("APPROVE");
+                    try {
+                      await salaryRequestService.approveRequest(selectedRequest.id);
+                      await refresh();
+                      toast.success("Request approved", selectedRequest.requestId);
+                      setSelectedRequest(null);
+                    } catch (error) {
+                      toast.error("Unable to approve request", getApiErrorMessage(error));
+                    } finally {
+                      setReviewAction(null);
+                    }
                   }}
                 >
-                  Approve
+                  {reviewAction === "APPROVE" ? "Approving..." : "Approve"}
                 </Button>
                 <Button
                   variant="danger"
                   icon={<X size={16} />}
+                  disabled={Boolean(reviewAction)}
                   onClick={async () => {
-                    await salaryRequestService.rejectRequest(selectedRequest.id);
-                    await refresh();
-                    setSelectedRequest(null);
+                    setReviewAction("REJECT");
+                    try {
+                      await salaryRequestService.rejectRequest(selectedRequest.id);
+                      await refresh();
+                      toast.success("Request rejected", selectedRequest.requestId);
+                      setSelectedRequest(null);
+                    } catch (error) {
+                      toast.error("Unable to reject request", getApiErrorMessage(error));
+                    } finally {
+                      setReviewAction(null);
+                    }
                   }}
                 >
-                  Reject
+                  {reviewAction === "REJECT" ? "Rejecting..." : "Reject"}
                 </Button>
               </div>
             ) : null}

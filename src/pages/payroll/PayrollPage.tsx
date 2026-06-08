@@ -5,26 +5,36 @@ import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
 import { MetricCard } from "../../components/ui/MetricCard";
 import { PageHeader } from "../../components/ui/PageHeader";
+import { useToast } from "../../hooks/useToast";
+import { getApiErrorMessage } from "../../services/api-errors";
 import { payrollService } from "../../services/payroll.service";
 import type { PayrollSettingsPayload, PayrollSummary, Repayment } from "../../types";
 import { formatCurrency, formatPayrollDay } from "../../utils/formatters";
 
 export function PayrollPage() {
+  const toast = useToast();
   const [summary, setSummary] = useState<PayrollSummary | null>(null);
   const [recoveries, setRecoveries] = useState<Repayment[]>([]);
   const [settings, setSettings] = useState<PayrollSettingsPayload>({ payrollDate: 28, payrollCutoffDate: 21 });
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    Promise.all([payrollService.getPayrollSummary(), payrollService.getUpcomingRecoveries()]).then(([nextSummary, nextRecoveries]) => {
-      setSummary(nextSummary);
-      setRecoveries(nextRecoveries);
-      setSettings({
-        payrollDate: nextSummary.payrollDate ?? 28,
-        payrollCutoffDate: nextSummary.payrollCutoffDate ?? 21
+    Promise.all([payrollService.getPayrollSummary(), payrollService.getUpcomingRecoveries()])
+      .then(([nextSummary, nextRecoveries]) => {
+        setSummary(nextSummary);
+        setRecoveries(nextRecoveries);
+        setSettings({
+          payrollDate: nextSummary.payrollDate ?? 28,
+          payrollCutoffDate: nextSummary.payrollCutoffDate ?? 21
+        });
+      })
+      .catch((error) => {
+        const message = getApiErrorMessage(error, "Unable to load payroll data.");
+        setError(message);
+        toast.error("Unable to load payroll data", message);
       });
-    });
   }, []);
 
   const setSetting = (key: keyof PayrollSettingsPayload, value: string) => {
@@ -69,22 +79,28 @@ export function PayrollPage() {
             }
 
             try {
+              setSaving(true);
               const updatedSummary = await payrollService.updatePayrollSettings(settings);
               const nextRecoveries = await payrollService.getUpcomingRecoveries();
               setSummary(updatedSummary);
               setRecoveries(nextRecoveries);
               setSaved(true);
-            } catch {
+              toast.success("Payroll settings updated");
+            } catch (error) {
               setSaved(false);
-              setError("Unable to update payroll settings. Please verify employer permission and try again.");
+              const message = getApiErrorMessage(error, "Unable to update payroll settings. Please try again.");
+              setError(message);
+              toast.error("Unable to update payroll settings", message);
+            } finally {
+              setSaving(false);
             }
           }}
         >
           <Input label="Payroll Day" type="number" min={1} max={31} value={settings.payrollDate} onChange={(event) => setSetting("payrollDate", event.target.value)} />
           <Input label="Cutoff Day" type="number" min={1} max={31} value={settings.payrollCutoffDate} onChange={(event) => setSetting("payrollCutoffDate", event.target.value)} />
           <div className="flex items-end">
-            <Button icon={<Save size={16} />} type="submit" className="w-full md:w-auto">
-              Save Payroll
+            <Button icon={<Save size={16} />} type="submit" className="w-full md:w-auto" disabled={saving}>
+              {saving ? "Saving..." : "Save Payroll"}
             </Button>
           </div>
         </form>
