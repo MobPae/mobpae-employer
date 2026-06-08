@@ -11,6 +11,27 @@ import { Select } from "../../components/ui/Select";
 import { employeeService } from "../../services/employee.service";
 import type { Employee, EmployeePayload, EmploymentStatus } from "../../types";
 
+const mergeEmployeesByStableOrder = (currentEmployees: Employee[], nextEmployees: Employee[]) => {
+  const nextById = new Map(nextEmployees.map((employee) => [employee.id, employee]));
+  const currentIds = new Set(currentEmployees.map((employee) => employee.id));
+  const retainedEmployees = currentEmployees.flatMap((employee) => {
+    const nextEmployee = nextById.get(employee.id);
+    return nextEmployee ? [nextEmployee] : [];
+  });
+  const newEmployees = nextEmployees.filter((employee) => !currentIds.has(employee.id));
+
+  return [...retainedEmployees, ...newEmployees];
+};
+
+const upsertEmployeesByStableOrder = (currentEmployees: Employee[], nextEmployees: Employee[]) => {
+  const nextById = new Map(nextEmployees.map((employee) => [employee.id, employee]));
+  const currentIds = new Set(currentEmployees.map((employee) => employee.id));
+  const updatedEmployees = currentEmployees.map((employee) => nextById.get(employee.id) ?? employee);
+  const newEmployees = nextEmployees.filter((employee) => !currentIds.has(employee.id));
+
+  return [...updatedEmployees, ...newEmployees];
+};
+
 export function EmployeesPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [query, setQuery] = useState("");
@@ -20,7 +41,16 @@ export function EmployeesPage() {
   const [drawerMode, setDrawerMode] = useState<"CREATE" | "EDIT" | "BULK_CREATE" | null>(null);
   const [editingEmployee, setEditingEmployee] = useState<Employee | undefined>();
 
-  const refresh = () => employeeService.getEmployees().then(setEmployees);
+  const refresh = () => {
+    employeeService.getEmployees().then((nextEmployees) => {
+      setEmployees((currentEmployees) => mergeEmployeesByStableOrder(currentEmployees, nextEmployees));
+      setSelectedIds((currentIds) => currentIds.filter((id) => nextEmployees.some((employee) => employee.id === id)));
+    });
+  };
+
+  const upsertEmployees = (nextEmployees: Employee[]) => {
+    setEmployees((currentEmployees) => upsertEmployeesByStableOrder(currentEmployees, nextEmployees));
+  };
 
   useEffect(() => {
     refresh();
@@ -92,9 +122,9 @@ export function EmployeesPage() {
             icon={<Zap size={15} />}
             disabled={!selectedIds.length}
             onClick={async () => {
-              await employeeService.bulkActivateEmployees(selectedIds);
+              const updatedEmployees = await employeeService.bulkActivateEmployees(selectedIds);
+              upsertEmployees(updatedEmployees);
               setSelectedIds([]);
-              refresh();
             }}
           >
             Bulk Activation
@@ -111,13 +141,9 @@ export function EmployeesPage() {
               setEditingEmployee(employee);
               setDrawerMode("EDIT");
             }}
-            onStatusChange={async (employee, employmentStatus) => {
-              await employeeService.updateEmployee(employee.id, { employmentStatus });
-              refresh();
-            }}
             onToggleAccess={async (employee) => {
-              await employeeService.activateEmployee(employee.id, !employee.appActivated);
-              refresh();
+              const updatedEmployee = await employeeService.activateEmployee(employee.id, !employee.appActivated);
+              upsertEmployees([updatedEmployee]);
             }}
           />
         </div>
@@ -132,12 +158,13 @@ export function EmployeesPage() {
         <EmployeeForm
           employee={editingEmployee}
           onSubmit={async (payload: EmployeePayload) => {
+            let updatedEmployee: Employee;
             if (editingEmployee) {
-              await employeeService.updateEmployee(editingEmployee.id, payload);
+              updatedEmployee = await employeeService.updateEmployee(editingEmployee.id, payload);
             } else {
-              await employeeService.createEmployee(payload);
+              updatedEmployee = await employeeService.createEmployee(payload);
             }
-            await refresh();
+            upsertEmployees([updatedEmployee]);
             closeDrawer();
           }}
         />
@@ -151,8 +178,8 @@ export function EmployeesPage() {
       >
         <BulkEmployeeForm
           onSubmit={async (payloads: EmployeePayload[]) => {
-            await employeeService.bulkCreateEmployees(payloads);
-            await refresh();
+            const createdEmployees = await employeeService.bulkCreateEmployees(payloads);
+            upsertEmployees(createdEmployees);
             closeDrawer();
           }}
         />

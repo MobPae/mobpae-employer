@@ -2,7 +2,7 @@ import { Edit, ToggleLeft, ToggleRight } from "lucide-react";
 import { Button } from "../ui/Button";
 import { DataTable } from "../ui/DataTable";
 import { StatusBadge } from "../ui/StatusBadge";
-import type { Employee, EmploymentStatus } from "../../types";
+import type { Employee } from "../../types";
 import { formatCurrency } from "../../utils/formatters";
 
 export function EmployeeTable({
@@ -11,7 +11,6 @@ export function EmployeeTable({
   onSelect,
   onSelectAll,
   onEdit,
-  onStatusChange,
   onToggleAccess
 }: {
   employees: Employee[];
@@ -19,7 +18,6 @@ export function EmployeeTable({
   onSelect: (id: string, selected: boolean) => void;
   onSelectAll: (selected: boolean) => void;
   onEdit: (employee: Employee) => void;
-  onStatusChange: (employee: Employee, status: EmploymentStatus) => void;
   onToggleAccess: (employee: Employee) => void;
 }) {
   return (
@@ -62,20 +60,7 @@ export function EmployeeTable({
         {
           key: "status",
           header: "Status",
-          render: (employee) => (
-            <div className="flex items-center gap-2">
-              <StatusBadge status={employee.employmentStatus} />
-              <select
-                className="h-8 rounded-md border border-blue-100 bg-white px-2 text-xs font-semibold text-slate-700 focus:border-blue-300 focus:ring-4 focus:ring-blue-100"
-                value={employee.employmentStatus}
-                onChange={(event) => onStatusChange(employee, event.target.value as EmploymentStatus)}
-                aria-label={`Change employment status for ${employee.name}`}
-              >
-                <option value="ACTIVE">Active</option>
-                <option value="INACTIVE">Inactive</option>
-              </select>
-            </div>
-          )
+          render: (employee) => <StatusBadge status={employee.employmentStatus} />
         },
         {
           key: "access",
