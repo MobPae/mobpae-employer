@@ -91,10 +91,17 @@ export interface PayrollSettingsPayload {
 export interface EmployerProfile {
   companyName: string;
   companyCode: string;
-  payrollDate: string;
-  payrollCutoffDate: string;
   contactPerson: string;
-  email: string;
+  companyEmail: string;
+  loginEmail: string;
+  phone: string;
+  status?: string;
+}
+
+export interface EmployerProfilePayload {
+  companyName: string;
+  contactPerson: string;
+  companyEmail: string;
   phone: string;
 }
 

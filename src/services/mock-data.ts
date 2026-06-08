@@ -10,11 +10,11 @@ import type {
 export const employerProfile: EmployerProfile = {
   companyName: "Nimbus Retail Pvt Ltd",
   companyCode: "NRPL-4821",
-  payrollDate: "2026-06-30",
-  payrollCutoffDate: "2026-06-25",
   contactPerson: "Ananya Mehra",
-  email: "hr@nimbusretail.com",
-  phone: "+91 98765 43210"
+  companyEmail: "hr@nimbusretail.com",
+  loginEmail: "employer@mobpae.com",
+  phone: "+91 98765 43210",
+  status: "ACTIVE"
 };
 
 export const employees: Employee[] = [

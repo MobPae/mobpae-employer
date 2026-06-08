@@ -9,11 +9,11 @@ import type { EmployerProfile } from "../../types";
 const fallbackProfile: EmployerProfile = {
   companyName: "",
   companyCode: "",
-  payrollDate: "",
-  payrollCutoffDate: "",
   contactPerson: "",
-  email: "",
-  phone: ""
+  companyEmail: "",
+  loginEmail: "",
+  phone: "",
+  status: ""
 };
 
 export function SettingsPage() {
@@ -33,7 +33,7 @@ export function SettingsPage() {
 
   return (
     <>
-      <PageHeader eyebrow="Employer profile" title="Settings" description="Maintain company identity, payroll cycle details and HR contact information." />
+      <PageHeader eyebrow="Employer profile" title="Settings" description="Maintain company contact details and account ownership information." />
 
       <section className="rounded-lg border border-blue-100 bg-white p-5 shadow-sm shadow-blue-950/5">
         <form
@@ -42,29 +42,32 @@ export function SettingsPage() {
             event.preventDefault();
             setError("");
             try {
-              const updatedProfile = await employerService.updateEmployerProfile(profile);
+              const updatedProfile = await employerService.updateEmployerProfile({
+                companyName: profile.companyName,
+                contactPerson: profile.contactPerson,
+                companyEmail: profile.companyEmail,
+                phone: profile.phone
+              });
               setProfile(updatedProfile);
               setSaved(true);
             } catch {
               setSaved(false);
-              setError("You do not have permission to update employer settings yet.");
+              setError("Unable to update employer profile. Please verify the details and try again.");
             }
           }}
         >
           <div className="grid gap-4 sm:grid-cols-2">
-            <Input label="Company Name" value={profile.companyName} onChange={(event) => setField("companyName", event.target.value)} />
-            <Input label="Company Code" value={profile.companyCode} onChange={(event) => setField("companyCode", event.target.value)} />
+            <Input label="Company Name" value={profile.companyName} disabled />
+            <Input label="Company Code" value={profile.companyCode} disabled />
           </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Input label="Payroll Date" type="date" value={profile.payrollDate} onChange={(event) => setField("payrollDate", event.target.value)} />
-            <Input label="Payroll Cutoff Date" type="date" value={profile.payrollCutoffDate} onChange={(event) => setField("payrollCutoffDate", event.target.value)} />
-          </div>
+          <Input label="Login Email" type="email" value={profile.loginEmail} disabled />
+          <p className="-mt-2 rounded-md bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700">Login email is used for account authentication and cannot be changed.</p>
           <Input label="Contact Person" value={profile.contactPerson} onChange={(event) => setField("contactPerson", event.target.value)} />
           <div className="grid gap-4 sm:grid-cols-2">
-            <Input label="Email" type="email" value={profile.email} onChange={(event) => setField("email", event.target.value)} />
+            <Input label="Company Email" type="email" value={profile.companyEmail} onChange={(event) => setField("companyEmail", event.target.value)} />
             <Input label="Phone" value={profile.phone} onChange={(event) => setField("phone", event.target.value)} />
           </div>
-          {saved ? <p className="rounded-md bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700">Employer profile saved for this demo session.</p> : null}
+          {saved ? <p className="rounded-md bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700">Employer profile updated.</p> : null}
           {error ? <p className="rounded-md bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-700">{error}</p> : null}
           <div>
             <Button icon={<Save size={16} />} type="submit">

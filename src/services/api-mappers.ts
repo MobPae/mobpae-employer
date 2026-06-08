@@ -159,16 +159,17 @@ export const mapRepayment = (value: unknown): Repayment => {
 
 export const mapEmployerProfile = (value: unknown): EmployerProfile => {
   const record = asRecord(value);
-  const settings = asRecord(Array.isArray(value) ? value[0] : value);
+  const user = asRecord(record.user);
+  const companyEmail = text(record.contactEmail ?? record.companyEmail ?? record.email, "");
 
   return {
-    companyName: text(record.companyName ?? record.name ?? settings.companyName, ""),
-    companyCode: text(record.companyCode ?? record.code ?? settings.companyCode, ""),
-    payrollDate: text(record.payrollDate ?? settings.payrollDate, ""),
-    payrollCutoffDate: text(record.payrollCutoffDate ?? settings.payrollCutoffDate, ""),
-    contactPerson: text(record.contactPerson ?? record.hrName ?? settings.contactPerson, ""),
-    email: text(record.email ?? settings.email, ""),
-    phone: text(record.phone ?? settings.phone, "")
+    companyName: text(record.companyName ?? record.name, ""),
+    companyCode: text(record.companyCode ?? record.code, ""),
+    contactPerson: text(record.contactPerson ?? record.hrName, ""),
+    companyEmail,
+    loginEmail: text(record.loginEmail ?? user.email, companyEmail),
+    phone: text(record.phone, ""),
+    status: text(record.status)
   };
 };
 
