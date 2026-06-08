@@ -46,6 +46,10 @@ const numberValue = (value: unknown, fallback = 0) => {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
 };
+const optionalNumberValue = (value: unknown) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
+};
 const boolValue = (value: unknown, fallback = false) => {
   if (typeof value === "boolean") return value;
   if (typeof value === "string") return ["true", "yes", "1", "activated", "active"].includes(value.toLowerCase());
@@ -168,14 +172,22 @@ export const mapSalaryRequest = (value: unknown): SalaryRequest => {
 export const mapRepayment = (value: unknown): Repayment => {
   const record = asRecord(value);
   const request = asRecord(record.salaryRequest ?? record.request);
-  const employee = asRecord(record.employee ?? request.employee);
+  const employee = asRecord(record.employeeDetails ?? record.employee ?? request.employee);
+  const principalAmount = numberValue(record.principalAmount ?? record.amount ?? record.recoveryAmount);
+  const interestAmount = numberValue(record.interestAmount);
+  const totalAmount = numberValue(record.totalAmount, principalAmount + interestAmount);
 
   return {
     id: text(record.id ?? record._id, ""),
     employeeId: text(record.employeeId ?? employee.id, ""),
     employeeName: text(record.employeeName ?? employee.name ?? employee.fullName, "Employee"),
     salaryRequestId: text(record.salaryRequestId ?? record.salaryRequestCode ?? request.requestId ?? request.id, ""),
-    amount: numberValue(record.amount ?? record.recoveryAmount),
+    amount: totalAmount,
+    principalAmount,
+    interestAmount,
+    totalAmount,
+    interestRate: optionalNumberValue(record.interestRate),
+    interestDays: optionalNumberValue(record.interestDays),
     dueDate: text(record.dueDate ?? record.createdAt, new Date().toISOString()),
     status: normalizeRepaymentStatus(record.status)
   };
@@ -192,6 +204,8 @@ export const mapEmployerProfile = (value: unknown): EmployerProfile => {
     contactPerson: text(record.contactPerson ?? record.hrName, ""),
     companyEmail,
     loginEmail: text(record.loginEmail ?? user.email, companyEmail),
+    payrollDate: record.payrollDate === null || record.payrollDate === undefined || record.payrollDate === "" ? null : numberValue(record.payrollDate),
+    payrollCutoffDate: record.payrollCutoffDate === null || record.payrollCutoffDate === undefined || record.payrollCutoffDate === "" ? null : numberValue(record.payrollCutoffDate),
     phone: text(record.phone, ""),
     status: text(record.status)
   };
@@ -205,7 +219,8 @@ export const mapDashboardStats = (value: unknown): Partial<DashboardStats> => {
     appActivatedEmployees: numberValue(record.appActivatedEmployees ?? record.activatedEmployees),
     pendingSalaryRequests: numberValue(record.pendingSalaryRequests ?? record.pendingRequests),
     approvedRequests: numberValue(record.approvedRequests),
-    outstandingAmount: numberValue(record.outstandingAmount ?? record.totalOutstandingAmount)
+    outstandingAmount: numberValue(record.outstandingAmount ?? record.totalOutstandingAmount),
+    recentSalaryRequests: unwrapList(record.recentSalaryRequests).map(mapSalaryRequest)
   };
 };
 

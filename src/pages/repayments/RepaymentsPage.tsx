@@ -63,7 +63,9 @@ export function RepaymentsPage() {
             columns={[
               { key: "employee", header: "Employee", render: (repayment) => <span className="font-semibold text-slate-950">{repayment.employeeName}</span> },
               { key: "request", header: "Salary Request", render: (repayment) => repayment.salaryRequestId },
-              { key: "amount", header: "Amount", render: (repayment) => formatCurrency(repayment.amount) },
+              { key: "principal", header: "Principal", render: (repayment) => formatCurrency(repayment.principalAmount) },
+              { key: "interest", header: "Interest", render: (repayment) => formatCurrency(repayment.interestAmount) },
+              { key: "total", header: "Total", render: (repayment) => <span className="font-semibold text-slate-950">{formatCurrency(repayment.totalAmount)}</span> },
               { key: "due", header: "Due Date", render: (repayment) => formatDate(repayment.dueDate) },
               { key: "status", header: "Status", render: (repayment) => <StatusBadge status={repayment.status} /> },
               {

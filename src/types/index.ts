@@ -84,6 +84,11 @@ export interface Repayment {
   employeeName: string;
   salaryRequestId: string;
   amount: number;
+  principalAmount: number;
+  interestAmount: number;
+  totalAmount: number;
+  interestRate?: number;
+  interestDays?: number;
   dueDate: string;
   status: RepaymentStatus;
 }
@@ -108,6 +113,8 @@ export interface EmployerProfile {
   contactPerson: string;
   companyEmail: string;
   loginEmail: string;
+  payrollDate?: number | null;
+  payrollCutoffDate?: number | null;
   phone: string;
   status?: string;
 }
@@ -126,6 +133,7 @@ export interface DashboardStats {
   pendingSalaryRequests: number;
   approvedRequests: number;
   outstandingAmount: number;
+  recentSalaryRequests?: SalaryRequest[];
 }
 
 export interface NotificationItem {

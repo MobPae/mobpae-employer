@@ -1,4 +1,3 @@
-import { salaryRequestService } from "./salary-request.service";
 import type { DashboardStats, NotificationItem, SalaryRequest } from "../types";
 import { mapDashboardStats, unwrapItem, unwrapList } from "./api-mappers";
 import { authService } from "./auth.service";
@@ -19,8 +18,14 @@ const mapNotification = (value: unknown): NotificationItem => {
 
 export const dashboardService = {
   async getDashboardStats(): Promise<DashboardStats> {
-    const { data } = await httpClient.get("/dashboard/employers/me");
-    const stats = mapDashboardStats(unwrapItem(data, ["dashboard", "stats"]));
+    const { data } = await httpClient.get("/dashboard/employers");
+    const dashboard = unwrapItem<Record<string, unknown>>(data, ["dashboard"]);
+    const rawStats = unwrapItem<Record<string, unknown>>(dashboard, ["stats"]);
+    const stats = mapDashboardStats({
+      ...dashboard,
+      ...rawStats,
+      recentSalaryRequests: dashboard.recentSalaryRequests ?? rawStats.recentSalaryRequests
+    });
 
     return {
       totalEmployees: stats.totalEmployees ?? 0,
@@ -28,15 +33,14 @@ export const dashboardService = {
       appActivatedEmployees: stats.appActivatedEmployees ?? 0,
       pendingSalaryRequests: stats.pendingSalaryRequests ?? 0,
       approvedRequests: stats.approvedRequests ?? 0,
-      outstandingAmount: stats.outstandingAmount ?? 0
+      outstandingAmount: stats.outstandingAmount ?? 0,
+      recentSalaryRequests: stats.recentSalaryRequests ?? []
     };
   },
 
   async getRecentSalaryRequests(): Promise<SalaryRequest[]> {
-    const salaryRequests = await salaryRequestService.getSalaryRequests().catch(() => []);
-    return salaryRequests
-      .sort((a, b) => new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime())
-      .slice(0, 5);
+    const stats = await this.getDashboardStats();
+    return (stats.recentSalaryRequests ?? []).slice(0, 5);
   },
 
   async getRecentNotifications(): Promise<NotificationItem[]> {

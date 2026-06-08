@@ -14,17 +14,23 @@ export function DashboardPage() {
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
 
   useEffect(() => {
-    dashboardService.getDashboardStats().then(setStats).catch(() =>
-      setStats({
-        totalEmployees: 0,
-        activeEmployees: 0,
-        appActivatedEmployees: 0,
-        pendingSalaryRequests: 0,
-        approvedRequests: 0,
-        outstandingAmount: 0
+    dashboardService
+      .getDashboardStats()
+      .then((nextStats) => {
+        setStats(nextStats);
+        setRequests(nextStats.recentSalaryRequests ?? []);
       })
-    );
-    dashboardService.getRecentSalaryRequests().then(setRequests).catch(() => setRequests([]));
+      .catch(() => {
+        setStats({
+          totalEmployees: 0,
+          activeEmployees: 0,
+          appActivatedEmployees: 0,
+          pendingSalaryRequests: 0,
+          approvedRequests: 0,
+          outstandingAmount: 0
+        });
+        setRequests([]);
+      });
     dashboardService.getRecentNotifications().then(setNotifications).catch(() => setNotifications([]));
   }, []);
 

@@ -13,6 +13,8 @@ export const employerProfile: EmployerProfile = {
   contactPerson: "Ananya Mehra",
   companyEmail: "hr@nimbusretail.com",
   loginEmail: "employer@mobpae.com",
+  payrollDate: 30,
+  payrollCutoffDate: 25,
   phone: "+91 98765 43210",
   status: "ACTIVE"
 };
@@ -162,6 +164,9 @@ export const repayments: Repayment[] = [
     employeeName: "Aarav Sharma",
     salaryRequestId: "REQ-24061",
     amount: 12000,
+    principalAmount: 12000,
+    interestAmount: 0,
+    totalAmount: 12000,
     dueDate: "2026-06-30",
     status: "PENDING"
   },
@@ -171,6 +176,9 @@ export const repayments: Repayment[] = [
     employeeName: "Priya Nair",
     salaryRequestId: "REQ-24063",
     amount: 15000,
+    principalAmount: 15000,
+    interestAmount: 0,
+    totalAmount: 15000,
     dueDate: "2026-06-30",
     status: "PENDING"
   },
@@ -180,6 +188,9 @@ export const repayments: Repayment[] = [
     employeeName: "Meera Rao",
     salaryRequestId: "REQ-24065",
     amount: 21000,
+    principalAmount: 21000,
+    interestAmount: 0,
+    totalAmount: 21000,
     dueDate: "2026-05-31",
     status: "PAID"
   },
@@ -189,6 +200,9 @@ export const repayments: Repayment[] = [
     employeeName: "Isha Banerjee",
     salaryRequestId: "REQ-23991",
     amount: 6200,
+    principalAmount: 6200,
+    interestAmount: 0,
+    totalAmount: 6200,
     dueDate: "2026-05-31",
     status: "OVERDUE"
   }
