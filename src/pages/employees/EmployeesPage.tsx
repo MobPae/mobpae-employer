@@ -160,9 +160,19 @@ export function EmployeesPage() {
           onSubmit={async (payload: EmployeePayload) => {
             let updatedEmployee: Employee;
             if (editingEmployee) {
-              updatedEmployee = await employeeService.updateEmployee(editingEmployee.id, payload);
+              const { appActivated, ...employeeDetails } = payload;
+              updatedEmployee = await employeeService.updateEmployee(editingEmployee.id, employeeDetails);
+              updatedEmployee = { ...updatedEmployee, appActivated: editingEmployee.appActivated };
+
+              if (appActivated !== editingEmployee.appActivated) {
+                updatedEmployee = await employeeService.activateEmployee(editingEmployee.id, appActivated);
+              }
             } else {
               updatedEmployee = await employeeService.createEmployee(payload);
+
+              if (updatedEmployee.appActivated !== payload.appActivated) {
+                updatedEmployee = await employeeService.activateEmployee(updatedEmployee.id, payload.appActivated);
+              }
             }
             upsertEmployees([updatedEmployee]);
             closeDrawer();
