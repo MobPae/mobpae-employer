@@ -20,6 +20,7 @@ export function SalaryRequestsPage() {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<"ALL" | SalaryRequestStatus>("ALL");
   const [reviewAction, setReviewAction] = useState<"APPROVE" | "REJECT" | null>(null);
+  const [rejectRemarks, setRejectRemarks] = useState("");
 
   const refresh = () => {
     salaryRequestService
@@ -84,7 +85,14 @@ export function SalaryRequestsPage() {
                 key: "actions",
                 header: "Actions",
                 render: (request) => (
-                  <Button variant="ghost" icon={<Eye size={15} />} onClick={() => setSelectedRequest(request)}>
+                  <Button
+                    variant="ghost"
+                    icon={<Eye size={15} />}
+                    onClick={() => {
+                      setRejectRemarks("");
+                      setSelectedRequest(request);
+                    }}
+                  >
                     View
                   </Button>
                 )
@@ -109,7 +117,17 @@ export function SalaryRequestsPage() {
               <div className="flex justify-between gap-3"><dt className="text-slate-500">Created</dt><dd className="font-semibold text-slate-950">{formatDate(selectedRequest.createdDate)}</dd></div>
             </dl>
             {canReview ? (
-              <div className="grid grid-cols-2 gap-3 border-t border-blue-100 pt-4">
+              <div className="grid gap-3 border-t border-blue-100 pt-4">
+                <label className="grid gap-1.5 text-sm font-medium text-slate-700">
+                  Rejection remarks
+                  <textarea
+                    className="min-h-24 rounded-md border border-blue-100 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-100"
+                    placeholder="Employee not eligible for salary advance"
+                    value={rejectRemarks}
+                    onChange={(event) => setRejectRemarks(event.target.value)}
+                  />
+                </label>
+                <div className="grid grid-cols-2 gap-3">
                 <Button
                   icon={<Check size={16} />}
                   disabled={Boolean(reviewAction)}
@@ -132,14 +150,15 @@ export function SalaryRequestsPage() {
                 <Button
                   variant="danger"
                   icon={<X size={16} />}
-                  disabled={Boolean(reviewAction)}
+                  disabled={Boolean(reviewAction) || !rejectRemarks.trim()}
                   onClick={async () => {
                     setReviewAction("REJECT");
                     try {
-                      await salaryRequestService.rejectRequest(selectedRequest.id);
+                      await salaryRequestService.rejectRequest(selectedRequest.id, rejectRemarks.trim());
                       await refresh();
                       toast.success("Request rejected", selectedRequest.requestId);
                       setSelectedRequest(null);
+                      setRejectRemarks("");
                     } catch (error) {
                       toast.error("Unable to reject request", getApiErrorMessage(error));
                     } finally {
@@ -149,6 +168,7 @@ export function SalaryRequestsPage() {
                 >
                   {reviewAction === "REJECT" ? "Rejecting..." : "Reject"}
                 </Button>
+                </div>
               </div>
             ) : null}
           </div>

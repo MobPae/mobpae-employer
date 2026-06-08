@@ -11,7 +11,7 @@ import { Select } from "../../components/ui/Select";
 import { useToast } from "../../hooks/useToast";
 import { getApiErrorMessage } from "../../services/api-errors";
 import { employeeService } from "../../services/employee.service";
-import type { Employee, EmployeePayload, EmploymentStatus } from "../../types";
+import type { BulkEmployeeUploadResult, Employee, EmployeePayload, EmploymentStatus } from "../../types";
 
 const mergeEmployeesByStableOrder = (currentEmployees: Employee[], nextEmployees: Employee[]) => {
   const nextById = new Map(nextEmployees.map((employee) => [employee.id, employee]));
@@ -43,6 +43,7 @@ export function EmployeesPage() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [bulkActivating, setBulkActivating] = useState(false);
   const [actionEmployeeId, setActionEmployeeId] = useState<string | null>(null);
+  const [bulkUploadResult, setBulkUploadResult] = useState<BulkEmployeeUploadResult | null>(null);
   const [drawerMode, setDrawerMode] = useState<"CREATE" | "EDIT" | "BULK_CREATE" | null>(null);
   const [editingEmployee, setEditingEmployee] = useState<Employee | undefined>();
 
@@ -77,6 +78,7 @@ export function EmployeesPage() {
   const closeDrawer = () => {
     setDrawerMode(null);
     setEditingEmployee(undefined);
+    setBulkUploadResult(null);
   };
 
   return (
@@ -87,7 +89,14 @@ export function EmployeesPage() {
         description="Manage employee eligibility, app activation and salary access controls."
         actions={
           <>
-            <Button variant="secondary" icon={<UploadCloud size={16} />} onClick={() => setDrawerMode("BULK_CREATE")}>
+            <Button
+              variant="secondary"
+              icon={<UploadCloud size={16} />}
+              onClick={() => {
+                setBulkUploadResult(null);
+                setDrawerMode("BULK_CREATE");
+              }}
+            >
               Bulk Add
             </Button>
             <Button icon={<Plus size={16} />} onClick={() => setDrawerMode("CREATE")}>
@@ -199,15 +208,14 @@ export function EmployeesPage() {
               if (editingEmployee) {
                 const { appActivated, ...employeeDetails } = payload;
                 updatedEmployee = await employeeService.updateEmployee(editingEmployee.id, employeeDetails);
-                updatedEmployee = { ...updatedEmployee, appActivated: editingEmployee.appActivated };
 
-                if (appActivated !== editingEmployee.appActivated) {
+                if (payload.employmentStatus === "ACTIVE" && appActivated !== updatedEmployee.appActivated) {
                   updatedEmployee = await employeeService.activateEmployee(editingEmployee.id, appActivated);
                 }
               } else {
                 updatedEmployee = await employeeService.createEmployee(payload);
 
-                if (updatedEmployee.appActivated !== payload.appActivated) {
+                if (payload.employmentStatus === "ACTIVE" && updatedEmployee.appActivated !== payload.appActivated) {
                   updatedEmployee = await employeeService.activateEmployee(updatedEmployee.id, payload.appActivated);
                 }
               }
@@ -231,16 +239,51 @@ export function EmployeesPage() {
         <BulkEmployeeForm
           onSubmit={async (payloads: EmployeePayload[]) => {
             try {
-              const createdEmployees = await employeeService.bulkCreateEmployees(payloads);
-              upsertEmployees(createdEmployees);
-              toast.success("Employees imported", `${createdEmployees.length} employee${createdEmployees.length === 1 ? "" : "s"} created.`);
-              closeDrawer();
+              const result = await employeeService.bulkCreateEmployees(payloads);
+              setBulkUploadResult(result);
+              upsertEmployees(result.created);
+              if (result.failureCount > 0) {
+                toast.error("Some employees were skipped", `${result.successCount} created, ${result.failureCount} failed.`);
+              } else {
+                toast.success("Employees imported", `${result.successCount} employee${result.successCount === 1 ? "" : "s"} created.`);
+                closeDrawer();
+              }
+              return result;
             } catch (error) {
               toast.error("Unable to import employees", getApiErrorMessage(error));
               throw error;
             }
           }}
         />
+        {bulkUploadResult?.errors.length ? (
+          <div className="mt-4 rounded-lg border border-rose-100 bg-rose-50/70 p-4">
+            <p className="text-sm font-semibold text-rose-700">
+              {bulkUploadResult.failureCount} row{bulkUploadResult.failureCount === 1 ? "" : "s"} skipped
+            </p>
+            <div className="mt-3 max-h-56 overflow-y-auto scrollbar-soft">
+              <table className="min-w-full text-left text-sm">
+                <thead className="text-xs font-medium uppercase tracking-[0.02em] text-rose-700/70">
+                  <tr>
+                    <th className="py-2 pr-3">Row</th>
+                    <th className="py-2 pr-3">Employee Code</th>
+                    <th className="py-2 pr-3">Email</th>
+                    <th className="py-2">Error</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-rose-100">
+                  {bulkUploadResult.errors.map((error) => (
+                    <tr key={`${error.row}-${error.employeeCode}-${error.email}`}>
+                      <td className="py-2 pr-3 text-rose-700">{error.row}</td>
+                      <td className="py-2 pr-3 text-slate-700">{error.employeeCode || "-"}</td>
+                      <td className="py-2 pr-3 text-slate-700">{error.email || "-"}</td>
+                      <td className="py-2 text-slate-700">{error.message}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ) : null}
       </Drawer>
     </>
   );

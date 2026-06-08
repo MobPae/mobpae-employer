@@ -8,6 +8,8 @@ import type {
   PayrollSummary,
   Repayment,
   RepaymentStatus,
+  BulkEmployeeUploadError,
+  BulkEmployeeUploadResult,
   SalaryRequest,
   SalaryRequestStatus,
   UserRole
@@ -116,6 +118,28 @@ export const toEmployeeApiPayload = (payload: EmployeePayload) => ({
   joinedAt: payload.joinedAt
 });
 
+export const mapBulkEmployeeUploadError = (value: unknown): BulkEmployeeUploadError => {
+  const record = asRecord(value);
+
+  return {
+    row: numberValue(record.row ?? record.rowNumber),
+    employeeCode: text(record.employeeCode),
+    email: text(record.email),
+    message: text(record.message ?? record.error, "Unable to import row")
+  };
+};
+
+export const mapBulkEmployeeUploadResult = (value: unknown): BulkEmployeeUploadResult => {
+  const record = asRecord(value);
+
+  return {
+    successCount: numberValue(record.successCount),
+    failureCount: numberValue(record.failureCount),
+    created: unwrapList(record.created).map(mapEmployee),
+    errors: unwrapList(record.errors).map(mapBulkEmployeeUploadError)
+  };
+};
+
 export const mapSalaryRequest = (value: unknown): SalaryRequest => {
   const record = asRecord(value);
   const employee = asRecord(record.employee);
@@ -150,7 +174,7 @@ export const mapRepayment = (value: unknown): Repayment => {
     id: text(record.id ?? record._id, ""),
     employeeId: text(record.employeeId ?? employee.id, ""),
     employeeName: text(record.employeeName ?? employee.name ?? employee.fullName, "Employee"),
-    salaryRequestId: text(record.salaryRequestId ?? request.requestId ?? request.id, ""),
+    salaryRequestId: text(record.salaryRequestId ?? record.salaryRequestCode ?? request.requestId ?? request.id, ""),
     amount: numberValue(record.amount ?? record.recoveryAmount),
     dueDate: text(record.dueDate ?? record.createdAt, new Date().toISOString()),
     status: normalizeRepaymentStatus(record.status)
@@ -176,12 +200,12 @@ export const mapEmployerProfile = (value: unknown): EmployerProfile => {
 export const mapDashboardStats = (value: unknown): Partial<DashboardStats> => {
   const record = asRecord(value);
   return {
-    totalEmployees: numberValue(record.totalEmployees ?? record.employeeCount, NaN),
-    activeEmployees: numberValue(record.activeEmployees, NaN),
-    appActivatedEmployees: numberValue(record.appActivatedEmployees ?? record.activatedEmployees, NaN),
-    pendingSalaryRequests: numberValue(record.pendingSalaryRequests ?? record.pendingRequests, NaN),
-    approvedRequests: numberValue(record.approvedRequests, NaN),
-    outstandingAmount: numberValue(record.outstandingAmount ?? record.totalOutstandingAmount, NaN)
+    totalEmployees: numberValue(record.totalEmployees ?? record.employeeCount),
+    activeEmployees: numberValue(record.activeEmployees),
+    appActivatedEmployees: numberValue(record.appActivatedEmployees ?? record.activatedEmployees),
+    pendingSalaryRequests: numberValue(record.pendingSalaryRequests ?? record.pendingRequests),
+    approvedRequests: numberValue(record.approvedRequests),
+    outstandingAmount: numberValue(record.outstandingAmount ?? record.totalOutstandingAmount)
   };
 };
 

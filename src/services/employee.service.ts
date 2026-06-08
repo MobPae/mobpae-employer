@@ -1,5 +1,5 @@
-import type { Employee, EmployeePayload } from "../types";
-import { mapEmployee, toEmployeeApiPayload, unwrapItem, unwrapList } from "./api-mappers";
+import type { BulkEmployeeUploadResult, Employee, EmployeePayload } from "../types";
+import { mapBulkEmployeeUploadResult, mapEmployee, toEmployeeApiPayload, unwrapItem, unwrapList } from "./api-mappers";
 import { httpClient } from "./http-client";
 
 export const employeeService = {
@@ -18,9 +18,9 @@ export const employeeService = {
     return mapEmployee(unwrapItem(data, ["employee"]));
   },
 
-  async bulkCreateEmployees(payloads: EmployeePayload[]): Promise<Employee[]> {
-    const responses = await Promise.all(payloads.map((payload) => this.createEmployee(payload)));
-    return responses;
+  async bulkCreateEmployees(payloads: EmployeePayload[]): Promise<BulkEmployeeUploadResult> {
+    const { data } = await httpClient.post("/employees/bulk", payloads.map(toEmployeeApiPayload));
+    return mapBulkEmployeeUploadResult(unwrapItem(data, ["result", "bulkUpload"]));
   },
 
   async updateEmployee(id: string, payload: Partial<EmployeePayload>): Promise<Employee> {

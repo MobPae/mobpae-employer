@@ -3,7 +3,7 @@ import { AlertCircle, CheckCircle2, UploadCloud } from "lucide-react";
 import { Button } from "../ui/Button";
 import { DataTable } from "../ui/DataTable";
 import { StatusBadge } from "../ui/StatusBadge";
-import type { EmployeePayload, EmploymentStatus } from "../../types";
+import type { BulkEmployeeUploadResult, EmployeePayload, EmploymentStatus } from "../../types";
 import { formatCurrency } from "../../utils/formatters";
 
 const sampleRows = [
@@ -65,7 +65,7 @@ const parseRows = (value: string): ParsedBulkEmployee[] => {
 export function BulkEmployeeForm({
   onSubmit
 }: {
-  onSubmit: (payloads: EmployeePayload[]) => Promise<void>;
+  onSubmit: (payloads: EmployeePayload[]) => Promise<BulkEmployeeUploadResult | void>;
 }) {
   const [rawRows, setRawRows] = useState(sampleRows);
   const [uploadedFileName, setUploadedFileName] = useState("");

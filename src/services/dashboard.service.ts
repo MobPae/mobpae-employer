@@ -1,7 +1,6 @@
-import { employeeService } from "./employee.service";
 import { salaryRequestService } from "./salary-request.service";
 import type { DashboardStats, NotificationItem, SalaryRequest } from "../types";
-import { unwrapList } from "./api-mappers";
+import { mapDashboardStats, unwrapItem, unwrapList } from "./api-mappers";
 import { authService } from "./auth.service";
 import { httpClient } from "./http-client";
 
@@ -20,22 +19,16 @@ const mapNotification = (value: unknown): NotificationItem => {
 
 export const dashboardService = {
   async getDashboardStats(): Promise<DashboardStats> {
-    const employees = await employeeService.getEmployees();
-    const salaryRequests = await salaryRequestService.getSalaryRequests().catch(() => []);
+    const { data } = await httpClient.get("/dashboard/employers/me");
+    const stats = mapDashboardStats(unwrapItem(data, ["dashboard", "stats"]));
 
     return {
-      totalEmployees: employees.length,
-      activeEmployees: employees.filter((employee) => employee.employmentStatus === "ACTIVE").length,
-      appActivatedEmployees: employees.filter((employee) => employee.appActivated).length,
-      pendingSalaryRequests: salaryRequests.filter((request) =>
-        ["PENDING", "SUBMITTED", "UNDER_REVIEW"].includes(request.status)
-      ).length,
-      approvedRequests: salaryRequests.filter((request) =>
-        ["APPROVED", "DISBURSED", "REPAID"].includes(request.status)
-      ).length,
-      outstandingAmount: salaryRequests
-        .filter((request) => ["APPROVED", "DISBURSED"].includes(request.status))
-        .reduce((total, request) => total + request.approvedAmount, 0)
+      totalEmployees: stats.totalEmployees ?? 0,
+      activeEmployees: stats.activeEmployees ?? 0,
+      appActivatedEmployees: stats.appActivatedEmployees ?? 0,
+      pendingSalaryRequests: stats.pendingSalaryRequests ?? 0,
+      approvedRequests: stats.approvedRequests ?? 0,
+      outstandingAmount: stats.outstandingAmount ?? 0
     };
   },
 

@@ -33,8 +33,8 @@ export const salaryRequestService = {
     return mapSalaryRequest(unwrapItem(data, ["salaryRequest", "request"]));
   },
 
-  async rejectRequest(id: string): Promise<SalaryRequest> {
-    const { data } = await httpClient.post(`/salary-requests/${id}/reject`);
+  async rejectRequest(id: string, remarks: string): Promise<SalaryRequest> {
+    const { data } = await httpClient.post(`/salary-requests/${id}/reject`, { remarks });
     return mapSalaryRequest(unwrapItem(data, ["salaryRequest", "request"]));
   },
 };

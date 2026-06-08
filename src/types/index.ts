@@ -50,6 +50,20 @@ export type EmployeePayload = Omit<Employee, "id" | "joinedAt"> & {
   joinedAt?: string;
 };
 
+export interface BulkEmployeeUploadError {
+  row: number;
+  employeeCode: string;
+  email: string;
+  message: string;
+}
+
+export interface BulkEmployeeUploadResult {
+  successCount: number;
+  failureCount: number;
+  created: Employee[];
+  errors: BulkEmployeeUploadError[];
+}
+
 export interface SalaryRequest {
   id: string;
   requestId: string;
