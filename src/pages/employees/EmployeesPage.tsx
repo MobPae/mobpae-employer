@@ -96,18 +96,18 @@ export function EmployeesPage() {
             value={status}
             onChange={(event) => setStatus(event.target.value as "ALL" | EmploymentStatus)}
             options={[
-              { label: "All statuses", value: "ALL" },
-              { label: "Active", value: "ACTIVE" },
-              { label: "Inactive", value: "INACTIVE" }
+              { label: "Employment: All", value: "ALL" },
+              { label: "Employment: Active", value: "ACTIVE" },
+              { label: "Employment: Inactive", value: "INACTIVE" }
             ]}
           />
           <Select
             value={activation}
             onChange={(event) => setActivation(event.target.value as "ALL" | "ACTIVE" | "INACTIVE")}
             options={[
-              { label: "All access", value: "ALL" },
-              { label: "Activated", value: "ACTIVE" },
-              { label: "Not activated", value: "INACTIVE" }
+              { label: "App access: All", value: "ALL" },
+              { label: "App access: Activated", value: "ACTIVE" },
+              { label: "App access: Inactive", value: "INACTIVE" }
             ]}
           />
         </div>
@@ -137,7 +137,7 @@ export function EmployeesPage() {
               setSelectedIds([]);
             }}
           >
-            Bulk Activation
+            Activate selected
           </Button>
         </div>
 

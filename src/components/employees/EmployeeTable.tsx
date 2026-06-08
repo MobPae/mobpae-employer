@@ -68,7 +68,7 @@ export function EmployeeTable({
           render: (employee) => (
             <button className="flex items-center gap-2 text-sm font-semibold text-slate-700" onClick={() => onToggleAccess(employee)}>
               {employee.appActivated ? <ToggleRight className="text-blue-600" size={24} /> : <ToggleLeft className="text-blue-300" size={24} />}
-              {employee.appActivated ? "Activated" : "Not active"}
+              {employee.appActivated ? "Activated" : "Inactive"}
             </button>
           )
         },
