@@ -123,7 +123,17 @@ export function EmployeesPage() {
             disabled={!selectedIds.length}
             onClick={async () => {
               const updatedEmployees = await employeeService.bulkActivateEmployees(selectedIds);
-              upsertEmployees(updatedEmployees);
+              const updatedEmployeeIds = new Set(updatedEmployees.map((employee) => employee.id));
+              setEmployees((currentEmployees) =>
+                upsertEmployeesByStableOrder(
+                  currentEmployees.map((employee) =>
+                    selectedIds.includes(employee.id) && !updatedEmployeeIds.has(employee.id)
+                      ? { ...employee, appActivated: true }
+                      : employee
+                  ),
+                  updatedEmployees
+                )
+              );
               setSelectedIds([]);
             }}
           >
