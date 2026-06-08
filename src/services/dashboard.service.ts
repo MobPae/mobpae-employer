@@ -18,7 +18,7 @@ const mapNotification = (value: unknown): NotificationItem => {
 
 export const dashboardService = {
   async getDashboardStats(): Promise<DashboardStats> {
-    const { data } = await httpClient.get("/dashboard/employers");
+    const { data } = await httpClient.get("/dashboard/employers/me");
     const dashboard = unwrapItem<Record<string, unknown>>(data, ["dashboard"]);
     const rawStats = unwrapItem<Record<string, unknown>>(dashboard, ["stats"]);
     const stats = mapDashboardStats({

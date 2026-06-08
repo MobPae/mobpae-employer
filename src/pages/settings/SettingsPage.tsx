@@ -7,7 +7,6 @@ import { useToast } from "../../hooks/useToast";
 import { getApiErrorMessage } from "../../services/api-errors";
 import { employerService } from "../../services/employer.service";
 import type { EmployerProfile } from "../../types";
-import { formatPayrollDay } from "../../utils/formatters";
 
 const fallbackProfile: EmployerProfile = {
   companyName: "",
@@ -81,10 +80,6 @@ export function SettingsPage() {
           </div>
           <Input label="Login Email" type="email" value={profile.loginEmail} disabled />
           <p className="-mt-2 rounded-md bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700">Login email is used for account authentication and cannot be changed.</p>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Input label="Payroll Date" value={formatPayrollDay(profile.payrollDate)} disabled />
-            <Input label="Payroll Cutoff Date" value={formatPayrollDay(profile.payrollCutoffDate)} disabled />
-          </div>
           <Input label="Contact Person" value={profile.contactPerson} onChange={(event) => setField("contactPerson", event.target.value)} />
           <div className="grid gap-4 sm:grid-cols-2">
             <Input label="Company Email" type="email" value={profile.companyEmail} onChange={(event) => setField("companyEmail", event.target.value)} />
