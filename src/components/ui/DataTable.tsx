@@ -21,7 +21,7 @@ export function DataTable<T>({ columns, data, emptyMessage = "No records found."
           <thead className="bg-blue-50/70">
             <tr>
               {columns.map((column) => (
-                <th key={column.key} className={`px-4 py-3 text-xs font-semibold uppercase text-blue-700/70 ${column.className ?? ""}`}>
+                <th key={column.key} className={`px-4 py-3 text-xs font-medium uppercase tracking-[0.02em] text-blue-700/70 ${column.className ?? ""}`}>
                   {column.header}
                 </th>
               ))}

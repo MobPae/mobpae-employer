@@ -49,7 +49,7 @@ export function EmployerLayout() {
               <WalletCards size={21} />
             </div>
             <div>
-              <p className="text-sm font-bold text-slate-950">MobPae</p>
+              <p className="text-sm font-semibold text-slate-950">MobPae</p>
               <p className="text-xs font-medium text-slate-500">Employer Portal</p>
             </div>
           </div>
@@ -67,7 +67,7 @@ export function EmployerLayout() {
                 to={item.to}
                 onClick={() => setSidebarOpen(false)}
                 className={({ isActive }) =>
-                  `flex min-h-10 items-center gap-3 rounded-md px-3 text-sm font-semibold transition ${
+                  `flex min-h-10 items-center gap-3 rounded-md px-3 text-sm font-medium transition ${
                     isActive ? "bg-blue-600 text-white shadow-sm shadow-blue-600/20" : "text-blue-900/70 hover:bg-blue-50 hover:text-blue-950"
                   }`
                 }
@@ -82,10 +82,10 @@ export function EmployerLayout() {
         <div className="mt-auto rounded-lg border border-blue-100 bg-blue-50/70 p-3">
           <div className="flex items-center gap-2 text-blue-700">
             <Building2 size={16} />
-            <span className="text-xs font-bold uppercase tracking-normal">{user?.companyCode}</span>
+            <span className="text-xs font-semibold uppercase tracking-[0.02em]">{user?.companyCode}</span>
           </div>
-          <p className="mt-2 text-sm font-semibold text-slate-950">{user?.companyName}</p>
-          <button className="mt-4 flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm font-semibold text-rose-600 hover:bg-rose-50" onClick={handleLogout}>
+          <p className="mt-2 text-sm font-medium text-slate-950">{user?.companyName}</p>
+          <button className="mt-4 flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm font-medium text-rose-600 hover:bg-rose-50" onClick={handleLogout}>
             <LogOut size={16} />
             Logout
           </button>
@@ -102,7 +102,7 @@ export function EmployerLayout() {
             </button>
             <div>
               <p className="text-xs font-semibold text-slate-500">Company</p>
-              <p className="text-sm font-bold text-slate-950">{user?.companyName}</p>
+              <p className="text-sm font-semibold text-slate-950">{user?.companyName}</p>
             </div>
           </div>
 
@@ -111,7 +111,7 @@ export function EmployerLayout() {
               <Bell size={17} />
               <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-cyan-500" />
             </button>
-            <button className="flex min-h-9 items-center gap-2 rounded-md border border-blue-100 bg-white px-2 text-sm font-semibold text-slate-700 hover:bg-blue-50">
+            <button className="flex min-h-9 items-center gap-2 rounded-md border border-blue-100 bg-white px-2 text-sm font-medium text-slate-700 hover:bg-blue-50">
               <span className="grid h-7 w-7 place-items-center rounded-md bg-blue-700 text-xs text-white">AM</span>
               <span className="hidden sm:inline">{user?.name}</span>
               <ChevronDown size={15} />
