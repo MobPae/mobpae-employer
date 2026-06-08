@@ -42,7 +42,7 @@ export const employerService = {
   },
 
   async updateEmployerProfile(payload: EmployerProfilePayload): Promise<EmployerProfile> {
-    await httpClient.put("/employers/profile", toEmployerProfileApiPayload(payload));
-    return this.getEmployerProfile();
+    const { data } = await httpClient.put("/employers/profile", toEmployerProfileApiPayload(payload));
+    return mapEmployerProfile(unwrapItem(data, ["profile", "employer"]));
   }
 };
