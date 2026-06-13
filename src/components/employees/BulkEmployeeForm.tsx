@@ -1,166 +1,158 @@
-import { useMemo, useState } from "react";
 import { AlertCircle, CheckCircle2, UploadCloud } from "lucide-react";
-import { Button } from "../ui/Button";
-import { DataTable } from "../ui/DataTable";
-import { StatusBadge } from "../ui/StatusBadge";
+import { useMemo, useState } from "react";
 import type { BulkEmployeeUploadResult, EmployeePayload, EmploymentStatus } from "../../types";
 import { formatCurrency } from "../../utils/formatters";
 
-const sampleRows = [
-  "NR-2001,Rohan Kapoor,rohan.kapoor@nimbusretail.com,+91 98765 11111,54000,ACTIVE,false,Store Operations",
-  "NR-2002,Neha Menon,neha.menon@nimbusretail.com,+91 98765 22222,62000,ACTIVE,true,Finance"
+const SAMPLE = [
+  "EMP-001,Arjun Sharma,arjun@company.com,+91 98765 11111,54000,ACTIVE,false,Engineering",
+  "EMP-002,Priya Nair,priya@company.com,+91 98765 22222,62000,ACTIVE,true,Finance",
 ].join("\n");
 
-interface ParsedBulkEmployee {
-  payload: EmployeePayload;
-  rowNumber: number;
-  errors: string[];
-}
+const isStatus = (v: string): v is EmploymentStatus => v === "ACTIVE" || v === "INACTIVE";
+const parseBool = (v: string) => ["true", "yes", "1"].includes(v.trim().toLowerCase());
 
-const isEmploymentStatus = (value: string): value is EmploymentStatus =>
-  value === "ACTIVE" || value === "INACTIVE";
+interface ParsedRow { payload: EmployeePayload; row: number; errors: string[] }
 
-const parseBoolean = (value: string) => {
-  const normalized = value.trim().toLowerCase();
-  return normalized === "true" || normalized === "yes" || normalized === "1";
-};
-
-const parseRows = (value: string): ParsedBulkEmployee[] => {
-  return value
+function parseRows(raw: string): ParsedRow[] {
+  return raw
     .split("\n")
-    .map((row, index) => ({ row, rowNumber: index + 1 }))
-    .filter(({ row }) => row.trim().length > 0)
-    .map(({ row, rowNumber }) => {
-      const [employeeCode = "", name = "", email = "", phone = "", salary = "", status = "ACTIVE", appActivated = "false", department = ""] =
-        row.split(",").map((cell) => cell.trim());
-      const salaryInHand = Number(salary);
-      const employmentStatus = status.toUpperCase();
+    .map((line, i) => ({ line: line.trim(), row: i + 1 }))
+    .filter(({ line }) => line.length > 0)
+    .map(({ line, row }) => {
+      const [code = "", name = "", email = "", phone = "", salary = "", status = "ACTIVE", app = "false", dept = ""] =
+        line.split(",").map(c => c.trim());
+      const salaryNum = Number(salary);
+      const empStatus = status.toUpperCase();
       const errors: string[] = [];
-
-      if (!employeeCode) errors.push("employeeCode required");
-      if (!name) errors.push("name required");
-      if (!email.includes("@")) errors.push("valid email required");
-      if (!phone) errors.push("phone required");
-      if (!Number.isFinite(salaryInHand) || salaryInHand <= 0) errors.push("salaryInHand must be positive");
-      if (!isEmploymentStatus(employmentStatus)) errors.push("status must be ACTIVE or INACTIVE");
-      if (!department) errors.push("department required");
-
+      if (!code)                                    errors.push("code required");
+      if (!name)                                    errors.push("name required");
+      if (!email.includes("@"))                     errors.push("valid email required");
+      if (!phone)                                   errors.push("phone required");
+      if (!Number.isFinite(salaryNum) || salaryNum <= 0) errors.push("salary must be positive");
+      if (!isStatus(empStatus))                     errors.push("status: ACTIVE or INACTIVE");
       return {
-        rowNumber,
+        row,
         errors,
         payload: {
-          employeeCode,
-          name,
-          email,
-          phone,
-          salaryInHand: Number.isFinite(salaryInHand) ? salaryInHand : 0,
-          employmentStatus: isEmploymentStatus(employmentStatus) ? employmentStatus : "ACTIVE",
-          appActivated: parseBoolean(appActivated),
-          department
-        }
+          employeeCode: code, name, email, phone,
+          salaryInHand: Number.isFinite(salaryNum) ? salaryNum : 0,
+          employmentStatus: isStatus(empStatus) ? empStatus : "ACTIVE",
+          appActivated: parseBool(app),
+          department: dept,
+        },
       };
     });
-};
+}
 
-export function BulkEmployeeForm({
-  onSubmit
-}: {
-  onSubmit: (payloads: EmployeePayload[]) => Promise<BulkEmployeeUploadResult | void>;
-}) {
-  const [rawRows, setRawRows] = useState(sampleRows);
-  const [uploadedFileName, setUploadedFileName] = useState("");
+export function BulkEmployeeForm({ onSubmit }: { onSubmit: (p: EmployeePayload[]) => Promise<BulkEmployeeUploadResult | void> }) {
+  const [raw, setRaw]     = useState(SAMPLE);
+  const [fileName, setFileName] = useState("");
   const [saving, setSaving] = useState(false);
-  const parsedRows = useMemo(() => parseRows(rawRows), [rawRows]);
-  const validRows = parsedRows.filter((row) => row.errors.length === 0);
-  const hasErrors = parsedRows.some((row) => row.errors.length > 0);
+
+  const rows   = useMemo(() => parseRows(raw), [raw]);
+  const valid  = rows.filter(r => r.errors.length === 0);
+  const hasErr = rows.some(r => r.errors.length > 0);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!valid.length || hasErr) return;
+    setSaving(true);
+    try { await onSubmit(valid.map(r => r.payload)); } finally { setSaving(false); }
+  };
 
   return (
-    <form
-      className="grid gap-4"
-      onSubmit={async (event) => {
-        event.preventDefault();
-        if (!validRows.length || hasErrors) {
-          return;
-        }
-
-        setSaving(true);
-        try {
-          await onSubmit(validRows.map((row) => row.payload));
-        } finally {
-          setSaving(false);
-        }
-      }}
-    >
-      <div className="rounded-lg border border-blue-100 bg-blue-50/70 p-4">
-        <p className="text-sm font-semibold text-slate-950">Upload a CSV or paste employee rows</p>
-        <p className="mt-1 text-sm leading-5 text-slate-500">
-          Format: employeeCode, name, email, phone, salaryInHand, employmentStatus, appActivated, department
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Info */}
+      <div className="bg-slate-50 border border-slate-100 rounded-lg px-4 py-3">
+        <p className="text-[12px] font-[600] text-slate-800">CSV format</p>
+        <p className="text-[11px] text-slate-500 mt-1 font-mono leading-relaxed">
+          code, name, email, phone, salary, status, appActivated, department
         </p>
       </div>
 
-      <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-blue-200 bg-white px-4 py-6 text-center transition hover:bg-blue-50/60">
-        <UploadCloud className="text-blue-600" size={24} />
-        <span className="text-sm font-semibold text-slate-950">
-          {uploadedFileName || "Choose CSV file"}
-        </span>
-        <span className="text-xs text-slate-500">CSV content will populate the rows below for review before import.</span>
+      {/* Upload */}
+      <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-slate-200 rounded-xl py-6 cursor-pointer hover:border-blue-300 hover:bg-blue-50/30 transition-colors">
+        <UploadCloud size={20} className="text-slate-400" />
+        <span className="text-[12px] font-[500] text-slate-600">{fileName || "Choose CSV file"}</span>
+        <span className="text-[11px] text-slate-400">or paste rows below</span>
         <input
-          className="sr-only"
-          type="file"
-          accept=".csv,text/csv"
-          onChange={(event) => {
-            const file = event.target.files?.[0];
-
-            if (!file) {
-              return;
-            }
-
-            setUploadedFileName(file.name);
+          type="file" accept=".csv,text/csv" className="sr-only"
+          onChange={e => {
+            const f = e.target.files?.[0];
+            if (!f) return;
+            setFileName(f.name);
             const reader = new FileReader();
-            reader.onload = () => setRawRows(String(reader.result ?? ""));
-            reader.readAsText(file);
+            reader.onload = () => setRaw(String(reader.result ?? ""));
+            reader.readAsText(f);
           }}
         />
       </label>
 
-      <label className="grid gap-1.5 text-sm font-medium text-slate-700">
-        Employee CSV rows
+      {/* Textarea */}
+      <div>
+        <label className="block text-[11px] font-[500] text-slate-500 mb-1">Employee rows</label>
         <textarea
-          className="min-h-40 w-full rounded-md border border-blue-100 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm transition placeholder:text-slate-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-100"
-          value={rawRows}
-          onChange={(event) => setRawRows(event.target.value)}
+          value={raw}
+          onChange={e => setRaw(e.target.value)}
+          rows={5}
+          className="w-full px-3 py-2.5 text-[12px] font-mono bg-white border border-slate-200 rounded-lg text-slate-800 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 resize-y transition"
         />
-      </label>
-
-      <div className="flex flex-wrap items-center gap-3 text-sm">
-        <span className="inline-flex items-center gap-2 rounded-md bg-emerald-50 px-3 py-2 font-semibold text-emerald-700">
-          <CheckCircle2 size={16} />
-          {validRows.length} valid
-        </span>
-        {hasErrors ? (
-          <span className="inline-flex items-center gap-2 rounded-md bg-rose-50 px-3 py-2 font-semibold text-rose-700">
-            <AlertCircle size={16} />
-            Fix rows before importing
-          </span>
-        ) : null}
       </div>
 
-      <DataTable
-        data={parsedRows}
-        emptyMessage="Paste at least one employee row."
-        columns={[
-          { key: "row", header: "Row", render: (row) => row.rowNumber },
-          { key: "employee", header: "Employee", render: (row) => <div><p className="font-semibold text-slate-950">{row.payload.name || "-"}</p><p className="text-xs text-slate-500">{row.payload.employeeCode || "-"}</p></div> },
-          { key: "email", header: "Email", render: (row) => row.payload.email || "-" },
-          { key: "salary", header: "Salary", render: (row) => formatCurrency(row.payload.salaryInHand) },
-          { key: "status", header: "Status", render: (row) => <StatusBadge status={row.payload.employmentStatus} /> },
-          { key: "result", header: "Validation", render: (row) => row.errors.length ? <span className="text-xs font-semibold text-rose-600">{row.errors.join(", ")}</span> : <span className="text-xs font-semibold text-emerald-700">Ready</span> }
-        ]}
-      />
+      {/* Summary */}
+      <div className="flex gap-2">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-50 text-[12px] font-[500] text-emerald-700">
+          <CheckCircle2 size={13} />{valid.length} valid
+        </span>
+        {hasErr && (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-red-50 text-[12px] font-[500] text-red-600">
+            <AlertCircle size={13} />Fix errors before importing
+          </span>
+        )}
+      </div>
 
-      <Button type="submit" disabled={saving || !validRows.length || hasErrors}>
-        {saving ? "Importing..." : `Import ${validRows.length} Employees`}
-      </Button>
+      {/* Preview table */}
+      {rows.length > 0 && (
+        <div className="overflow-x-auto border border-slate-100 rounded-lg">
+          <table className="w-full text-[11px]">
+            <thead>
+              <tr className="border-b border-slate-100 bg-slate-50">
+                {["Row", "Employee", "Email", "Salary", "Validation"].map(h => (
+                  <th key={h} className="px-3 py-2 text-left font-[500] text-slate-500">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-50">
+              {rows.map(r => (
+                <tr key={r.row} className={r.errors.length ? "bg-red-50/40" : ""}>
+                  <td className="px-3 py-2 text-slate-400">{r.row}</td>
+                  <td className="px-3 py-2">
+                    <p className="font-[500] text-slate-700">{r.payload.name || "—"}</p>
+                    <p className="text-slate-400">{r.payload.employeeCode || "—"}</p>
+                  </td>
+                  <td className="px-3 py-2 text-slate-500">{r.payload.email || "—"}</td>
+                  <td className="px-3 py-2 text-slate-600 tabular-nums">{formatCurrency(r.payload.salaryInHand)}</td>
+                  <td className="px-3 py-2">
+                    {r.errors.length ? (
+                      <span className="text-red-600 font-[500]">{r.errors.join(", ")}</span>
+                    ) : (
+                      <span className="text-emerald-600 font-[500]">Ready</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <button
+        type="submit"
+        disabled={saving || !valid.length || hasErr}
+        className="w-full h-10 rounded-lg bg-[#0f1729] hover:bg-slate-800 text-white text-[13px] font-[600] transition disabled:opacity-40"
+      >
+        {saving ? "Importing…" : `Import ${valid.length} employee${valid.length !== 1 ? "s" : ""}`}
+      </button>
     </form>
   );
 }

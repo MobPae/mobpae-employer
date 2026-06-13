@@ -143,3 +143,36 @@ export interface NotificationItem {
   createdAt: string;
   type: "REQUEST" | "PAYROLL" | "EMPLOYEE" | "RISK";
 }
+
+// ── Settlements ───────────────────────────────────────────────────────────────
+
+export type SettlementStatus = "PENDING" | "PARTIALLY_PAID" | "PAID" | "OVERDUE";
+
+export interface EmployerSettlement {
+  id: string;
+  employerId: string;
+  payrollMonth: string;       // "2024-01" or human-readable
+  principalAmount: number;
+  interestAmount: number;
+  lateFeeAmount: number;
+  totalAmount: number;
+  outstandingAmount: number;
+  dueDate: string;
+  gracePeriodEnd: string | null;
+  paidDate: string | null;
+  status: SettlementStatus;
+  referenceNumber: string | null;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SettlementSummary {
+  outstandingAmount: number;
+  totalAmount: number;
+  pendingCount: number;
+  overdueCount: number;
+  paidCount: number;
+  partiallyPaidCount: number;
+  totalSettlements: number;
+}

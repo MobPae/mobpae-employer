@@ -1,33 +1,46 @@
 import {
+  ArrowDownCircle,
   Bell,
-  Building2,
   CalendarDays,
-  ChevronDown,
+  ChevronRight,
   ClipboardList,
-  CreditCard,
+  Landmark,
   LayoutDashboard,
   LogOut,
   Menu,
   Settings,
   UsersRound,
-  WalletCards,
-  X
+  X,
 } from "lucide-react";
 import { useState } from "react";
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 
-const navItems = [
-  { label: "Dashboard", to: "/dashboard", icon: LayoutDashboard },
-  { label: "Employees", to: "/employees", icon: UsersRound },
-  { label: "Salary Requests", to: "/salary-requests", icon: ClipboardList },
-  { label: "Repayments", to: "/repayments", icon: CreditCard },
-  { label: "Payroll", to: "/payroll", icon: CalendarDays },
-  { label: "Settings", to: "/settings", icon: Settings }
+const NAV = [
+  { label: "Dashboard",       to: "/dashboard",       icon: LayoutDashboard  },
+  { label: "Employees",       to: "/employees",       icon: UsersRound       },
+  { label: "Salary Requests", to: "/salary-requests", icon: ClipboardList    },
+  { label: "Recoveries",      to: "/recoveries",      icon: ArrowDownCircle  },
+  { label: "Payroll",         to: "/payroll",          icon: CalendarDays     },
+  { label: "Settlements",     to: "/settlements",      icon: Landmark         },
+  { label: "Settings",        to: "/settings",         icon: Settings         },
 ];
 
-export function EmployerLayout() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+const PAGE_TITLES: Record<string, string> = {
+  "/dashboard":       "Dashboard",
+  "/employees":       "Employees",
+  "/salary-requests": "Salary Requests",
+  "/recoveries":      "Recoveries",
+  "/payroll":         "Payroll",
+  "/settlements":     "Settlements",
+  "/settings":        "Settings",
+};
+
+function initials(name: string) {
+  return name.split(" ").filter(Boolean).slice(0, 2).map(w => w[0]).join("").toUpperCase();
+}
+
+function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -37,91 +50,104 @@ export function EmployerLayout() {
   };
 
   return (
-    <div className="min-h-screen bg-blue-50/40">
-      <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-blue-100 bg-white px-4 py-4 shadow-xl transition-transform lg:translate-x-0 lg:shadow-none ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3 px-2">
-            <div className="grid h-10 w-10 place-items-center rounded-lg bg-blue-600 text-white shadow-sm shadow-blue-600/25">
-              <WalletCards size={21} />
+    <>
+      {open && (
+        <button aria-label="Close sidebar" className="fixed inset-0 z-30 bg-black/40 backdrop-blur-[2px] lg:hidden" onClick={onClose} />
+      )}
+      <aside className={`fixed inset-y-0 left-0 z-40 flex w-[220px] flex-col bg-[#0f1729] transition-transform duration-200 ${open ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}>
+        <div className="pointer-events-none absolute inset-0 opacity-[0.035]" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,1) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
+        <div className="relative flex flex-col h-full">
+          {/* Logo */}
+          <div className="flex items-center justify-between px-4 h-[52px] border-b border-white/[0.06]">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg bg-blue-500 flex items-center justify-center text-white font-[700] text-[12px] shadow-lg shadow-blue-500/30 flex-shrink-0">M</div>
+              <div>
+                <p className="text-[13px] font-[600] text-white leading-none">MobPae</p>
+                <p className="text-[9px] text-white/30 leading-none mt-0.5 uppercase tracking-[0.1em]">Employer</p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-semibold text-slate-950">MobPae</p>
-              <p className="text-xs font-medium text-slate-500">Employer Portal</p>
-            </div>
+            <button onClick={onClose} className="lg:hidden w-7 h-7 flex items-center justify-center text-white/40 hover:text-white/70 rounded"><X size={15} /></button>
           </div>
-          <button className="grid h-9 w-9 place-items-center rounded-md text-blue-700 hover:bg-blue-50 lg:hidden" onClick={() => setSidebarOpen(false)}>
-            <X size={18} />
-          </button>
-        </div>
 
-        <nav className="mt-8 grid gap-1">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            return (
+          {/* Nav */}
+          <nav className="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto">
+            {NAV.map(({ label, to, icon: Icon }) => (
               <NavLink
-                key={item.to}
-                to={item.to}
-                onClick={() => setSidebarOpen(false)}
-                className={({ isActive }) =>
-                  `flex min-h-10 items-center gap-3 rounded-md px-3 text-sm font-medium transition ${
-                    isActive ? "bg-blue-600 text-white shadow-sm shadow-blue-600/20" : "text-blue-900/70 hover:bg-blue-50 hover:text-blue-950"
-                  }`
-                }
+                key={to} to={to} onClick={onClose}
+                className={({ isActive }) => `flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[12.5px] font-[500] transition-colors ${isActive ? "bg-white/10 text-white" : "text-white/45 hover:text-white/80 hover:bg-white/[0.06]"}`}
               >
-                <Icon size={18} />
-                {item.label}
+                {({ isActive }) => (
+                  <>
+                    <Icon size={15} className={isActive ? "text-blue-400" : ""} />
+                    {label}
+                    {isActive && <ChevronRight size={12} className="ml-auto text-white/30" />}
+                  </>
+                )}
               </NavLink>
-            );
-          })}
-        </nav>
+            ))}
+          </nav>
 
-        <div className="mt-auto rounded-lg border border-blue-100 bg-blue-50/70 p-3">
-          <div className="flex items-center gap-2 text-blue-700">
-            <Building2 size={16} />
-            <span className="text-xs font-semibold uppercase tracking-[0.02em]">{user?.companyCode}</span>
+          {/* Footer */}
+          <div className="px-3 py-3 border-t border-white/[0.06]">
+            <div className="flex items-center gap-2.5 px-1 py-2">
+              <div className="w-7 h-7 rounded-lg bg-white/10 border border-white/10 flex items-center justify-center flex-shrink-0">
+                <span className="text-[10px] font-[700] text-white/70">{user?.companyCode?.slice(0, 2).toUpperCase() ?? "MP"}</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[12px] font-[600] text-white/80 truncate leading-none">{user?.companyName ?? "Company"}</p>
+                <p className="text-[10px] text-white/30 mt-0.5 truncate">{user?.companyCode}</p>
+              </div>
+            </div>
+            <button onClick={handleLogout} className="mt-1 w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-[12px] font-[500] text-white/35 hover:text-red-400 hover:bg-red-500/10 transition-colors">
+              <LogOut size={13} />Sign out
+            </button>
           </div>
-          <p className="mt-2 text-sm font-medium text-slate-950">{user?.companyName}</p>
-          <button className="mt-4 flex w-full items-center gap-2 rounded-md px-2 py-2 text-sm font-medium text-rose-600 hover:bg-rose-50" onClick={handleLogout}>
-            <LogOut size={16} />
-            Logout
-          </button>
         </div>
       </aside>
+    </>
+  );
+}
 
-      {sidebarOpen ? <button aria-label="Close sidebar" className="fixed inset-0 z-30 bg-blue-950/30 lg:hidden" onClick={() => setSidebarOpen(false)} /> : null}
+function Header({ onMenuClick }: { onMenuClick: () => void }) {
+  const { user } = useAuth();
+  const location = useLocation();
+  const pageTitle = PAGE_TITLES[location.pathname] ?? "MobPae";
 
-      <div className="lg:pl-72">
-        <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-blue-100 bg-white/90 px-4 backdrop-blur md:px-6">
-          <div className="flex items-center gap-3">
-            <button className="grid h-9 w-9 place-items-center rounded-md border border-blue-100 text-blue-700 lg:hidden" onClick={() => setSidebarOpen(true)}>
-              <Menu size={18} />
-            </button>
-            <div>
-              <p className="text-xs font-semibold text-slate-500">Company</p>
-              <p className="text-sm font-semibold text-slate-950">{user?.companyName}</p>
-            </div>
+  return (
+    <header className="sticky top-0 z-20 h-[52px] flex items-center justify-between px-5 bg-white border-b border-slate-100">
+      <div className="flex items-center gap-3">
+        <button onClick={onMenuClick} className="lg:hidden w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50">
+          <Menu size={16} />
+        </button>
+        <h1 className="text-[14px] font-[600] text-slate-900">{pageTitle}</h1>
+      </div>
+      <div className="flex items-center gap-2">
+        <button className="relative w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 transition-colors">
+          <Bell size={15} />
+          <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-blue-500" />
+        </button>
+        <div className="flex items-center gap-2 pl-1">
+          <div className="w-7 h-7 rounded-full bg-[#0f1729] flex items-center justify-center flex-shrink-0">
+            <span className="text-[10px] font-[700] text-white">{user ? initials(user.name) : "?"}</span>
           </div>
-
-          <div className="flex items-center gap-2">
-            <button className="relative grid h-9 w-9 place-items-center rounded-md border border-blue-100 text-blue-700 hover:bg-blue-50" aria-label="Notifications">
-              <Bell size={17} />
-              <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-cyan-500" />
-            </button>
-            <button className="flex min-h-9 items-center gap-2 rounded-md border border-blue-100 bg-white px-2 text-sm font-medium text-slate-700 hover:bg-blue-50">
-              <span className="grid h-7 w-7 place-items-center rounded-md bg-blue-700 text-xs text-white">AM</span>
-              <span className="hidden sm:inline">{user?.name}</span>
-              <ChevronDown size={15} />
-            </button>
+          <div className="hidden sm:block">
+            <p className="text-[12px] font-[600] text-slate-800 leading-none">{user?.name}</p>
+            <p className="text-[10px] text-slate-400 mt-0.5">{user?.email}</p>
           </div>
-        </header>
+        </div>
+      </div>
+    </header>
+  );
+}
 
-        <main className="grid w-full gap-6 px-4 py-6 md:px-8 2xl:px-10">
-          <Outlet />
-        </main>
+export function EmployerLayout() {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  return (
+    <div className="min-h-screen bg-[#f8fafc]">
+      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <div className="lg:pl-[220px] flex flex-col min-h-screen">
+        <Header onMenuClick={() => setSidebarOpen(true)} />
+        <main className="flex-1 p-6"><Outlet /></main>
       </div>
     </div>
   );

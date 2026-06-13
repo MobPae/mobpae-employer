@@ -4,6 +4,7 @@ import type {
   Employee,
   EmployeePayload,
   EmployerProfile,
+  EmployerSettlement,
   EmploymentStatus,
   PayrollSummary,
   Repayment,
@@ -12,6 +13,8 @@ import type {
   BulkEmployeeUploadResult,
   SalaryRequest,
   SalaryRequestStatus,
+  SettlementStatus,
+  SettlementSummary,
   UserRole
 } from "../types";
 
@@ -221,6 +224,57 @@ export const mapDashboardStats = (value: unknown): Partial<DashboardStats> => {
     approvedRequests: numberValue(record.approvedRequests),
     outstandingAmount: numberValue(record.outstandingAmount ?? record.totalOutstandingAmount),
     recentSalaryRequests: unwrapList(record.recentSalaryRequests).map(mapSalaryRequest)
+  };
+};
+
+const normalizeSettlementStatus = (value: unknown): SettlementStatus => {
+  const s = String(value ?? "PENDING").toUpperCase();
+  const allowed: SettlementStatus[] = ["PENDING", "PARTIALLY_PAID", "PAID", "OVERDUE"];
+  return allowed.includes(s as SettlementStatus) ? (s as SettlementStatus) : "PENDING";
+};
+
+// Parse amount that may arrive as string or number from backend
+const amountValue = (value: unknown): number => {
+  if (typeof value === "number") return Number.isFinite(value) ? value : 0;
+  if (typeof value === "string") {
+    const parsed = parseFloat(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+  return 0;
+};
+
+export const mapSettlement = (value: unknown): EmployerSettlement => {
+  const r = asRecord(value);
+  return {
+    id:                text(r.id ?? r._id, ""),
+    employerId:        text(r.employerId, ""),
+    payrollMonth:      text(r.payrollMonth ?? r.month ?? r.period, ""),
+    principalAmount:   amountValue(r.principalAmount),
+    interestAmount:    amountValue(r.interestAmount),
+    lateFeeAmount:     amountValue(r.lateFeeAmount ?? r.lateFee ?? r.penaltyAmount),
+    totalAmount:       amountValue(r.totalAmount),
+    outstandingAmount: amountValue(r.outstandingAmount ?? r.amountDue),
+    dueDate:           text(r.dueDate, new Date().toISOString()),
+    gracePeriodEnd:    typeof r.gracePeriodEnd === "string" ? r.gracePeriodEnd : null,
+    paidDate:          typeof r.paidDate === "string" ? r.paidDate : null,
+    status:            normalizeSettlementStatus(r.status),
+    referenceNumber:   typeof r.referenceNumber === "string" ? r.referenceNumber : null,
+    notes:             typeof r.notes === "string" ? r.notes : null,
+    createdAt:         text(r.createdAt, new Date().toISOString()),
+    updatedAt:         text(r.updatedAt, new Date().toISOString()),
+  };
+};
+
+export const mapSettlementSummary = (value: unknown): SettlementSummary => {
+  const r = asRecord(value);
+  return {
+    outstandingAmount:   amountValue(r.outstandingAmount ?? r.totalOutstandingAmount),
+    totalAmount:         amountValue(r.totalAmount),
+    pendingCount:        numberValue(r.pendingCount ?? r.pending),
+    overdueCount:        numberValue(r.overdueCount ?? r.overdue),
+    paidCount:           numberValue(r.paidCount ?? r.paid),
+    partiallyPaidCount:  numberValue(r.partiallyPaidCount ?? r.partiallyPaid),
+    totalSettlements:    numberValue(r.totalSettlements ?? r.total),
   };
 };
 

@@ -1,10 +1,7 @@
 import { useState } from "react";
-import { Button } from "../ui/Button";
-import { Input } from "../ui/Input";
-import { Select } from "../ui/Select";
 import type { Employee, EmployeePayload, EmploymentStatus } from "../../types";
 
-const emptyPayload: EmployeePayload = {
+const empty: EmployeePayload = {
   employeeCode: "",
   name: "",
   email: "",
@@ -12,76 +9,93 @@ const emptyPayload: EmployeePayload = {
   salaryInHand: 0,
   employmentStatus: "ACTIVE",
   appActivated: false,
-  department: ""
+  department: "",
 };
 
-export function EmployeeForm({
-  employee,
-  onSubmit
-}: {
-  employee?: Employee;
-  onSubmit: (payload: EmployeePayload) => Promise<void>;
-}) {
-  const [payload, setPayload] = useState<EmployeePayload>(employee ?? emptyPayload);
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <label className="block text-[11px] font-[500] text-slate-500 mb-1">{label}</label>
+      {children}
+    </div>
+  );
+}
+
+const inputCls = "w-full h-9 px-3 text-[13px] bg-white border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition";
+const selectCls = inputCls + " appearance-none cursor-pointer";
+
+export function EmployeeForm({ employee, onSubmit }: { employee?: Employee; onSubmit: (p: EmployeePayload) => Promise<void> }) {
+  const [form, setForm] = useState<EmployeePayload>(employee ?? empty);
   const [saving, setSaving] = useState(false);
 
-  const setField = <K extends keyof EmployeePayload>(key: K, value: EmployeePayload[K]) => {
-    setPayload((current) => ({ ...current, [key]: value }));
+  const set = <K extends keyof EmployeePayload>(k: K, v: EmployeePayload[K]) =>
+    setForm(f => ({ ...f, [k]: v }));
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try { await onSubmit(form); } finally { setSaving(false); }
   };
 
   return (
-    <form
-      className="grid gap-4"
-      onSubmit={async (event) => {
-        event.preventDefault();
-        setSaving(true);
-        try {
-          await onSubmit(payload);
-        } finally {
-          setSaving(false);
-        }
-      }}
-    >
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Input label="Employee code" value={payload.employeeCode} onChange={(event) => setField("employeeCode", event.target.value)} required />
-        <Input label="Full name" value={payload.name} onChange={(event) => setField("name", event.target.value)} required />
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid grid-cols-2 gap-3">
+        <Field label="Employee code">
+          <input className={inputCls} value={form.employeeCode} onChange={e => set("employeeCode", e.target.value)} required placeholder="EMP-001" />
+        </Field>
+        <Field label="Full name">
+          <input className={inputCls} value={form.name} onChange={e => set("name", e.target.value)} required placeholder="Arjun Sharma" />
+        </Field>
       </div>
-      <Input label="Email" type="email" value={payload.email} onChange={(event) => setField("email", event.target.value)} required />
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Input label="Phone" value={payload.phone} onChange={(event) => setField("phone", event.target.value)} required />
-        <Input
-          label="Salary in hand"
-          type="number"
-          min={0}
-          value={payload.salaryInHand}
-          onChange={(event) => setField("salaryInHand", Number(event.target.value))}
-          required
-        />
+
+      <Field label="Email">
+        <input className={inputCls} type="email" value={form.email} onChange={e => set("email", e.target.value)} required placeholder="arjun@company.com" />
+      </Field>
+
+      <div className="grid grid-cols-2 gap-3">
+        <Field label="Phone">
+          <input className={inputCls} value={form.phone} onChange={e => set("phone", e.target.value)} required placeholder="+91 98765 00000" />
+        </Field>
+        <Field label="Salary in hand (₹)">
+          <input className={inputCls} type="number" min={0} value={form.salaryInHand || ""} onChange={e => set("salaryInHand", Number(e.target.value))} required placeholder="50000" />
+        </Field>
       </div>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Input label="Department" value={payload.department} onChange={(event) => setField("department", event.target.value)} required />
-        <Select
-          label="Employment status"
-          value={payload.employmentStatus}
-          onChange={(event) => setField("employmentStatus", event.target.value as EmploymentStatus)}
-          options={[
-            { label: "Active", value: "ACTIVE" },
-            { label: "Inactive", value: "INACTIVE" }
-          ]}
-        />
+
+      <div className="grid grid-cols-2 gap-3">
+        <Field label="Department">
+          <input className={inputCls} value={form.department} onChange={e => set("department", e.target.value)} placeholder="Engineering" />
+        </Field>
+        <Field label="Employment status">
+          <select className={selectCls} value={form.employmentStatus} onChange={e => set("employmentStatus", e.target.value as EmploymentStatus)}>
+            <option value="ACTIVE">Active</option>
+            <option value="INACTIVE">Inactive</option>
+          </select>
+        </Field>
       </div>
-      <label className="flex items-center justify-between rounded-lg border border-blue-100 bg-blue-50/70 px-4 py-3 text-sm font-semibold text-slate-700">
-        App access activated
-        <input
-          className="h-5 w-5 accent-slate-950"
-          type="checkbox"
-          checked={payload.appActivated}
-          onChange={(event) => setField("appActivated", event.target.checked)}
-        />
-      </label>
-      <Button type="submit" disabled={saving}>
-        {saving ? "Saving..." : employee ? "Save employee" : "Create employee"}
-      </Button>
+
+      {/* App access toggle */}
+      <div className="flex items-center justify-between bg-slate-50 border border-slate-100 rounded-lg px-4 py-3">
+        <div>
+          <p className="text-[13px] font-[500] text-slate-800">App access</p>
+          <p className="text-[11px] text-slate-400 mt-0.5">Allow employee to use the MobPae app</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => set("appActivated", !form.appActivated)}
+          style={{ width: 36, height: 20 }}
+          className={`relative inline-flex items-center rounded-full transition-colors flex-shrink-0 ${form.appActivated ? "bg-emerald-500" : "bg-slate-200"}`}
+        >
+          <span className={`inline-block w-4 h-4 rounded-full bg-white shadow transition-transform ${form.appActivated ? "translate-x-[17px]" : "translate-x-[2px]"}`} />
+        </button>
+      </div>
+
+      <button
+        type="submit"
+        disabled={saving}
+        className="w-full h-10 rounded-lg bg-[#0f1729] hover:bg-slate-800 text-white text-[13px] font-[600] transition disabled:opacity-50"
+      >
+        {saving ? "Saving…" : employee ? "Save changes" : "Add employee"}
+      </button>
     </form>
   );
 }

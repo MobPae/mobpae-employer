@@ -1,290 +1,328 @@
-import { Filter, Plus, Search, UploadCloud, Zap } from "lucide-react";
+import { Plus, Search, UploadCloud, X, Zap } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { BulkEmployeeForm } from "../../components/employees/BulkEmployeeForm";
 import { EmployeeForm } from "../../components/employees/EmployeeForm";
 import { EmployeeTable } from "../../components/employees/EmployeeTable";
-import { Button } from "../../components/ui/Button";
-import { Drawer } from "../../components/ui/Drawer";
-import { Input } from "../../components/ui/Input";
-import { PageHeader } from "../../components/ui/PageHeader";
-import { Select } from "../../components/ui/Select";
 import { useToast } from "../../hooks/useToast";
 import { getApiErrorMessage } from "../../services/api-errors";
 import { employeeService } from "../../services/employee.service";
 import type { BulkEmployeeUploadResult, Employee, EmployeePayload, EmploymentStatus } from "../../types";
 
-const mergeEmployeesByStableOrder = (currentEmployees: Employee[], nextEmployees: Employee[]) => {
-  const nextById = new Map(nextEmployees.map((employee) => [employee.id, employee]));
-  const currentIds = new Set(currentEmployees.map((employee) => employee.id));
-  const retainedEmployees = currentEmployees.flatMap((employee) => {
-    const nextEmployee = nextById.get(employee.id);
-    return nextEmployee ? [nextEmployee] : [];
-  });
-  const newEmployees = nextEmployees.filter((employee) => !currentIds.has(employee.id));
+// ── helpers ───────────────────────────────────────────────────────────────────
 
-  return [...retainedEmployees, ...newEmployees];
-};
+function mergeStable(cur: Employee[], next: Employee[]): Employee[] {
+  const nextMap = new Map(next.map(e => [e.id, e]));
+  const curSet  = new Set(cur.map(e => e.id));
+  return [
+    ...cur.flatMap(e => { const n = nextMap.get(e.id); return n ? [n] : []; }),
+    ...next.filter(e => !curSet.has(e.id)),
+  ];
+}
+function upsertStable(cur: Employee[], next: Employee[]): Employee[] {
+  const nextMap = new Map(next.map(e => [e.id, e]));
+  const curSet  = new Set(cur.map(e => e.id));
+  return [
+    ...cur.map(e => nextMap.get(e.id) ?? e),
+    ...next.filter(e => !curSet.has(e.id)),
+  ];
+}
 
-const upsertEmployeesByStableOrder = (currentEmployees: Employee[], nextEmployees: Employee[]) => {
-  const nextById = new Map(nextEmployees.map((employee) => [employee.id, employee]));
-  const currentIds = new Set(currentEmployees.map((employee) => employee.id));
-  const updatedEmployees = currentEmployees.map((employee) => nextById.get(employee.id) ?? employee);
-  const newEmployees = nextEmployees.filter((employee) => !currentIds.has(employee.id));
+// ── drawer ────────────────────────────────────────────────────────────────────
 
-  return [...updatedEmployees, ...newEmployees];
-};
+type DrawerMode = "CREATE" | "EDIT" | "BULK" | null;
+
+function DrawerPanel({
+  open, title, subtitle, onClose, children,
+}: { open: boolean; title: string; subtitle?: string; onClose: () => void; children: React.ReactNode }) {
+  return (
+    <>
+      {open && (
+        <div className="fixed inset-0 z-30 bg-black/20 backdrop-blur-[1px]" onClick={onClose} />
+      )}
+      <div
+        className={`fixed inset-y-0 right-0 z-40 w-[440px] bg-white border-l border-slate-200 shadow-xl flex flex-col transition-transform duration-200 ${
+          open ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
+        {/* Header */}
+        <div className="flex items-start justify-between px-5 pt-5 pb-4 border-b border-slate-100">
+          <div>
+            <p className="text-[14px] font-[600] text-slate-900">{title}</p>
+            {subtitle && <p className="text-[12px] text-slate-400 mt-0.5">{subtitle}</p>}
+          </div>
+          <button
+            onClick={onClose}
+            className="w-7 h-7 flex items-center justify-center rounded-lg border border-slate-200 text-slate-400 hover:text-slate-700 hover:border-slate-300 transition-colors flex-shrink-0"
+          >
+            <X size={14} />
+          </button>
+        </div>
+        {/* Body */}
+        <div className="flex-1 overflow-y-auto px-5 py-4">{children}</div>
+      </div>
+    </>
+  );
+}
+
+// ── page ──────────────────────────────────────────────────────────────────────
 
 export function EmployeesPage() {
   const toast = useToast();
-  const [employees, setEmployees] = useState<Employee[]>([]);
-  const [query, setQuery] = useState("");
-  const [status, setStatus] = useState<"ALL" | EmploymentStatus>("ALL");
-  const [activation, setActivation] = useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [bulkActivating, setBulkActivating] = useState(false);
-  const [actionEmployeeId, setActionEmployeeId] = useState<string | null>(null);
-  const [bulkUploadResult, setBulkUploadResult] = useState<BulkEmployeeUploadResult | null>(null);
-  const [drawerMode, setDrawerMode] = useState<"CREATE" | "EDIT" | "BULK_CREATE" | null>(null);
-  const [editingEmployee, setEditingEmployee] = useState<Employee | undefined>();
+  const [employees,     setEmployees]     = useState<Employee[]>([]);
+  const [loading,       setLoading]       = useState(true);
+  const [query,         setQuery]         = useState("");
+  const [statusFilter,  setStatusFilter]  = useState<"ALL" | EmploymentStatus>("ALL");
+  const [appFilter,     setAppFilter]     = useState<"ALL" | "ON" | "OFF">("ALL");
+  const [selectedIds,   setSelectedIds]   = useState<string[]>([]);
+  const [bulkLoading,   setBulkLoading]   = useState(false);
+  const [actionId,      setActionId]      = useState<string | null>(null);
+  const [drawerMode,    setDrawerMode]    = useState<DrawerMode>(null);
+  const [editEmployee,  setEditEmployee]  = useState<Employee | undefined>();
+  const [bulkResult,    setBulkResult]    = useState<BulkEmployeeUploadResult | null>(null);
 
   const refresh = () => {
-    employeeService
-      .getEmployees()
-      .then((nextEmployees) => {
-        setEmployees((currentEmployees) => mergeEmployeesByStableOrder(currentEmployees, nextEmployees));
-        setSelectedIds((currentIds) => currentIds.filter((id) => nextEmployees.some((employee) => employee.id === id)));
-      })
-      .catch((error) => toast.error("Unable to load employees", getApiErrorMessage(error)));
+    setLoading(true);
+    employeeService.getEmployees()
+      .then(next => setEmployees(cur => mergeStable(cur, next)))
+      .catch(err => toast.error("Failed to load", getApiErrorMessage(err)))
+      .finally(() => setLoading(false));
   };
 
-  const upsertEmployees = (nextEmployees: Employee[]) => {
-    setEmployees((currentEmployees) => upsertEmployeesByStableOrder(currentEmployees, nextEmployees));
-  };
+  useEffect(() => { refresh(); }, []);
 
-  useEffect(() => {
-    refresh();
-  }, []);
-
-  const filteredEmployees = useMemo(() => {
-    return employees.filter((employee) => {
-      const searchable = `${employee.employeeCode} ${employee.name} ${employee.email} ${employee.phone}`.toLowerCase();
-      const matchesQuery = searchable.includes(query.toLowerCase());
-      const matchesStatus = status === "ALL" || employee.employmentStatus === status;
-      const matchesActivation = activation === "ALL" || employee.appActivated === (activation === "ACTIVE");
-      return matchesQuery && matchesStatus && matchesActivation;
-    });
-  }, [activation, employees, query, status]);
+  const filtered = useMemo(() => employees.filter(e => {
+    const q = `${e.employeeCode} ${e.name} ${e.email} ${e.phone}`.toLowerCase();
+    return (
+      q.includes(query.toLowerCase()) &&
+      (statusFilter === "ALL" || e.employmentStatus === statusFilter) &&
+      (appFilter === "ALL" || (appFilter === "ON") === e.appActivated)
+    );
+  }), [employees, query, statusFilter, appFilter]);
 
   const closeDrawer = () => {
     setDrawerMode(null);
-    setEditingEmployee(undefined);
-    setBulkUploadResult(null);
+    setEditEmployee(undefined);
+    setBulkResult(null);
   };
 
+  // counts for header chips
+  const total    = employees.length;
+  const active   = employees.filter(e => e.employmentStatus === "ACTIVE").length;
+  const appOn    = employees.filter(e => e.appActivated).length;
+
   return (
-    <>
-      <PageHeader
-        eyebrow="Workforce"
-        title="Employees"
-        description="Manage employee eligibility, app activation and salary access controls."
-        actions={
-          <>
-            <Button
-              variant="secondary"
-              icon={<UploadCloud size={16} />}
-              onClick={() => {
-                setBulkUploadResult(null);
-                setDrawerMode("BULK_CREATE");
-              }}
-            >
-              Bulk Add
-            </Button>
-            <Button icon={<Plus size={16} />} onClick={() => setDrawerMode("CREATE")}>
-              Add Employee
-            </Button>
-          </>
-        }
-      />
-
-      <section className="rounded-lg border border-blue-100 bg-white p-5 shadow-sm shadow-blue-950/5">
-        <div className="grid gap-3 lg:grid-cols-[1fr_180px_180px]">
-          <Input icon={<Search size={16} />} placeholder="Search employees" value={query} onChange={(event) => setQuery(event.target.value)} />
-          <Select
-            value={status}
-            onChange={(event) => setStatus(event.target.value as "ALL" | EmploymentStatus)}
-            options={[
-              { label: "Employment: All", value: "ALL" },
-              { label: "Employment: Active", value: "ACTIVE" },
-              { label: "Employment: Inactive", value: "INACTIVE" }
-            ]}
-          />
-          <Select
-            value={activation}
-            onChange={(event) => setActivation(event.target.value as "ALL" | "ACTIVE" | "INACTIVE")}
-            options={[
-              { label: "App access: All", value: "ALL" },
-              { label: "App access: Activated", value: "ACTIVE" },
-              { label: "App access: Inactive", value: "INACTIVE" }
-            ]}
-          />
-        </div>
-
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg bg-blue-50/70 px-3 py-2 text-sm text-blue-800">
-          <div className="flex items-center gap-2 font-semibold">
-            <Filter size={16} />
-            {filteredEmployees.length} employees shown · {selectedIds.length} selected
+    <div className="space-y-4">
+      {/* Top bar */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          {/* Search */}
+          <div className="relative flex-1 max-w-[280px]">
+            <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder="Search employees…"
+              className="w-full h-9 pl-8 pr-3 text-[13px] bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition placeholder-slate-400 text-slate-800"
+            />
           </div>
-          <Button
-            variant="secondary"
-            icon={<Zap size={15} />}
-            disabled={!selectedIds.length || bulkActivating}
-            onClick={async () => {
-              const idsToActivate = [...selectedIds];
-              setBulkActivating(true);
-              try {
-                const updatedEmployees = await employeeService.bulkActivateEmployees(idsToActivate);
-                const updatedEmployeeIds = new Set(updatedEmployees.map((employee) => employee.id));
-                setEmployees((currentEmployees) =>
-                  upsertEmployeesByStableOrder(
-                    currentEmployees.map((employee) =>
-                      idsToActivate.includes(employee.id) && !updatedEmployeeIds.has(employee.id)
-                        ? { ...employee, appActivated: true }
-                        : employee
-                    ),
-                    updatedEmployees
-                  )
-                );
-                setSelectedIds([]);
-                toast.success("Employees activated", `${idsToActivate.length} employee${idsToActivate.length === 1 ? "" : "s"} updated.`);
-              } catch (error) {
-                toast.error("Bulk activation failed", getApiErrorMessage(error));
-              } finally {
-                setBulkActivating(false);
-              }
-            }}
+          {/* Filters */}
+          <select
+            value={statusFilter}
+            onChange={e => setStatusFilter(e.target.value as "ALL" | EmploymentStatus)}
+            className="h-9 px-3 text-[12px] bg-white border border-slate-200 rounded-lg text-slate-600 focus:outline-none focus:border-blue-400 transition cursor-pointer"
           >
-            {bulkActivating ? "Activating..." : "Activate selected"}
-          </Button>
+            <option value="ALL">All employment</option>
+            <option value="ACTIVE">Active only</option>
+            <option value="INACTIVE">Inactive only</option>
+          </select>
+          <select
+            value={appFilter}
+            onChange={e => setAppFilter(e.target.value as "ALL" | "ON" | "OFF")}
+            className="h-9 px-3 text-[12px] bg-white border border-slate-200 rounded-lg text-slate-600 focus:outline-none focus:border-blue-400 transition cursor-pointer"
+          >
+            <option value="ALL">All app access</option>
+            <option value="ON">App activated</option>
+            <option value="OFF">Not activated</option>
+          </select>
         </div>
 
-        <div className="mt-4">
-          <EmployeeTable
-            employees={filteredEmployees}
-            selectedIds={selectedIds}
-            onSelect={(id, selected) => setSelectedIds((current) => (selected ? [...current, id] : current.filter((value) => value !== id)))}
-            onSelectAll={(selected) => setSelectedIds(selected ? filteredEmployees.map((employee) => employee.id) : [])}
-            onEdit={(employee) => {
-              setEditingEmployee(employee);
-              setDrawerMode("EDIT");
-            }}
-            onToggleAccess={async (employee) => {
-              setActionEmployeeId(employee.id);
+        {/* Actions */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <button
+            onClick={() => { setBulkResult(null); setDrawerMode("BULK"); }}
+            className="h-9 px-3.5 flex items-center gap-2 text-[12px] font-[500] text-slate-600 bg-white border border-slate-200 rounded-lg hover:border-slate-300 hover:bg-slate-50 transition-colors"
+          >
+            <UploadCloud size={14} />Bulk add
+          </button>
+          <button
+            onClick={() => { setEditEmployee(undefined); setDrawerMode("CREATE"); }}
+            className="h-9 px-3.5 flex items-center gap-2 text-[12px] font-[600] text-white bg-[#0f1729] rounded-lg hover:bg-slate-800 transition-colors"
+          >
+            <Plus size={14} />Add employee
+          </button>
+        </div>
+      </div>
+
+      {/* Summary + bulk action bar */}
+      <div className="flex items-center justify-between gap-3 px-4 py-2.5 bg-white border border-slate-100 rounded-xl text-[12px]">
+        <div className="flex items-center gap-4">
+          <span className="text-slate-500">{filtered.length} shown</span>
+          <span className="text-slate-300">·</span>
+          <span className="text-slate-600"><span className="font-[600] text-slate-800">{active}</span> active</span>
+          <span className="text-slate-600"><span className="font-[600] text-slate-800">{appOn}</span> app activated</span>
+          <span className="text-slate-600">of <span className="font-[600] text-slate-800">{total}</span> total</span>
+        </div>
+        {selectedIds.length > 0 && (
+          <button
+            disabled={bulkLoading}
+            onClick={async () => {
+              const ids = [...selectedIds];
+              setBulkLoading(true);
               try {
-                const updatedEmployee = await employeeService.activateEmployee(employee.id, !employee.appActivated);
-                upsertEmployees([updatedEmployee]);
-                toast.success("App access updated", `${employee.name} is now ${updatedEmployee.appActivated ? "activated" : "inactive"}.`);
-              } catch (error) {
-                toast.error("Unable to update app access", getApiErrorMessage(error));
+                const updated = await employeeService.bulkActivateEmployees(ids);
+                const updMap = new Map(updated.map(e => [e.id, e]));
+                setEmployees(cur => upsertStable(
+                  cur.map(e => ids.includes(e.id) && !updMap.has(e.id) ? { ...e, appActivated: true } : e),
+                  updated
+                ));
+                setSelectedIds([]);
+                toast.success("Activated", `${ids.length} employee${ids.length > 1 ? "s" : ""} activated`);
+              } catch (err) {
+                toast.error("Bulk activation failed", getApiErrorMessage(err));
               } finally {
-                setActionEmployeeId(null);
+                setBulkLoading(false);
               }
             }}
-            actionEmployeeId={actionEmployeeId}
-          />
-        </div>
-      </section>
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-600 text-white text-[12px] font-[500] hover:bg-blue-700 disabled:opacity-50 transition-colors"
+          >
+            <Zap size={12} />
+            {bulkLoading ? "Activating…" : `Activate ${selectedIds.length} selected`}
+          </button>
+        )}
+      </div>
 
-      <Drawer
+      {/* Table card */}
+      <div className="bg-white border border-slate-100 rounded-xl overflow-hidden">
+        {loading ? (
+          <div className="py-16 text-center">
+            <p className="text-[13px] text-slate-400">Loading employees…</p>
+          </div>
+        ) : (
+          <div className="px-5 py-4">
+            <EmployeeTable
+              employees={filtered}
+              selectedIds={selectedIds}
+              onSelect={(id, sel) => setSelectedIds(cur => sel ? [...cur, id] : cur.filter(x => x !== id))}
+              onSelectAll={sel => setSelectedIds(sel ? filtered.map(e => e.id) : [])}
+              onEdit={emp => { setEditEmployee(emp); setDrawerMode("EDIT"); }}
+              onToggleAccess={async emp => {
+                setActionId(emp.id);
+                try {
+                  const updated = await employeeService.activateEmployee(emp.id, !emp.appActivated);
+                  setEmployees(cur => upsertStable(cur, [updated]));
+                  toast.success("App access updated", `${emp.name} is now ${updated.appActivated ? "activated" : "inactive"}`);
+                } catch (err) {
+                  toast.error("Update failed", getApiErrorMessage(err));
+                } finally {
+                  setActionId(null);
+                }
+              }}
+              actionEmployeeId={actionId}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Add / Edit drawer */}
+      <DrawerPanel
         open={drawerMode === "CREATE" || drawerMode === "EDIT"}
-        title={drawerMode === "EDIT" ? "Edit Employee" : "Add Employee"}
-        description="Employee records are served from the dummy service and can be swapped to API calls later."
+        title={drawerMode === "EDIT" ? "Edit employee" : "Add employee"}
+        subtitle={drawerMode === "EDIT" ? editEmployee?.name : "New team member"}
         onClose={closeDrawer}
       >
         <EmployeeForm
-          employee={editingEmployee}
+          employee={editEmployee}
           onSubmit={async (payload: EmployeePayload) => {
             try {
-              let updatedEmployee: Employee;
-              if (editingEmployee) {
-                const { appActivated, ...employeeDetails } = payload;
-                updatedEmployee = await employeeService.updateEmployee(editingEmployee.id, employeeDetails);
-
-                if (payload.employmentStatus === "ACTIVE" && appActivated !== updatedEmployee.appActivated) {
-                  updatedEmployee = await employeeService.activateEmployee(editingEmployee.id, appActivated);
+              let emp: Employee;
+              if (editEmployee) {
+                const { appActivated, ...rest } = payload;
+                emp = await employeeService.updateEmployee(editEmployee.id, rest);
+                if (payload.employmentStatus === "ACTIVE" && appActivated !== emp.appActivated) {
+                  emp = await employeeService.activateEmployee(editEmployee.id, appActivated);
                 }
               } else {
-                updatedEmployee = await employeeService.createEmployee(payload);
-
-                if (payload.employmentStatus === "ACTIVE" && updatedEmployee.appActivated !== payload.appActivated) {
-                  updatedEmployee = await employeeService.activateEmployee(updatedEmployee.id, payload.appActivated);
+                emp = await employeeService.createEmployee(payload);
+                if (payload.employmentStatus === "ACTIVE" && emp.appActivated !== payload.appActivated) {
+                  emp = await employeeService.activateEmployee(emp.id, payload.appActivated);
                 }
               }
-              upsertEmployees([updatedEmployee]);
-              toast.success(editingEmployee ? "Employee updated" : "Employee created", updatedEmployee.name);
+              setEmployees(cur => upsertStable(cur, [emp]));
+              toast.success(editEmployee ? "Employee updated" : "Employee created", emp.name);
               closeDrawer();
-            } catch (error) {
-              toast.error(editingEmployee ? "Unable to update employee" : "Unable to create employee", getApiErrorMessage(error));
-              throw error;
+            } catch (err) {
+              toast.error(editEmployee ? "Update failed" : "Create failed", getApiErrorMessage(err));
+              throw err;
             }
           }}
         />
-      </Drawer>
+      </DrawerPanel>
 
-      <Drawer
-        open={drawerMode === "BULK_CREATE"}
-        title="Bulk Add Employees"
-        description="Paste employee rows and import them through the employee service."
+      {/* Bulk drawer */}
+      <DrawerPanel
+        open={drawerMode === "BULK"}
+        title="Bulk add employees"
+        subtitle="Upload a CSV or paste rows"
         onClose={closeDrawer}
       >
         <BulkEmployeeForm
           onSubmit={async (payloads: EmployeePayload[]) => {
             try {
               const result = await employeeService.bulkCreateEmployees(payloads);
-              setBulkUploadResult(result);
-              upsertEmployees(result.created);
+              setBulkResult(result);
+              setEmployees(cur => upsertStable(cur, result.created));
               if (result.failureCount > 0) {
-                toast.error("Some employees were skipped", `${result.successCount} created, ${result.failureCount} failed.`);
+                toast.error("Some rows skipped", `${result.successCount} created, ${result.failureCount} failed`);
               } else {
-                toast.success("Employees imported", `${result.successCount} employee${result.successCount === 1 ? "" : "s"} created.`);
+                toast.success("Import complete", `${result.successCount} employee${result.successCount !== 1 ? "s" : ""} added`);
                 closeDrawer();
               }
               return result;
-            } catch (error) {
-              toast.error("Unable to import employees", getApiErrorMessage(error));
-              throw error;
+            } catch (err) {
+              toast.error("Import failed", getApiErrorMessage(err));
+              throw err;
             }
           }}
         />
-        {bulkUploadResult?.errors.length ? (
-          <div className="mt-4 rounded-lg border border-rose-100 bg-rose-50/70 p-4">
-            <p className="text-sm font-semibold text-rose-700">
-              {bulkUploadResult.failureCount} row{bulkUploadResult.failureCount === 1 ? "" : "s"} skipped
-            </p>
-            <div className="mt-3 max-h-56 overflow-y-auto scrollbar-soft">
-              <table className="min-w-full text-left text-sm">
-                <thead className="text-xs font-medium uppercase tracking-[0.02em] text-rose-700/70">
-                  <tr>
-                    <th className="py-2 pr-3">Row</th>
-                    <th className="py-2 pr-3">Employee Code</th>
-                    <th className="py-2 pr-3">Email</th>
-                    <th className="py-2">Error</th>
+        {(bulkResult?.errors.length ?? 0) > 0 && (
+          <div className="mt-4 bg-red-50 border border-red-100 rounded-lg overflow-hidden">
+            <div className="px-4 py-3 border-b border-red-100">
+              <p className="text-[12px] font-[600] text-red-700">{bulkResult!.failureCount} rows skipped</p>
+            </div>
+            <div className="overflow-x-auto max-h-52 overflow-y-auto">
+              <table className="w-full text-[11px]">
+                <thead>
+                  <tr className="border-b border-red-100">
+                    {["Row", "Code", "Email", "Error"].map(h => (
+                      <th key={h} className="px-3 py-2 text-left font-[500] text-red-600">{h}</th>
+                    ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-rose-100">
-                  {bulkUploadResult.errors.map((error) => (
-                    <tr key={`${error.row}-${error.employeeCode}-${error.email}`}>
-                      <td className="py-2 pr-3 text-rose-700">{error.row}</td>
-                      <td className="py-2 pr-3 text-slate-700">{error.employeeCode || "-"}</td>
-                      <td className="py-2 pr-3 text-slate-700">{error.email || "-"}</td>
-                      <td className="py-2 text-slate-700">{error.message}</td>
+                <tbody className="divide-y divide-red-50">
+                  {bulkResult!.errors.map(e => (
+                    <tr key={`${e.row}-${e.email}`}>
+                      <td className="px-3 py-2 text-red-500">{e.row}</td>
+                      <td className="px-3 py-2 text-slate-600">{e.employeeCode || "—"}</td>
+                      <td className="px-3 py-2 text-slate-600">{e.email || "—"}</td>
+                      <td className="px-3 py-2 text-slate-600">{e.message}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
           </div>
-        ) : null}
-      </Drawer>
-    </>
+        )}
+      </DrawerPanel>
+    </div>
   );
 }
