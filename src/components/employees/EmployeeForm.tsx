@@ -92,7 +92,7 @@ export function EmployeeForm({ employee, onSubmit }: { employee?: Employee; onSu
       <button
         type="submit"
         disabled={saving}
-        className="w-full h-10 rounded-lg bg-[#0f1729] hover:bg-slate-800 text-white text-[13px] font-[600] transition disabled:opacity-50"
+        className="w-full h-10 rounded-lg bg-[#c4522a] hover:bg-[#a8411f] text-white text-[13px] font-[600] transition disabled:opacity-50"
       >
         {saving ? "Saving…" : employee ? "Save changes" : "Add employee"}
       </button>

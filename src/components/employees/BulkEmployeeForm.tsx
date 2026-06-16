@@ -149,7 +149,7 @@ export function BulkEmployeeForm({ onSubmit }: { onSubmit: (p: EmployeePayload[]
       <button
         type="submit"
         disabled={saving || !valid.length || hasErr}
-        className="w-full h-10 rounded-lg bg-[#0f1729] hover:bg-slate-800 text-white text-[13px] font-[600] transition disabled:opacity-40"
+        className="w-full h-10 rounded-lg bg-[#c4522a] hover:bg-[#a8411f] text-white text-[13px] font-[600] transition disabled:opacity-40"
       >
         {saving ? "Importing…" : `Import ${valid.length} employee${valid.length !== 1 ? "s" : ""}`}
       </button>

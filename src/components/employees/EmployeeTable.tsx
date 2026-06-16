@@ -58,8 +58,8 @@ export function EmployeeTable({
   if (!employees.length) {
     return (
       <div className="py-14 text-center">
-        <p className="text-[13px] font-[500] text-slate-500">No employees found</p>
-        <p className="text-[12px] text-slate-400 mt-1">Try adjusting your filters or add employees</p>
+        <p className="text-[13px] font-[500] text-slate-500">No employees match your search</p>
+        <p className="text-[12px] text-slate-400 mt-1">Try adjusting your filters</p>
       </div>
     );
   }

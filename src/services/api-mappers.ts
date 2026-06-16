@@ -69,9 +69,9 @@ const normalizeSalaryRequestStatus = (value: unknown): SalaryRequestStatus => {
 };
 
 const normalizeRepaymentStatus = (value: unknown): RepaymentStatus => {
-  const normalized = String(value ?? "PENDING").toUpperCase();
-  const allowed: RepaymentStatus[] = ["PENDING", "PAID", "OVERDUE"];
-  return allowed.includes(normalized as RepaymentStatus) ? (normalized as RepaymentStatus) : "PENDING";
+  const normalized = String(value ?? "SCHEDULED").toUpperCase();
+  const allowed: RepaymentStatus[] = ["SCHEDULED", "PENDING", "PAID", "OVERDUE"];
+  return allowed.includes(normalized as RepaymentStatus) ? (normalized as RepaymentStatus) : "SCHEDULED";
 };
 
 const normalizeUserRole = (value: unknown): UserRole => {
@@ -98,6 +98,7 @@ export const mapAuthUser = (value: unknown): AuthUser => {
 
 export const mapEmployee = (value: unknown): Employee => {
   const record = asRecord(value);
+  const employer = asRecord(record.employer ?? record.company);
 
   return {
     id: text(record.id ?? record._id, ""),
@@ -109,7 +110,8 @@ export const mapEmployee = (value: unknown): Employee => {
     employmentStatus: normalizeEmploymentStatus(record.employmentStatus ?? record.employment_status ?? record.status ?? record.isActive),
     appActivated: boolValue(record.appActivated ?? record.isAppActivated ?? record.activationStatus),
     department: text(record.department, "General"),
-    joinedAt: text(record.joinedAt ?? record.createdAt, new Date().toISOString())
+    joinedAt: text(record.joinedAt ?? record.createdAt, new Date().toISOString()),
+    employerId: text(record.employerId ?? record.employer_id ?? employer.id ?? record.companyId) || undefined,
   };
 };
 
@@ -267,14 +269,26 @@ export const mapSettlement = (value: unknown): EmployerSettlement => {
 
 export const mapSettlementSummary = (value: unknown): SettlementSummary => {
   const r = asRecord(value);
+  const pendingSettlements = numberValue(r.pendingSettlements ?? r.pendingCount ?? r.pending);
+  const paidSettlements    = numberValue(r.paidSettlements    ?? r.paidCount    ?? r.paid);
   return {
-    outstandingAmount:   amountValue(r.outstandingAmount ?? r.totalOutstandingAmount),
-    totalAmount:         amountValue(r.totalAmount),
-    pendingCount:        numberValue(r.pendingCount ?? r.pending),
-    overdueCount:        numberValue(r.overdueCount ?? r.overdue),
-    paidCount:           numberValue(r.paidCount ?? r.paid),
-    partiallyPaidCount:  numberValue(r.partiallyPaidCount ?? r.partiallyPaid),
-    totalSettlements:    numberValue(r.totalSettlements ?? r.total),
+    outstandingAmount:             amountValue(r.outstandingAmount ?? r.totalOutstandingAmount),
+    overdueAmount:                 amountValue(r.overdueAmount),
+    totalAmount:                   amountValue(r.totalAmount),
+    pendingCount:                  pendingSettlements,
+    pendingSettlements,
+    overdueCount:                  numberValue(r.overdueCount ?? r.overdue),
+    paidCount:                     paidSettlements,
+    paidSettlements,
+    partiallyPaidCount:            numberValue(r.partiallyPaidCount ?? r.partiallyPaid),
+    totalSettlements:              numberValue(r.totalSettlements ?? r.total),
+    nextDueDate:                   typeof r.nextDueDate === "string" ? r.nextDueDate : null,
+    gracePeriodDays:               numberValue(r.gracePeriodDays),
+    daysRemaining:                 numberValue(r.daysRemaining),
+    lateFeePercentage:             numberValue(r.lateFeePercentage),
+    estimatedLateFeeAmount:        amountValue(r.estimatedLateFeeAmount),
+    amountPayableAfterGracePeriod: amountValue(r.amountPayableAfterGracePeriod),
+    riskStatus:                    typeof r.riskStatus === "string" ? r.riskStatus : "GOOD",
   };
 };
 

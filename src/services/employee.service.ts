@@ -4,7 +4,7 @@ import { httpClient } from "./http-client";
 
 export const employeeService = {
   async getEmployees(): Promise<Employee[]> {
-    const { data } = await httpClient.get("/employees");
+    const { data } = await httpClient.get("/employees/employer");
     return unwrapList(data, ["employees"]).map(mapEmployee);
   },
 

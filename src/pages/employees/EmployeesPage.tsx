@@ -156,7 +156,7 @@ export function EmployeesPage() {
           </button>
           <button
             onClick={() => { setEditEmployee(undefined); setDrawerMode("CREATE"); }}
-            className="h-9 px-3.5 flex items-center gap-2 text-[12px] font-[600] text-white bg-[#0f1729] rounded-lg hover:bg-slate-800 transition-colors"
+            className="h-9 px-3.5 flex items-center gap-2 text-[12px] font-[600] text-white bg-[#c4522a] rounded-lg hover:bg-[#a8411f] transition-colors"
           >
             <Plus size={14} />Add employee
           </button>
@@ -206,6 +206,19 @@ export function EmployeesPage() {
         {loading ? (
           <div className="py-16 text-center">
             <p className="text-[13px] text-slate-400">Loading employees…</p>
+          </div>
+        ) : employees.length === 0 ? (
+          <div className="py-16 text-center">
+            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center mx-auto mb-3">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-slate-400">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" strokeLinecap="round" strokeLinejoin="round" />
+                <circle cx="9" cy="7" r="4" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <p className="text-[13px] font-[500] text-slate-700">No employees added yet</p>
+            <p className="text-[12px] text-slate-400 mt-1">Employees will appear here once your workforce is onboarded.</p>
           </div>
         ) : (
           <div className="px-5 py-4">

@@ -9,7 +9,7 @@ export type SalaryRequestStatus =
   | "DISBURSED"
   | "REPAID";
 
-export type RepaymentStatus = "PENDING" | "PAID" | "OVERDUE";
+export type RepaymentStatus = "SCHEDULED" | "PENDING" | "PAID" | "OVERDUE";
 
 export type UserRole = "ADMIN" | "EMPLOYER" | "EMPLOYEE";
 
@@ -44,6 +44,7 @@ export interface Employee {
   appActivated: boolean;
   department: string;
   joinedAt: string;
+  employerId?: string;
 }
 
 export type EmployeePayload = Omit<Employee, "id" | "joinedAt"> & {
@@ -169,10 +170,20 @@ export interface EmployerSettlement {
 
 export interface SettlementSummary {
   outstandingAmount: number;
+  overdueAmount: number;
   totalAmount: number;
   pendingCount: number;
+  pendingSettlements: number;
   overdueCount: number;
   paidCount: number;
+  paidSettlements: number;
   partiallyPaidCount: number;
   totalSettlements: number;
+  nextDueDate: string | null;
+  gracePeriodDays: number;
+  daysRemaining: number;
+  lateFeePercentage: number;
+  estimatedLateFeeAmount: number;
+  amountPayableAfterGracePeriod: number;
+  riskStatus: string;
 }

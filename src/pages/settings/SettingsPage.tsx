@@ -143,7 +143,7 @@ export function SettingsPage() {
             <button
               type="submit"
               disabled={saving}
-              className="h-9 px-4 flex items-center gap-2 rounded-lg bg-[#0f1729] hover:bg-slate-800 text-white text-[12px] font-[600] disabled:opacity-50 transition-colors"
+              className="h-9 px-4 flex items-center gap-2 rounded-lg bg-[#c4522a] hover:bg-[#a8411f] text-white text-[12px] font-[600] disabled:opacity-50 transition-colors"
             >
               <Save size={13} />
               {saving ? "Saving…" : "Save changes"}

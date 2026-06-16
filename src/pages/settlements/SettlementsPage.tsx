@@ -1,11 +1,14 @@
 import {
   AlertTriangle,
+  CalendarClock,
   CheckCircle2,
   ChevronRight,
   CircleDollarSign,
   Clock3,
   CreditCard,
+  Info,
   Landmark,
+  ShieldCheck,
   X,
 } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -13,8 +16,6 @@ import { useFetch } from "../../hooks/useFetch";
 import { settlementService } from "../../services/settlement.service";
 import type { EmployerSettlement, SettlementStatus } from "../../types";
 import { formatCurrency, formatDate } from "../../utils/formatters";
-import { useToast } from "../../hooks/useToast";
-import { getApiErrorMessage } from "../../services/api-errors";
 
 // ── status config ─────────────────────────────────────────────────────────────
 
@@ -66,7 +67,7 @@ function SummaryCard({ label, value, icon, iconBg, iconColor, highlight, sub }: 
   iconBg: string; iconColor: string; highlight?: boolean; sub?: string;
 }) {
   return (
-    <div className={`rounded-xl p-4 flex flex-col gap-3 border ${highlight ? "bg-[#0f1729] border-slate-700" : "bg-white border-slate-100"}`}>
+    <div className={`rounded-xl p-4 flex flex-col gap-3 border ${highlight ? "bg-[#c4522a] border-[#a8411f]" : "bg-white border-slate-100"}`}>
       <div className="flex items-center justify-between">
         <span className={`text-[12px] font-[500] ${highlight ? "text-white/50" : "text-slate-500"}`}>{label}</span>
         <div className={`w-7 h-7 rounded-lg ${iconBg} flex items-center justify-center ${iconColor}`}>{icon}</div>
@@ -134,17 +135,15 @@ function InfoRow({ label, value, accent }: { label: string; value: React.ReactNo
 // ── page ──────────────────────────────────────────────────────────────────────
 
 export function SettlementsPage() {
-  const toast = useToast();
   const [filter,   setFilter]   = useState<"ALL" | SettlementStatus>("ALL");
   const [selected, setSelected] = useState<EmployerSettlement | null>(null);
-  const [marking,  setMarking]  = useState(false);
 
-  const { data: summaryRaw, refresh: refreshSummary } =
+  const { data: summaryRaw } =
     useFetch(() => settlementService.getSettlementSummary(), []);
-  const { data: settlementsRaw, loading, error, refresh: refreshList } =
+  const { data: settlementsRaw, loading, error } =
     useFetch(() => settlementService.getSettlements(), []);
 
-  const summary    = summaryRaw    ?? null;
+  const summary     = summaryRaw    ?? null;
   const settlements = settlementsRaw ?? [];
 
   const counts = useMemo(() => {
@@ -158,24 +157,9 @@ export function SettlementsPage() {
     [settlements, filter]
   );
 
-  const refresh = () => { refreshList(); refreshSummary(); };
-
-  const handleMarkPaid = async (settlement: EmployerSettlement) => {
-    setMarking(true);
-    try {
-      await settlementService.markPaid(settlement.id);
-      refresh();
-      toast.success("Settlement marked as paid", formatPayrollMonth(settlement.payrollMonth));
-      setSelected(null);
-    } catch (err) {
-      toast.error("Failed to mark as paid", getApiErrorMessage(err));
-    } finally {
-      setMarking(false);
-    }
-  };
-
-  const isOverdue = (s: EmployerSettlement) => s.status === "OVERDUE";
-  const canPay    = (s: EmployerSettlement) => s.status === "PENDING" || s.status === "PARTIALLY_PAID" || s.status === "OVERDUE";
+  const isOverdue      = (s: EmployerSettlement) => s.status === "OVERDUE";
+  const gracePeriodOver = summary ? summary.daysRemaining <= 0 : false;
+  const riskGood        = summary?.riskStatus === "GOOD";
 
   if (error) {
     return (
@@ -199,33 +183,73 @@ export function SettlementsPage() {
           sub="total owed to MobPae"
         />
         <SummaryCard
-          label="Pending"
-          value={summary?.pendingCount ?? 0}
+          label="Pending Settlements"
+          value={summary?.pendingSettlements ?? 0}
           icon={<Clock3 size={14} />}
           iconBg="bg-amber-50" iconColor="text-amber-600"
-          sub="awaiting payment"
+          sub={summary?.nextDueDate ? `Due ${formatDate(summary.nextDueDate)}` : "awaiting payment"}
         />
         <SummaryCard
-          label="Overdue"
-          value={summary?.overdueCount ?? 0}
-          icon={<AlertTriangle size={14} />}
-          iconBg="bg-red-50" iconColor="text-red-600"
-          sub="past due date"
+          label="Grace Period"
+          value={summary ? (gracePeriodOver ? "Expired" : `${summary.daysRemaining}d left`) : "—"}
+          icon={<CalendarClock size={14} />}
+          iconBg={gracePeriodOver ? "bg-red-50" : "bg-sky-50"}
+          iconColor={gracePeriodOver ? "text-red-600" : "text-sky-600"}
+          sub={gracePeriodOver
+            ? `Late fee: ${formatCurrency(summary?.estimatedLateFeeAmount ?? 0)}`
+            : `${summary?.gracePeriodDays ?? 0} day grace period`}
         />
         <SummaryCard
-          label="Paid"
-          value={summary?.paidCount ?? 0}
+          label="Paid Settlements"
+          value={summary?.paidSettlements ?? 0}
           icon={<CheckCircle2 size={14} />}
           iconBg="bg-emerald-50" iconColor="text-emerald-600"
           sub="settled with MobPae"
         />
       </div>
 
+      {/* Grace period / late fee warning */}
+      {summary && summary.outstandingAmount > 0 && (
+        gracePeriodOver ? (
+          <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 flex items-start gap-3">
+            <AlertTriangle size={15} className="text-red-500 mt-0.5 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-[12px] font-[600] text-red-700">Grace period has expired</p>
+              <p className="text-[12px] text-red-600 mt-0.5">
+                A late fee of {summary.lateFeePercentage}% applies.
+                Amount payable is now{" "}
+                <strong>{formatCurrency(summary.amountPayableAfterGracePeriod)}</strong>
+                {" "}(includes {formatCurrency(summary.estimatedLateFeeAmount)} late fee).
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-sky-50/70 border border-sky-100 rounded-xl px-4 py-3 flex items-start gap-3">
+            <CalendarClock size={15} className="text-sky-500 mt-0.5 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-[12px] font-[600] text-sky-800">
+                Grace period active — {summary.daysRemaining} day{summary.daysRemaining !== 1 ? "s" : ""} remaining
+              </p>
+              <p className="text-[12px] text-sky-600 mt-0.5">
+                Pay {formatCurrency(summary.outstandingAmount)} before the grace period ends to avoid a{" "}
+                {summary.lateFeePercentage}% late fee ({formatCurrency(summary.estimatedLateFeeAmount)}).
+                Amount after grace period: <strong>{formatCurrency(summary.amountPayableAfterGracePeriod)}</strong>.
+              </p>
+            </div>
+            {riskGood && (
+              <span className="inline-flex items-center gap-1 text-[11px] font-[600] text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full flex-shrink-0">
+                <ShieldCheck size={11} /> Good standing
+              </span>
+            )}
+          </div>
+        )
+      )}
+
       {/* Business flow info */}
       <div className="bg-blue-50/60 border border-blue-100 rounded-xl px-4 py-3 flex items-start gap-3">
         <Landmark size={15} className="text-blue-500 mt-0.5 flex-shrink-0" />
         <p className="text-[12px] text-blue-700 leading-relaxed">
-          Settlements represent amounts your company owes to MobPae — the total of salary advances disbursed to your employees, recovered through payroll deductions and now due for remittance.
+          Settlements represent amounts your company owes to MobPae. Remit payment to MobPae directly — your MobPae account manager will confirm receipt and mark it as paid.
         </p>
       </div>
 
@@ -237,7 +261,7 @@ export function SettlementsPage() {
             onClick={() => setFilter(f.value)}
             className={`h-7 px-3 rounded-full text-[12px] font-[500] transition-colors flex items-center gap-1.5 ${
               filter === f.value
-                ? "bg-slate-900 text-white"
+                ? "bg-[#c4522a] text-white"
                 : "bg-white border border-slate-200 text-slate-600 hover:border-slate-300"
             }`}
           >
@@ -418,20 +442,32 @@ export function SettlementsPage() {
               )}
             </div>
 
-            {/* Footer action */}
-            {canPay(selected) && (
+            {/* Footer — Pay Now info panel */}
+            {selected.status !== "PAID" && (
               <div className="px-5 py-4 border-t border-slate-100">
-                <button
-                  onClick={() => handleMarkPaid(selected)}
-                  disabled={marking}
-                  className="w-full h-10 flex items-center justify-center gap-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[13px] font-[600] disabled:opacity-50 transition-colors"
-                >
-                  <CheckCircle2 size={15} />
-                  {marking ? "Processing…" : "Mark as Paid"}
-                </button>
-                <p className="text-[11px] text-slate-400 text-center mt-2">
-                  Confirm that you have remitted {formatCurrency(selected.outstandingAmount || selected.totalAmount)} to MobPae
-                </p>
+                <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3.5 flex items-start gap-3">
+                  <Info size={15} className="text-blue-500 mt-0.5 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[12px] font-[600] text-blue-800 mb-1">Pay Now</p>
+                    <p className="text-[12px] text-blue-700 leading-relaxed">
+                      Remit{" "}
+                      <strong>
+                        {formatCurrency(
+                          gracePeriodOver && summary
+                            ? summary.amountPayableAfterGracePeriod
+                            : (selected.outstandingAmount || selected.totalAmount)
+                        )}
+                      </strong>{" "}
+                      to MobPae via bank transfer or your agreed payment method.
+                      Once received, your MobPae account manager will mark this settlement as paid.
+                    </p>
+                    {gracePeriodOver && summary && (
+                      <p className="text-[11px] text-red-600 mt-1.5 font-[500]">
+                        Includes {summary.lateFeePercentage}% late fee ({formatCurrency(summary.estimatedLateFeeAmount)})
+                      </p>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
           </>

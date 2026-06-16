@@ -14,3 +14,27 @@ httpClient.interceptors.request.use((config) => {
 
   return config;
 });
+
+// Guard against multiple parallel 401s each firing a logout.
+let sessionExpired = false;
+
+httpClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const requestUrl: string = error.config?.url ?? "";
+    const is401 = error.response?.status === 401;
+    const isAuthEndpoint = requestUrl.includes("/auth/login");
+
+    if (is401 && !isAuthEndpoint && !sessionExpired) {
+      sessionExpired = true;
+      localStorage.removeItem("mobpae_employer_token");
+      localStorage.removeItem("mobpae_employer_user");
+      // Notify the React auth context without a hard page reload.
+      window.dispatchEvent(new CustomEvent("mobpae:session:expired"));
+      // Reset flag after a short delay so a fresh login starts clean.
+      setTimeout(() => { sessionExpired = false; }, 3000);
+    }
+
+    return Promise.reject(error);
+  }
+);

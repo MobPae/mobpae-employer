@@ -16,5 +16,23 @@ export const payrollService = {
   async updatePayrollSettings(payload: PayrollSettingsPayload): Promise<PayrollSummary> {
     await httpClient.put("/payroll/employer/settings", payload);
     return this.getPayrollSummary();
-  }
+  },
+
+  async processPayrollRecovery(): Promise<{
+    processedCount: number;
+    totalAmount: number;
+    settlementId: string;
+    payrollMonth: string;
+    dueDate: string;
+  }> {
+    const { data } = await httpClient.post("/payroll/employer/process");
+    const d = (data as Record<string, unknown>) ?? {};
+    return {
+      processedCount: Number(d.processedRepayments ?? d.processedCount ?? d.count ?? 0),
+      totalAmount:    Number(d.settlementAmount ?? d.totalAmount ?? d.amount ?? 0),
+      settlementId:   String(d.settlementId ?? ""),
+      payrollMonth:   String(d.payrollMonth ?? ""),
+      dueDate:        String(d.dueDate ?? ""),
+    };
+  },
 };

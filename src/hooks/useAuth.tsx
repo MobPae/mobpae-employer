@@ -23,6 +23,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .finally(() => setLoading(false));
   }, []);
 
+  // When the http-client detects a 401 (expired session), force the UI back to login
+  // without a hard page reload.
+  useEffect(() => {
+    const handleExpired = () => {
+      setUser(null);
+      setLoading(false);
+    };
+    window.addEventListener("mobpae:session:expired", handleExpired);
+    return () => window.removeEventListener("mobpae:session:expired", handleExpired);
+  }, []);
+
   const value = useMemo<AuthContextValue>(
     () => ({
       user,
