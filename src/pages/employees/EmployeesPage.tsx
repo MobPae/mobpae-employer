@@ -1,239 +1,341 @@
-import { Plus, Upload, Search } from "lucide-react";
+import { Plus, Search, UploadCloud, X, Zap } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { BulkEmployeeForm } from "../../components/employees/BulkEmployeeForm";
+import { EmployeeForm } from "../../components/employees/EmployeeForm";
+import { EmployeeTable } from "../../components/employees/EmployeeTable";
+import { useToast } from "../../hooks/useToast";
+import { getApiErrorMessage } from "../../services/api-errors";
+import { employeeService } from "../../services/employee.service";
+import type { BulkEmployeeUploadResult, Employee, EmployeePayload, EmploymentStatus } from "../../types";
 
-export default function EmployeesPage() {
+// ── helpers ───────────────────────────────────────────────────────────────────
+
+function mergeStable(cur: Employee[], next: Employee[]): Employee[] {
+  const nextMap = new Map(next.map(e => [e.id, e]));
+  const curSet  = new Set(cur.map(e => e.id));
+  return [
+    ...cur.flatMap(e => { const n = nextMap.get(e.id); return n ? [n] : []; }),
+    ...next.filter(e => !curSet.has(e.id)),
+  ];
+}
+function upsertStable(cur: Employee[], next: Employee[]): Employee[] {
+  const nextMap = new Map(next.map(e => [e.id, e]));
+  const curSet  = new Set(cur.map(e => e.id));
+  return [
+    ...cur.map(e => nextMap.get(e.id) ?? e),
+    ...next.filter(e => !curSet.has(e.id)),
+  ];
+}
+
+// ── drawer ────────────────────────────────────────────────────────────────────
+
+type DrawerMode = "CREATE" | "EDIT" | "BULK" | null;
+
+function DrawerPanel({
+  open, title, subtitle, onClose, children,
+}: { open: boolean; title: string; subtitle?: string; onClose: () => void; children: React.ReactNode }) {
   return (
-    <div className="space-y-5">
-      {/* Overview */}
-      <div className="flex flex-wrap gap-3">
-        <StatChip label="Total Employees" value="124" color="blue" />
-
-        <StatChip label="Active" value="118" color="green" />
-
-        <StatChip label="Inactive" value="6" color="red" />
-
-        <StatChip label="Outstanding" value="₹42K" color="indigo" />
-      </div>
-
-      {/* Toolbar */}
-      <div className="bg-white border border-slate-200 rounded-3xl p-3">
-        <div className="flex items-center justify-between gap-4">
-          <div className="relative w-full max-w-sm">
-            <Search
-              size={16}
-              className="absolute left-3 top-3 text-slate-400"
-            />
-
-            <input
-              type="text"
-              placeholder="Search employee..."
-              className="
-                w-full
-                pl-10
-                pr-4
-                py-2
-                text-sm
-                border
-                border-slate-200
-                rounded-xl
-                focus:outline-none
-                focus:ring-2
-                focus:ring-blue-100
-              "
-            />
+    <>
+      {open && (
+        <div className="fixed inset-0 z-30 bg-black/20 backdrop-blur-[1px]" onClick={onClose} />
+      )}
+      <div
+        className={`fixed inset-y-0 right-0 z-40 w-[440px] bg-white border-l border-slate-200 shadow-xl flex flex-col transition-transform duration-200 ${
+          open ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
+        {/* Header */}
+        <div className="flex items-start justify-between px-5 pt-5 pb-4 border-b border-slate-100">
+          <div>
+            <p className="text-[14px] font-[600] text-slate-900">{title}</p>
+            {subtitle && <p className="text-[12px] text-slate-400 mt-0.5">{subtitle}</p>}
           </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              className="
-                flex items-center gap-2
-                px-4 py-2
-                border border-slate-200
-                rounded-xl
-                text-sm
-                hover:bg-slate-50
-              "
-            >
-              <Upload size={16} />
-              Import CSV
-            </button>
-
-            <button
-              className="
-                flex items-center gap-2
-                px-4 py-2
-                bg-blue-600
-                text-white
-                rounded-xl
-                text-sm
-                hover:bg-blue-700
-              "
-            >
-              <Plus size={16} />
-              Add Employee
-            </button>
-          </div>
+          <button
+            onClick={onClose}
+            className="w-7 h-7 flex items-center justify-center rounded-lg border border-slate-200 text-slate-400 hover:text-slate-700 hover:border-slate-300 transition-colors flex-shrink-0"
+          >
+            <X size={14} />
+          </button>
         </div>
+        {/* Body */}
+        <div className="flex-1 overflow-y-auto px-5 py-4">{children}</div>
       </div>
-
-      {/* Table */}
-      <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-slate-50 border-b border-slate-200">
-            <tr>
-              <th className="text-left text-xs font-medium text-slate-500 px-4 py-3">
-                ID
-              </th>
-
-              <th className="text-left text-xs font-medium text-slate-500 px-4 py-3">
-                Employee
-              </th>
-
-              <th className="text-left text-xs font-medium text-slate-500 px-4 py-3">
-                Salary
-              </th>
-
-              <th className="text-left text-xs font-medium text-slate-500 px-4 py-3">
-                Limit
-              </th>
-
-              <th className="text-left text-xs font-medium text-slate-500 px-4 py-3">
-                Outstanding
-              </th>
-
-              <th className="text-left text-xs font-medium text-slate-500 px-4 py-3">
-                Status
-              </th>
-
-              <th className="text-right text-xs font-medium text-slate-500 px-4 py-3">
-                Action
-              </th>
-            </tr>
-          </thead>
-
-          <tbody>
-            <EmployeeRow
-              employeeId="EMP001"
-              name="Rahul Sharma"
-              email="rahul@xyz.com"
-              salary="₹25,000"
-              limit="₹10,000"
-              outstanding="₹2,500"
-              status="ACTIVE"
-            />
-
-            <EmployeeRow
-              employeeId="EMP002"
-              name="Priya Verma"
-              email="priya@xyz.com"
-              salary="₹30,000"
-              limit="₹12,000"
-              outstanding="-"
-              status="ACTIVE"
-            />
-
-            <EmployeeRow
-              employeeId="EMP003"
-              name="Amit Singh"
-              email="amit@xyz.com"
-              salary="₹18,000"
-              limit="₹7,200"
-              outstanding="-"
-              status="INACTIVE"
-            />
-          </tbody>
-        </table>
-      </div>
-    </div>
+    </>
   );
 }
 
-function StatChip({
-  label,
-  value,
-  color,
-}: {
-  label: string;
-  value: string;
-  color: string;
-}) {
-  const styles: Record<string, string> = {
-    blue: "bg-blue-50 text-blue-700",
-    green: "bg-green-50 text-green-700",
-    red: "bg-red-50 text-red-700",
-    indigo: "bg-indigo-50 text-indigo-700",
+// ── page ──────────────────────────────────────────────────────────────────────
+
+export function EmployeesPage() {
+  const toast = useToast();
+  const [employees,     setEmployees]     = useState<Employee[]>([]);
+  const [loading,       setLoading]       = useState(true);
+  const [query,         setQuery]         = useState("");
+  const [statusFilter,  setStatusFilter]  = useState<"ALL" | EmploymentStatus>("ALL");
+  const [appFilter,     setAppFilter]     = useState<"ALL" | "ON" | "OFF">("ALL");
+  const [selectedIds,   setSelectedIds]   = useState<string[]>([]);
+  const [bulkLoading,   setBulkLoading]   = useState(false);
+  const [actionId,      setActionId]      = useState<string | null>(null);
+  const [drawerMode,    setDrawerMode]    = useState<DrawerMode>(null);
+  const [editEmployee,  setEditEmployee]  = useState<Employee | undefined>();
+  const [bulkResult,    setBulkResult]    = useState<BulkEmployeeUploadResult | null>(null);
+
+  const refresh = () => {
+    setLoading(true);
+    employeeService.getEmployees()
+      .then(next => setEmployees(cur => mergeStable(cur, next)))
+      .catch(err => toast.error("Failed to load", getApiErrorMessage(err)))
+      .finally(() => setLoading(false));
   };
 
+  useEffect(() => { refresh(); }, []);
+
+  const filtered = useMemo(() => employees.filter(e => {
+    const q = `${e.employeeCode} ${e.name} ${e.email} ${e.phone}`.toLowerCase();
+    return (
+      q.includes(query.toLowerCase()) &&
+      (statusFilter === "ALL" || e.employmentStatus === statusFilter) &&
+      (appFilter === "ALL" || (appFilter === "ON") === e.appActivated)
+    );
+  }), [employees, query, statusFilter, appFilter]);
+
+  const closeDrawer = () => {
+    setDrawerMode(null);
+    setEditEmployee(undefined);
+    setBulkResult(null);
+  };
+
+  // counts for header chips
+  const total    = employees.length;
+  const active   = employees.filter(e => e.employmentStatus === "ACTIVE").length;
+  const appOn    = employees.filter(e => e.appActivated).length;
+
   return (
-    <div
-      className={`
-        flex items-center gap-2
-        px-3 py-1.5
-        rounded-full
-        text-sm
-        font-medium
-        ${styles[color]}
-      `}
-    >
-      <span>{label}</span>
-      <span>{value}</span>
-    </div>
-  );
-}
-
-function EmployeeRow({
-  employeeId,
-  name,
-  email,
-  salary,
-  limit,
-  outstanding,
-  status,
-}: {
-  employeeId: string;
-  name: string;
-  email: string;
-  salary: string;
-  limit: string;
-  outstanding: string;
-  status: string;
-}) {
-  return (
-    <tr className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-      <td className="px-4 py-3">
-        <span className="text-xs font-medium text-slate-500">{employeeId}</span>
-      </td>
-
-      <td className="px-4 py-3">
-        <div>
-          <div className="text-sm font-medium text-slate-900">{name}</div>
-
-          <div className="text-[11px] text-slate-500">{email}</div>
+    <div className="space-y-4">
+      {/* Top bar */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          {/* Search */}
+          <div className="relative flex-1 max-w-[280px]">
+            <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder="Search employees…"
+              className="w-full h-9 pl-8 pr-3 text-[13px] bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition placeholder-slate-400 text-slate-800"
+            />
+          </div>
+          {/* Filters */}
+          <select
+            value={statusFilter}
+            onChange={e => setStatusFilter(e.target.value as "ALL" | EmploymentStatus)}
+            className="h-9 px-3 text-[12px] bg-white border border-slate-200 rounded-lg text-slate-600 focus:outline-none focus:border-blue-400 transition cursor-pointer"
+          >
+            <option value="ALL">All employment</option>
+            <option value="ACTIVE">Active only</option>
+            <option value="INACTIVE">Inactive only</option>
+          </select>
+          <select
+            value={appFilter}
+            onChange={e => setAppFilter(e.target.value as "ALL" | "ON" | "OFF")}
+            className="h-9 px-3 text-[12px] bg-white border border-slate-200 rounded-lg text-slate-600 focus:outline-none focus:border-blue-400 transition cursor-pointer"
+          >
+            <option value="ALL">All app access</option>
+            <option value="ON">App activated</option>
+            <option value="OFF">Not activated</option>
+          </select>
         </div>
-      </td>
 
-      <td className="px-4 py-3 text-sm font-medium text-slate-900">{salary}</td>
+        {/* Actions */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <button
+            onClick={() => { setBulkResult(null); setDrawerMode("BULK"); }}
+            className="h-9 px-3.5 flex items-center gap-2 text-[12px] font-[500] text-slate-600 bg-white border border-slate-200 rounded-lg hover:border-slate-300 hover:bg-slate-50 transition-colors"
+          >
+            <UploadCloud size={14} />Bulk add
+          </button>
+          <button
+            onClick={() => { setEditEmployee(undefined); setDrawerMode("CREATE"); }}
+            className="h-9 px-3.5 flex items-center gap-2 text-[12px] font-[600] text-white bg-[#c4522a] rounded-lg hover:bg-[#a8411f] transition-colors"
+          >
+            <Plus size={14} />Add employee
+          </button>
+        </div>
+      </div>
 
-      <td className="px-4 py-3 text-sm text-slate-700">{limit}</td>
+      {/* Summary + bulk action bar */}
+      <div className="flex items-center justify-between gap-3 px-4 py-2.5 bg-white border border-slate-100 rounded-xl text-[12px]">
+        <div className="flex items-center gap-4">
+          <span className="text-slate-500">{filtered.length} shown</span>
+          <span className="text-slate-300">·</span>
+          <span className="text-slate-600"><span className="font-[600] text-slate-800">{active}</span> active</span>
+          <span className="text-slate-600"><span className="font-[600] text-slate-800">{appOn}</span> app activated</span>
+          <span className="text-slate-600">of <span className="font-[600] text-slate-800">{total}</span> total</span>
+        </div>
+        {selectedIds.length > 0 && (
+          <button
+            disabled={bulkLoading}
+            onClick={async () => {
+              const ids = [...selectedIds];
+              setBulkLoading(true);
+              try {
+                const updated = await employeeService.bulkActivateEmployees(ids);
+                const updMap = new Map(updated.map(e => [e.id, e]));
+                setEmployees(cur => upsertStable(
+                  cur.map(e => ids.includes(e.id) && !updMap.has(e.id) ? { ...e, appActivated: true } : e),
+                  updated
+                ));
+                setSelectedIds([]);
+                toast.success("Activated", `${ids.length} employee${ids.length > 1 ? "s" : ""} activated`);
+              } catch (err) {
+                toast.error("Bulk activation failed", getApiErrorMessage(err));
+              } finally {
+                setBulkLoading(false);
+              }
+            }}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-600 text-white text-[12px] font-[500] hover:bg-blue-700 disabled:opacity-50 transition-colors"
+          >
+            <Zap size={12} />
+            {bulkLoading ? "Activating…" : `Activate ${selectedIds.length} selected`}
+          </button>
+        )}
+      </div>
 
-      <td className="px-4 py-3 text-sm text-slate-700">{outstanding}</td>
+      {/* Table card */}
+      <div className="bg-white border border-slate-100 rounded-xl overflow-hidden">
+        {loading ? (
+          <div className="py-16 text-center">
+            <p className="text-[13px] text-slate-400">Loading employees…</p>
+          </div>
+        ) : employees.length === 0 ? (
+          <div className="py-16 text-center">
+            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center mx-auto mb-3">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-slate-400">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" strokeLinecap="round" strokeLinejoin="round" />
+                <circle cx="9" cy="7" r="4" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <p className="text-[13px] font-[500] text-slate-700">No employees added yet</p>
+            <p className="text-[12px] text-slate-400 mt-1">Employees will appear here once your workforce is onboarded.</p>
+          </div>
+        ) : (
+          <div className="px-5 py-4">
+            <EmployeeTable
+              employees={filtered}
+              selectedIds={selectedIds}
+              onSelect={(id, sel) => setSelectedIds(cur => sel ? [...cur, id] : cur.filter(x => x !== id))}
+              onSelectAll={sel => setSelectedIds(sel ? filtered.map(e => e.id) : [])}
+              onEdit={emp => { setEditEmployee(emp); setDrawerMode("EDIT"); }}
+              onToggleAccess={async emp => {
+                setActionId(emp.id);
+                try {
+                  const updated = await employeeService.activateEmployee(emp.id, !emp.appActivated);
+                  setEmployees(cur => upsertStable(cur, [updated]));
+                  toast.success("App access updated", `${emp.name} is now ${updated.appActivated ? "activated" : "inactive"}`);
+                } catch (err) {
+                  toast.error("Update failed", getApiErrorMessage(err));
+                } finally {
+                  setActionId(null);
+                }
+              }}
+              actionEmployeeId={actionId}
+            />
+          </div>
+        )}
+      </div>
 
-      <td className="px-4 py-3">
-        <span
-          className={
-            status === "ACTIVE"
-              ? "inline-flex px-2 py-1 rounded-full text-[11px] font-medium bg-green-100 text-green-700"
-              : "inline-flex px-2 py-1 rounded-full text-[11px] font-medium bg-red-100 text-red-700"
-          }
-        >
-          {status}
-        </span>
-      </td>
+      {/* Add / Edit drawer */}
+      <DrawerPanel
+        open={drawerMode === "CREATE" || drawerMode === "EDIT"}
+        title={drawerMode === "EDIT" ? "Edit employee" : "Add employee"}
+        subtitle={drawerMode === "EDIT" ? editEmployee?.name : "New team member"}
+        onClose={closeDrawer}
+      >
+        <EmployeeForm
+          employee={editEmployee}
+          onSubmit={async (payload: EmployeePayload) => {
+            try {
+              let emp: Employee;
+              if (editEmployee) {
+                const { appActivated, ...rest } = payload;
+                emp = await employeeService.updateEmployee(editEmployee.id, rest);
+                if (payload.employmentStatus === "ACTIVE" && appActivated !== emp.appActivated) {
+                  emp = await employeeService.activateEmployee(editEmployee.id, appActivated);
+                }
+              } else {
+                emp = await employeeService.createEmployee(payload);
+                if (payload.employmentStatus === "ACTIVE" && emp.appActivated !== payload.appActivated) {
+                  emp = await employeeService.activateEmployee(emp.id, payload.appActivated);
+                }
+              }
+              setEmployees(cur => upsertStable(cur, [emp]));
+              toast.success(editEmployee ? "Employee updated" : "Employee created", emp.name);
+              closeDrawer();
+            } catch (err) {
+              toast.error(editEmployee ? "Update failed" : "Create failed", getApiErrorMessage(err));
+              throw err;
+            }
+          }}
+        />
+      </DrawerPanel>
 
-      <td className="px-4 py-3 text-right">
-        <button className="text-sm font-medium text-blue-600 hover:text-blue-700">
-          View
-        </button>
-      </td>
-    </tr>
+      {/* Bulk drawer */}
+      <DrawerPanel
+        open={drawerMode === "BULK"}
+        title="Bulk add employees"
+        subtitle="Upload a CSV or paste rows"
+        onClose={closeDrawer}
+      >
+        <BulkEmployeeForm
+          onSubmit={async (payloads: EmployeePayload[]) => {
+            try {
+              const result = await employeeService.bulkCreateEmployees(payloads);
+              setBulkResult(result);
+              setEmployees(cur => upsertStable(cur, result.created));
+              if (result.failureCount > 0) {
+                toast.error("Some rows skipped", `${result.successCount} created, ${result.failureCount} failed`);
+              } else {
+                toast.success("Import complete", `${result.successCount} employee${result.successCount !== 1 ? "s" : ""} added`);
+                closeDrawer();
+              }
+              return result;
+            } catch (err) {
+              toast.error("Import failed", getApiErrorMessage(err));
+              throw err;
+            }
+          }}
+        />
+        {(bulkResult?.errors.length ?? 0) > 0 && (
+          <div className="mt-4 bg-red-50 border border-red-100 rounded-lg overflow-hidden">
+            <div className="px-4 py-3 border-b border-red-100">
+              <p className="text-[12px] font-[600] text-red-700">{bulkResult!.failureCount} rows skipped</p>
+            </div>
+            <div className="overflow-x-auto max-h-52 overflow-y-auto">
+              <table className="w-full text-[11px]">
+                <thead>
+                  <tr className="border-b border-red-100">
+                    {["Row", "Code", "Email", "Error"].map(h => (
+                      <th key={h} className="px-3 py-2 text-left font-[500] text-red-600">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-red-50">
+                  {bulkResult!.errors.map(e => (
+                    <tr key={`${e.row}-${e.email}`}>
+                      <td className="px-3 py-2 text-red-500">{e.row}</td>
+                      <td className="px-3 py-2 text-slate-600">{e.employeeCode || "—"}</td>
+                      <td className="px-3 py-2 text-slate-600">{e.email || "—"}</td>
+                      <td className="px-3 py-2 text-slate-600">{e.message}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </DrawerPanel>
+    </div>
   );
 }
