@@ -5,7 +5,7 @@ import type { AuthUser, LoginCredentials } from "../types";
 interface AuthContextValue {
   user: AuthUser | null;
   loading: boolean;
-  login: (credentials: LoginCredentials) => Promise<void>;
+  login: (credentials: LoginCredentials) => Promise<{ passwordChanged: boolean }>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
 }
@@ -38,10 +38,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     () => ({
       user,
       loading,
-      isAuthenticated: Boolean(user) && authService.isAuthenticated(),
+      isAuthenticated: authService.isAuthenticated(),
       login: async (credentials) => {
         const response = await authService.login(credentials);
         setUser(response.user);
+        return { passwordChanged: Boolean(response.passwordChanged) };
       },
       logout: async () => {
         await authService.logout();

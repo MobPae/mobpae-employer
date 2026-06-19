@@ -181,7 +181,7 @@ function ProcessConfirmDialog({
               Cancel
             </button>
             <button type="button" onClick={onConfirm} disabled={processing}
-              className="flex-1 h-10 rounded-lg bg-[#c4522a] hover:bg-[#a8411f] text-white text-[13px] font-[600] flex items-center justify-center gap-2 disabled:opacity-60 transition-colors">
+              className="flex-1 h-10 rounded-lg bg-[#059669] hover:bg-[#047857] text-white text-[13px] font-[600] flex items-center justify-center gap-2 disabled:opacity-60 transition-colors">
               {processing ? (
                 <><span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />Processing…</>
               ) : (
@@ -324,7 +324,7 @@ export function PayrollPage() {
       )}
 
       {/* ── Payroll header ─────────────────────────────────────────────────── */}
-      <div className="bg-[#c4522a] rounded-2xl px-5 py-4 flex items-center justify-between gap-4 flex-wrap">
+      <div className="bg-[#059669] rounded-2xl px-5 py-4 flex items-center justify-between gap-4 flex-wrap">
         <div>
           <p className="text-[10px] font-[600] text-white/50 uppercase tracking-[0.1em] mb-1">Current Cycle</p>
           <p className="text-[20px] font-[700] text-white leading-tight">
@@ -393,8 +393,8 @@ export function PayrollPage() {
           value={loading ? "—" : formatCurrency(totals.grossPayroll)}
           sub="Total salary in hand"
           icon={<Wallet size={16} />}
-          iconBg="bg-[#fdf3ee]"
-          iconColor="text-[#c4522a]"
+          iconBg="bg-[#ecfdf5]"
+          iconColor="text-[#059669]"
         />
         <SummaryCard
           label="Total Recovery"
@@ -475,7 +475,7 @@ export function PayrollPage() {
             </div>
             <button
               type="submit" disabled={saving}
-              className="h-9 px-4 flex items-center gap-2 rounded-lg bg-[#c4522a] hover:bg-[#a8411f] text-white text-[12px] font-[600] disabled:opacity-50 transition-colors flex-shrink-0"
+              className="h-9 px-4 flex items-center gap-2 rounded-lg bg-[#059669] hover:bg-[#047857] text-white text-[12px] font-[600] disabled:opacity-50 transition-colors flex-shrink-0"
             >
               <Save size={13} />
               {saving ? "Saving…" : "Save"}

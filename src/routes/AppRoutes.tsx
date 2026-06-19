@@ -3,6 +3,9 @@ import { EmployerLayout } from "../components/layout/EmployerLayout";
 import { AuthProvider } from "../hooks/useAuth";
 import { ToastProvider } from "../hooks/useToast";
 import { LoginPage } from "../pages/auth/LoginPage";
+import { ForgotPasswordPage } from "../pages/auth/ForgotPasswordPage";
+import { ResetPasswordPage } from "../pages/auth/ResetPasswordPage";
+import { ChangePasswordPage } from "../pages/auth/ChangePasswordPage";
 import { DashboardPage } from "../pages/dashboard/DashboardPage";
 import { EmployeesPage } from "../pages/employees/EmployeesPage";
 import { PayrollPage } from "../pages/payroll/PayrollPage";
@@ -18,6 +21,9 @@ export function AppRoutes() {
       <ToastProvider>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/change-password" element={<ProtectedRoute><ChangePasswordPage /></ProtectedRoute>} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route
             element={
               <ProtectedRoute>

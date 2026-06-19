@@ -216,16 +216,45 @@ export const mapEmployerProfile = (value: unknown): EmployerProfile => {
   };
 };
 
+// Maps GET /dashboard/employer nested response shape:
+// { employees: {total, active, appActivated},
+//   salaryRequests: {pending, approved, disbursed},
+//   recoveries: {scheduled, overdue, amountDue},
+//   settlements: {pending, overdue, outstandingAmount},
+//   recentActivity: [...] }
+// Also handles flat/legacy shapes for backwards-compat.
 export const mapDashboardStats = (value: unknown): Partial<DashboardStats> => {
-  const record = asRecord(value);
+  const record     = asRecord(value);
+  const employees  = asRecord(record.employees);
+  const salaryReqs = asRecord(record.salaryRequests);
+  const recoveries = asRecord(record.recoveries);
+  const settlements = asRecord(record.settlements);
+
+  // recentActivity takes priority; fall back to recentSalaryRequests for older responses
+  const activityRaw = Array.isArray(record.recentActivity)
+    ? record.recentActivity
+    : Array.isArray(record.recentSalaryRequests)
+      ? record.recentSalaryRequests
+      : [];
+
   return {
-    totalEmployees: numberValue(record.totalEmployees ?? record.employeeCount),
-    activeEmployees: numberValue(record.activeEmployees),
-    appActivatedEmployees: numberValue(record.appActivatedEmployees ?? record.activatedEmployees),
-    pendingSalaryRequests: numberValue(record.pendingSalaryRequests ?? record.pendingRequests),
-    approvedRequests: numberValue(record.approvedRequests),
-    outstandingAmount: numberValue(record.outstandingAmount ?? record.totalOutstandingAmount),
-    recentSalaryRequests: unwrapList(record.recentSalaryRequests).map(mapSalaryRequest)
+    totalEmployees:        numberValue(employees.total        ?? record.totalEmployees    ?? record.employeeCount),
+    activeEmployees:       numberValue(employees.active       ?? record.activeEmployees),
+    appActivatedEmployees: numberValue(employees.appActivated ?? record.appActivatedEmployees ?? record.activatedEmployees),
+
+    pendingSalaryRequests: numberValue(salaryReqs.pending  ?? record.pendingSalaryRequests ?? record.pendingRequests),
+    approvedRequests:      numberValue(salaryReqs.approved ?? record.approvedRequests),
+    disbursedRequests:     numberValue(salaryReqs.disbursed ?? record.disbursedRequests ?? 0),
+
+    scheduledRecoveries:   numberValue(recoveries.scheduled ?? record.scheduledRecoveries ?? 0),
+    overdueRecoveries:     numberValue(recoveries.overdue   ?? record.overdueRecoveries   ?? 0),
+    recoveryAmountDue:     numberValue(recoveries.amountDue ?? record.recoveryAmountDue   ?? 0),
+
+    pendingSettlements:    numberValue(settlements.pending           ?? record.pendingSettlements  ?? 0),
+    overdueSettlements:    numberValue(settlements.overdue           ?? record.overdueSettlements  ?? 0),
+    outstandingAmount:     numberValue(settlements.outstandingAmount ?? record.outstandingAmount   ?? record.totalOutstandingAmount),
+
+    recentActivity: (activityRaw as unknown[]).map(mapSalaryRequest),
   };
 };
 

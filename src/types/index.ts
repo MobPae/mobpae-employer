@@ -31,6 +31,7 @@ export interface LoginCredentials {
 export interface LoginResponse {
   token: string;
   user: AuthUser;
+  passwordChanged?: boolean;
 }
 
 export interface Employee {
@@ -127,14 +128,35 @@ export interface EmployerProfilePayload {
   phone: string;
 }
 
+// Matches GET /dashboard/employer response shape
 export interface DashboardStats {
+  // employees
   totalEmployees: number;
   activeEmployees: number;
   appActivatedEmployees: number;
+  // salaryRequests
   pendingSalaryRequests: number;
   approvedRequests: number;
+  disbursedRequests: number;
+  // recoveries
+  scheduledRecoveries: number;
+  overdueRecoveries: number;
+  recoveryAmountDue: number;
+  // settlements
+  pendingSettlements: number;
+  overdueSettlements: number;
   outstandingAmount: number;
-  recentSalaryRequests?: SalaryRequest[];
+  // recent activity feed
+  recentActivity: SalaryRequest[];
+}
+
+export interface DashboardTrend {
+  month: string;           // "2026-01"
+  requestCount: number;
+  approvedCount: number;
+  disbursedCount: number;
+  requestedAmount: number;
+  disbursedAmount: number;
 }
 
 export interface NotificationItem {

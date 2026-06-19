@@ -156,7 +156,7 @@ export function EmployeesPage() {
           </button>
           <button
             onClick={() => { setEditEmployee(undefined); setDrawerMode("CREATE"); }}
-            className="h-9 px-3.5 flex items-center gap-2 text-[12px] font-[600] text-white bg-[#c4522a] rounded-lg hover:bg-[#a8411f] transition-colors"
+            className="h-9 px-3.5 flex items-center gap-2 text-[12px] font-[600] text-white bg-[#059669] rounded-lg hover:bg-[#047857] transition-colors"
           >
             <Plus size={14} />Add employee
           </button>

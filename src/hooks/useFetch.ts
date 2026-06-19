@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { getApiErrorMessage } from "../services/api-errors";
 
 interface FetchState<T> {
   data: T | null;
@@ -20,7 +21,7 @@ export function useFetch<T>(
       if (mountedRef.current) setState({ data, loading: false, error: null });
     } catch (err) {
       if (mountedRef.current)
-        setState({ data: null, loading: false, error: err instanceof Error ? err.message : "Failed to load" });
+        setState({ data: null, loading: false, error: getApiErrorMessage(err, "Failed to load") });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
@@ -47,7 +48,7 @@ export function useAsync<TArgs extends unknown[], TResult>(
       const result = await action(...args);
       return result;
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Action failed";
+      const msg = getApiErrorMessage(err, "Action failed");
       setError(msg);
       return null;
     } finally {

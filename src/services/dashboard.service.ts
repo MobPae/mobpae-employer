@@ -1,4 +1,4 @@
-import type { DashboardStats, NotificationItem, SalaryRequest } from "../types";
+import type { DashboardStats, DashboardTrend, NotificationItem, SalaryRequest } from "../types";
 import { mapDashboardStats, unwrapItem, unwrapList } from "./api-mappers";
 import { authService } from "./auth.service";
 import { httpClient } from "./http-client";
@@ -18,29 +18,49 @@ const mapNotification = (value: unknown): NotificationItem => {
 
 export const dashboardService = {
   async getDashboardStats(): Promise<DashboardStats> {
-    const { data } = await httpClient.get("/dashboard/employers/me");
-    const dashboard = unwrapItem<Record<string, unknown>>(data, ["dashboard"]);
-    const rawStats = unwrapItem<Record<string, unknown>>(dashboard, ["stats"]);
-    const stats = mapDashboardStats({
-      ...dashboard,
-      ...rawStats,
-      recentSalaryRequests: dashboard.recentSalaryRequests ?? rawStats.recentSalaryRequests
-    });
+    // GET /dashboard/employer — enhanced nested shape:
+    // { employees, salaryRequests, recoveries, settlements, recentActivity }
+    const { data } = await httpClient.get("/dashboard/employer");
+    const raw = unwrapItem<Record<string, unknown>>(data, ["dashboard", "data"]);
+    const stats = mapDashboardStats(raw);
 
     return {
-      totalEmployees: stats.totalEmployees ?? 0,
-      activeEmployees: stats.activeEmployees ?? 0,
+      totalEmployees:        stats.totalEmployees        ?? 0,
+      activeEmployees:       stats.activeEmployees       ?? 0,
       appActivatedEmployees: stats.appActivatedEmployees ?? 0,
       pendingSalaryRequests: stats.pendingSalaryRequests ?? 0,
-      approvedRequests: stats.approvedRequests ?? 0,
-      outstandingAmount: stats.outstandingAmount ?? 0,
-      recentSalaryRequests: stats.recentSalaryRequests ?? []
+      approvedRequests:      stats.approvedRequests      ?? 0,
+      disbursedRequests:     stats.disbursedRequests     ?? 0,
+      scheduledRecoveries:   stats.scheduledRecoveries   ?? 0,
+      overdueRecoveries:     stats.overdueRecoveries     ?? 0,
+      recoveryAmountDue:     stats.recoveryAmountDue     ?? 0,
+      pendingSettlements:    stats.pendingSettlements    ?? 0,
+      overdueSettlements:    stats.overdueSettlements    ?? 0,
+      outstandingAmount:     stats.outstandingAmount     ?? 0,
+      recentActivity:        stats.recentActivity        ?? [],
     };
   },
 
   async getRecentSalaryRequests(): Promise<SalaryRequest[]> {
     const stats = await this.getDashboardStats();
-    return (stats.recentSalaryRequests ?? []).slice(0, 5);
+    return (stats.recentActivity ?? []).slice(0, 5);
+  },
+
+  async getDashboardTrends(): Promise<DashboardTrend[]> {
+    try {
+      const { data } = await httpClient.get("/dashboard/employer/trends", { params: { period: "monthly" } });
+      const raw = unwrapList<Record<string, unknown>>(data, ["trends"]);
+      return raw.map(r => ({
+        month:           String(r.month ?? r.period ?? r.date ?? ""),
+        requestCount:    Number(r.requestCount    ?? 0),
+        approvedCount:   Number(r.approvedCount   ?? 0),
+        disbursedCount:  Number(r.disbursedCount  ?? 0),
+        requestedAmount: Number(r.requestedAmount ?? 0),
+        disbursedAmount: Number(r.disbursedAmount ?? 0),
+      }));
+    } catch {
+      return [];
+    }
   },
 
   async getRecentNotifications(): Promise<NotificationItem[]> {

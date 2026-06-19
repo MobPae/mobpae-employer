@@ -49,7 +49,9 @@ export const authService = {
       // Keep the user returned by login when /auth/me is not available for this token.
     }
 
-    const response: LoginResponse = { token, user };
+    const userObj = (responseData.user ?? responseData.profile ?? responseData) as Record<string, unknown>;
+    const passwordChanged = Boolean(userObj.passwordChanged ?? responseData.passwordChanged);
+    const response: LoginResponse = { token, user, passwordChanged };
 
     localStorage.setItem(USER_KEY, JSON.stringify(response.user));
 
@@ -93,5 +95,17 @@ export const authService = {
 
   isAuthenticated(): boolean {
     return Boolean(localStorage.getItem(TOKEN_KEY));
-  }
+  },
+
+  async changePassword(currentPassword: string, newPassword: string): Promise<void> {
+    await httpClient.post("/auth/change-password", { currentPassword, newPassword });
+  },
+
+  async forgotPassword(email: string): Promise<void> {
+    await httpClient.post("/auth/forgot-password", { email });
+  },
+
+  async resetPassword(token: string, newPassword: string): Promise<void> {
+    await httpClient.post("/auth/reset-password", { token, newPassword });
+  },
 };

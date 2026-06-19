@@ -67,7 +67,7 @@ function SummaryCard({ label, value, icon, iconBg, iconColor, highlight, sub }: 
   iconBg: string; iconColor: string; highlight?: boolean; sub?: string;
 }) {
   return (
-    <div className={`rounded-xl p-4 flex flex-col gap-3 border ${highlight ? "bg-[#c4522a] border-[#a8411f]" : "bg-white border-slate-100"}`}>
+    <div className={`rounded-xl p-4 flex flex-col gap-3 border ${highlight ? "bg-[#059669] border-[#047857]" : "bg-white border-slate-100"}`}>
       <div className="flex items-center justify-between">
         <span className={`text-[12px] font-[500] ${highlight ? "text-white/50" : "text-slate-500"}`}>{label}</span>
         <div className={`w-7 h-7 rounded-lg ${iconBg} flex items-center justify-center ${iconColor}`}>{icon}</div>
@@ -261,7 +261,7 @@ export function SettlementsPage() {
             onClick={() => setFilter(f.value)}
             className={`h-7 px-3 rounded-full text-[12px] font-[500] transition-colors flex items-center gap-1.5 ${
               filter === f.value
-                ? "bg-[#c4522a] text-white"
+                ? "bg-[#059669] text-white"
                 : "bg-white border border-slate-200 text-slate-600 hover:border-slate-300"
             }`}
           >

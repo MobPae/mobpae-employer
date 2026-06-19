@@ -1,109 +1,328 @@
 import {
+  AlertTriangle,
   ArrowDownCircle,
   ArrowRight,
   BadgeCheck,
   CircleDollarSign,
   Clock3,
+  Landmark,
+  RefreshCcw,
   ShieldCheck,
+  Sparkles,
   UsersRound,
   WalletCards,
 } from "lucide-react";
+import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
 import { useFetch } from "../../hooks/useFetch";
 import { dashboardService } from "../../services/dashboard.service";
-import type { DashboardStats, SalaryRequest } from "../../types";
+import type { DashboardStats, DashboardTrend, SalaryRequest } from "../../types";
 import { formatCurrency, formatDate } from "../../utils/formatters";
 
-// ── status pill ───────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// Status pill
+// ─────────────────────────────────────────────────────────────────────────────
 
 const STATUS_STYLES: Record<string, { bg: string; text: string; dot: string }> = {
-  PENDING:              { bg: "bg-amber-50",   text: "text-amber-700",   dot: "bg-amber-400"   },
-  SUBMITTED:            { bg: "bg-sky-50",     text: "text-sky-700",     dot: "bg-sky-400"     },
-  UNDER_REVIEW:         { bg: "bg-violet-50",  text: "text-violet-700",  dot: "bg-violet-400"  },
-  APPROVED:             { bg: "bg-emerald-50", text: "text-emerald-700", dot: "bg-emerald-400" },
-  REJECTED:             { bg: "bg-red-50",     text: "text-red-700",     dot: "bg-red-400"     },
-  DISBURSED:            { bg: "bg-blue-50",    text: "text-blue-700",    dot: "bg-blue-400"    },
-  REPAID:               { bg: "bg-slate-100",  text: "text-slate-500",   dot: "bg-slate-400"   },
+  PENDING:      { bg: "#fef5e4", text: "#b7700a", dot: "#b7700a" },
+  SUBMITTED:    { bg: "#e8f4fd", text: "#1a6fa0", dot: "#1a6fa0" },
+  UNDER_REVIEW: { bg: "#f0eafe", text: "#6b3fa0", dot: "#6b3fa0" },
+  APPROVED:     { bg: "#e6f4ec", text: "#1a7a40", dot: "#1a7a40" },
+  REJECTED:     { bg: "#feeaea", text: "#c0392b", dot: "#c0392b" },
+  DISBURSED:    { bg: "#e8f0fe", text: "#1a56cc", dot: "#1a56cc" },
+  REPAID:       { bg: "#f2f2f2", text: "#777",    dot: "#bbb"    },
 };
 
 function StatusPill({ status }: { status: string }) {
-  const s = STATUS_STYLES[status] ?? { bg: "bg-slate-100", text: "text-slate-500", dot: "bg-slate-400" };
+  const s = STATUS_STYLES[status] ?? { bg: "#f2f2f2", text: "#777", dot: "#bbb" };
   const label = status.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-[500] ${s.bg} ${s.text}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
+    <span
+      className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-[500]"
+      style={{ background: s.bg, color: s.text }}
+    >
+      <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: s.dot }} />
       {label}
     </span>
   );
 }
 
-// ── stat card ─────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// KPI card
+// ─────────────────────────────────────────────────────────────────────────────
 
-function StatCard({ label, value, icon, iconBg, iconColor, sub }: {
-  label: string; value: string | number; icon: React.ReactNode;
-  iconBg: string; iconColor: string; sub?: string;
+function KpiCard({
+  label, value, sub, icon, iconBg, iconColor, highlight = false,
+}: {
+  label: string; value: string | number; sub?: string;
+  icon: React.ReactNode; iconBg: string; iconColor: string; highlight?: boolean;
 }) {
   return (
-    <div className="bg-white border border-slate-100 rounded-xl p-4 flex flex-col gap-3">
+    <div
+      className="rounded-xl p-4 flex flex-col gap-3"
+      style={{
+        background: highlight ? "#059669" : "#fff",
+        border: highlight ? "none" : "0.5px solid #e8ddd5",
+      }}
+    >
       <div className="flex items-center justify-between">
-        <span className="text-[12px] font-[500] text-slate-500">{label}</span>
-        <div className={`w-7 h-7 rounded-lg ${iconBg} flex items-center justify-center ${iconColor}`}>{icon}</div>
+        <span className="text-[11px] font-[500]" style={{ color: highlight ? "rgba(255,255,255,0.6)" : "#999" }}>
+          {label}
+        </span>
+        <div
+          className="w-7 h-7 rounded-lg flex items-center justify-center"
+          style={{ background: iconBg, color: iconColor }}
+        >
+          {icon}
+        </div>
       </div>
       <div>
-        <p className="text-[22px] font-[700] text-slate-900 tracking-[-0.02em] leading-none">{value}</p>
-        {sub && <p className="text-[11px] text-slate-400 mt-1">{sub}</p>}
+        <p
+          className="text-[22px] font-[700] leading-none tracking-tight"
+          style={{ color: highlight ? "#fff" : "#1a1a1a" }}
+        >
+          {value}
+        </p>
+        {sub && (
+          <p className="text-[10px] mt-1" style={{ color: highlight ? "rgba(255,255,255,0.4)" : "#bbb" }}>
+            {sub}
+          </p>
+        )}
       </div>
     </div>
   );
 }
 
-// ── recent requests table ─────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// Trend chart (Chart.js)
+// ─────────────────────────────────────────────────────────────────────────────
 
-function RecentRequests({ requests }: { requests: SalaryRequest[] }) {
-  if (!requests.length) {
+declare global {
+  interface Window {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    Chart: any;
+  }
+}
+
+const CHART_JS_CDN = "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js";
+
+function useChartJs(onLoad: () => void) {
+  useEffect(() => {
+    if (window.Chart) { onLoad(); return; }
+    const s = document.createElement("script");
+    s.src = CHART_JS_CDN;
+    s.onload = onLoad;
+    document.head.appendChild(s);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+}
+
+function TrendChart({ trends }: { trends: DashboardTrend[] }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const chartRef = useRef<any>(null);
+
+  const buildChart = () => {
+    if (!canvasRef.current || !window.Chart) return;
+    if (chartRef.current) { chartRef.current.destroy(); }
+
+    const labels = trends.map(t => {
+      const [y, m] = t.month.split("-");
+      return new Date(Number(y), Number(m) - 1).toLocaleString("en", { month: "short" });
+    });
+
+    chartRef.current = new window.Chart(canvasRef.current, {
+      type: "line",
+      data: {
+        labels,
+        datasets: [
+          {
+            label: "Requested",
+            data: trends.map(t => t.requestCount),
+            borderColor: "#059669",
+            backgroundColor: "rgba(5,150,105,0.07)",
+            fill: true,
+            tension: 0.45,
+            pointBackgroundColor: "#059669",
+            pointRadius: 3,
+            pointHoverRadius: 5,
+            borderWidth: 2,
+          },
+          {
+            label: "Approved",
+            data: trends.map(t => t.approvedCount),
+            borderColor: "#1a7a40",
+            backgroundColor: "transparent",
+            fill: false,
+            tension: 0.45,
+            pointBackgroundColor: "#1a7a40",
+            pointRadius: 3,
+            pointHoverRadius: 5,
+            borderWidth: 1.5,
+            borderDash: [4, 3],
+          },
+          {
+            label: "Disbursed",
+            data: trends.map(t => t.disbursedCount),
+            borderColor: "#1a56cc",
+            backgroundColor: "transparent",
+            fill: false,
+            tension: 0.45,
+            pointBackgroundColor: "#1a56cc",
+            pointRadius: 3,
+            pointHoverRadius: 5,
+            borderWidth: 1.5,
+            borderDash: [4, 3],
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            titleFont: { size: 11 },
+            bodyFont: { size: 11 },
+            callbacks: {
+              label: (ctx: { dataset: { label: string }; parsed: { y: number } }) =>
+                `${ctx.dataset.label}: ${ctx.parsed.y}`,
+            },
+          },
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: { font: { size: 10 }, color: "#bbb" },
+          },
+          y: {
+            grid: { color: "rgba(0,0,0,0.04)" },
+            ticks: { font: { size: 10 }, color: "#bbb", stepSize: 5 },
+            beginAtZero: true,
+          },
+        },
+      },
+    });
+  };
+
+  useChartJs(buildChart);
+  useEffect(() => { buildChart(); }, [trends]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => () => { chartRef.current?.destroy(); }, []);
+
+  if (!trends.length) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-center">
-        <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center mb-3">
-          <WalletCards size={18} className="text-slate-400" />
+      <div className="h-[100px] flex items-center justify-center">
+        <p className="text-[11px]" style={{ color: "#ccc" }}>Trend data not yet available</p>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ position: "relative", height: "100px" }}>
+      <canvas ref={canvasRef} role="img" aria-label="Salary request trend over last 6 months" />
+    </div>
+  );
+}
+
+function DonutChart({ approved, disbursed, pending }: { approved: number; disbursed: number; pending: number }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const chartRef = useRef<any>(null);
+
+  const buildChart = () => {
+    if (!canvasRef.current || !window.Chart) return;
+    if (chartRef.current) { chartRef.current.destroy(); }
+
+    chartRef.current = new window.Chart(canvasRef.current, {
+      type: "doughnut",
+      data: {
+        labels: ["Approved", "Disbursed", "Pending"],
+        datasets: [{
+          data: [approved, disbursed, pending],
+          backgroundColor: ["#059669", "#022c22", "#6ee7b7"],
+          borderWidth: 0,
+          hoverOffset: 4,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: "68%",
+        plugins: {
+          legend: { display: false },
+          tooltip: { titleFont: { size: 11 }, bodyFont: { size: 11 } },
+        },
+      },
+    });
+  };
+
+  useChartJs(buildChart);
+  useEffect(() => { buildChart(); }, [approved, disbursed, pending]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => () => { chartRef.current?.destroy(); }, []);
+
+  return (
+    <div style={{ position: "relative", height: "110px" }}>
+      <canvas ref={canvasRef} role="img" aria-label={`Request split: ${approved} approved, ${disbursed} disbursed, ${pending} pending`} />
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Recent activity table
+// ─────────────────────────────────────────────────────────────────────────────
+
+function RecentActivity({ rows }: { rows: SalaryRequest[] }) {
+  if (!rows.length) {
+    return (
+      <div className="flex flex-col items-center justify-center py-8 text-center">
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-2" style={{ background: "#ecfdf5" }}>
+          <WalletCards size={16} style={{ color: "#059669" }} />
         </div>
-        <p className="text-[13px] font-[500] text-slate-600">No recent requests</p>
-        <p className="text-[12px] text-slate-400 mt-1">Salary requests will appear here</p>
+        <p className="text-[12px] font-[500]" style={{ color: "#555" }}>No recent activity</p>
+        <p className="text-[11px] mt-1" style={{ color: "#bbb" }}>Salary requests will appear here</p>
       </div>
     );
   }
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full text-[12px]">
+      <table className="w-full" style={{ fontSize: "12px", borderCollapse: "collapse" }}>
         <thead>
-          <tr className="border-b border-slate-100">
-            <th className="text-left pb-2.5 text-[11px] font-[500] text-slate-400 pr-4">Employee</th>
-            <th className="text-right pb-2.5 text-[11px] font-[500] text-slate-400 pr-4">Requested</th>
-            <th className="text-right pb-2.5 text-[11px] font-[500] text-slate-400 pr-4">Approved</th>
-            <th className="text-left pb-2.5 text-[11px] font-[500] text-slate-400 pr-4">Status</th>
-            <th className="text-right pb-2.5 text-[11px] font-[500] text-slate-400">Date</th>
+          <tr style={{ borderBottom: "0.5px solid #f0ebe7" }}>
+            <th className="text-left pb-2" style={{ fontSize: "10px", fontWeight: 600, color: "#bbb", textTransform: "uppercase", letterSpacing: "0.05em", paddingRight: "12px" }}>Employee</th>
+            <th className="text-right pb-2" style={{ fontSize: "10px", fontWeight: 600, color: "#bbb", textTransform: "uppercase", letterSpacing: "0.05em", paddingRight: "12px" }}>Requested</th>
+            <th className="text-left pb-2" style={{ fontSize: "10px", fontWeight: 600, color: "#bbb", textTransform: "uppercase", letterSpacing: "0.05em", paddingRight: "12px" }}>Status</th>
+            <th className="text-right pb-2" style={{ fontSize: "10px", fontWeight: 600, color: "#bbb", textTransform: "uppercase", letterSpacing: "0.05em" }}>Date</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-50">
-          {requests.map(r => (
-            <tr key={r.id} className="hover:bg-slate-50/50 transition-colors">
-              <td className="py-2.5 pr-4">
+        <tbody>
+          {rows.map(r => (
+            <tr key={r.id} style={{ borderTop: "0.5px solid #ecfdf5" }}>
+              <td style={{ padding: "7px 12px 7px 0" }}>
                 <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[9px] font-[700] text-slate-500 flex-shrink-0">
-                    {r.employeeName.slice(0, 2).toUpperCase()}
+                  <div
+                    className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
+                    style={{ background: "#ecfdf5", fontSize: "9px", fontWeight: 700, color: "#059669" }}
+                  >
+                    {(r.employeeName ?? "?").slice(0, 2).toUpperCase()}
                   </div>
                   <div>
-                    <p className="font-[500] text-slate-800 leading-none">{r.employeeName}</p>
-                    <p className="text-[10px] text-slate-400 mt-0.5">{r.requestId}</p>
+                    <p style={{ fontWeight: 500, color: "#1a1a1a", lineHeight: 1 }}>{r.employeeName}</p>
+                    <p style={{ fontSize: "10px", color: "#bbb", marginTop: 2 }}>{r.requestId}</p>
                   </div>
                 </div>
               </td>
-              <td className="py-2.5 pr-4 text-right font-[600] text-slate-700 tabular-nums">{formatCurrency(r.requestedAmount)}</td>
-              <td className="py-2.5 pr-4 text-right font-[600] text-slate-700 tabular-nums">
-                {r.approvedAmount ? formatCurrency(r.approvedAmount) : <span className="text-slate-300">—</span>}
+              <td className="text-right" style={{ padding: "7px 12px 7px 0", fontWeight: 600, color: "#1a1a1a", fontVariantNumeric: "tabular-nums" }}>
+                {formatCurrency(r.requestedAmount)}
               </td>
-              <td className="py-2.5 pr-4"><StatusPill status={r.status} /></td>
-              <td className="py-2.5 text-right text-slate-400 tabular-nums">{formatDate(r.createdDate)}</td>
+              <td style={{ padding: "7px 12px 7px 0" }}>
+                <StatusPill status={r.status} />
+              </td>
+              <td className="text-right" style={{ padding: "7px 0", color: "#bbb", fontVariantNumeric: "tabular-nums" }}>
+                {formatDate(r.createdDate)}
+              </td>
             </tr>
           ))}
         </tbody>
@@ -112,72 +331,368 @@ function RecentRequests({ requests }: { requests: SalaryRequest[] }) {
   );
 }
 
-// ── page ──────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// Progress bar
+// ─────────────────────────────────────────────────────────────────────────────
+
+function ProgressBar({ value, max, color = "#059669" }: { value: number; max: number; color?: string }) {
+  const pct = max > 0 ? Math.min(100, Math.round((value / max) * 100)) : 0;
+  return (
+    <div>
+      <div className="flex justify-between mb-1">
+        <span style={{ fontSize: "10px", color: "#aaa" }}>Recovery progress</span>
+        <span style={{ fontSize: "10px", fontWeight: 600, color }}>{pct}%</span>
+      </div>
+      <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "#f0ebe7" }}>
+        <div className="h-full rounded-full" style={{ width: `${pct}%`, background: color }} />
+      </div>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Skeletons
+// ─────────────────────────────────────────────────────────────────────────────
+
+function Skeleton({ h, className = "" }: { h: number; className?: string }) {
+  return (
+    <div
+      className={`rounded-xl animate-pulse ${className}`}
+      style={{ height: h, background: "#e2e8f0" }}
+    />
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Page
+// ─────────────────────────────────────────────────────────────────────────────
 
 export function DashboardPage() {
-  const { data: stats, loading, error } = useFetch<DashboardStats>(
+  const { user } = useAuth();
+
+  const { data: stats, loading: statsLoading, error: statsError } = useFetch<DashboardStats>(
     () => dashboardService.getDashboardStats(), []
   );
+  const { data: trends = [], loading: trendsLoading } = useFetch<DashboardTrend[]>(
+    () => dashboardService.getDashboardTrends(), []
+  );
 
-  const recentRequests = stats?.recentSalaryRequests ?? [];
+  const recentActivity = stats?.recentActivity ?? [];
+
+  // Activation rate
   const activationRate = stats && stats.totalEmployees > 0
     ? Math.round((stats.appActivatedEmployees / stats.totalEmployees) * 100)
     : 0;
 
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        <div className="grid grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6 gap-3">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="h-24 bg-white border border-slate-100 rounded-xl animate-pulse" />
-          ))}
-        </div>
-      </div>
-    );
-  }
+  // Disbursement split totals for donut
+  const totalRequests = (stats?.approvedRequests ?? 0) + (stats?.disbursedRequests ?? 0) + (stats?.pendingSalaryRequests ?? 0);
 
-  if (error) {
+  // Recovery progress: disbursed vs scheduled+overdue
+  const recoveryTotal = (stats?.scheduledRecoveries ?? 0) + (stats?.overdueRecoveries ?? 0);
+  const recoveryDone  = (stats?.scheduledRecoveries ?? 0); // scheduled = on track
+
+  if (statsError) {
     return (
-      <div className="bg-red-50 border border-red-100 rounded-xl p-5">
-        <p className="text-[13px] font-[500] text-red-700">Failed to load dashboard</p>
-        <p className="text-[12px] text-red-500 mt-1">{error}</p>
+      <div className="rounded-xl p-5" style={{ background: "#feeaea", border: "0.5px solid #f5c0c0" }}>
+        <p className="text-[13px] font-[500]" style={{ color: "#c0392b" }}>Failed to load dashboard</p>
+        <p className="text-[11px] mt-1" style={{ color: "#e07070" }}>{statsError}</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-4">
-      {/* Stat cards */}
-      <div className="grid grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6 gap-3">
-        <StatCard label="Total Employees"   value={stats?.totalEmployees ?? 0}
-          icon={<UsersRound size={14} />}      iconBg="bg-slate-100"  iconColor="text-slate-600" />
-        <StatCard label="Active Employees"  value={stats?.activeEmployees ?? 0}
-          icon={<ShieldCheck size={14} />}     iconBg="bg-emerald-50" iconColor="text-emerald-600" sub="on payroll" />
-        <StatCard label="App Activated"     value={stats?.appActivatedEmployees ?? 0}
-          icon={<BadgeCheck size={14} />}      iconBg="bg-blue-50"    iconColor="text-blue-600" sub={`${activationRate}% of total`} />
-        <StatCard label="Pending Requests"  value={stats?.pendingSalaryRequests ?? 0}
-          icon={<Clock3 size={14} />}          iconBg="bg-amber-50"   iconColor="text-amber-600" sub="awaiting approval" />
-        <StatCard label="Approved Requests" value={stats?.approvedRequests ?? 0}
-          icon={<ArrowDownCircle size={14} />} iconBg="bg-violet-50"  iconColor="text-violet-600" sub="in recovery" />
-        <StatCard label="Recovery Exposure" value={formatCurrency(stats?.outstandingAmount ?? 0)}
-          icon={<CircleDollarSign size={14} />} iconBg="bg-rose-50"   iconColor="text-rose-600" sub="total outstanding" />
+
+      {/* ── Page header ─────────────────────────────────────────── */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-[16px] font-[600]" style={{ color: "#1a1a1a" }}>
+            Welcome back, {user?.companyName ?? "Employer"}
+          </h1>
+          <p className="text-[12px] mt-0.5" style={{ color: "#aaa" }}>Here's what's happening with your team</p>
+        </div>
+        <p className="text-[11px]" style={{ color: "#bbb" }}>
+          {new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" })}
+        </p>
       </div>
 
-      {/* Recent salary requests */}
-      <div className="bg-white border border-slate-100 rounded-xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-          <div>
-            <p className="text-[13px] font-[600] text-slate-900">Recent Salary Requests</p>
-            <p className="text-[12px] text-slate-400 mt-0.5">Latest EWA activity from your team</p>
-          </div>
-          <Link to="/salary-requests" className="flex items-center gap-1.5 text-[12px] font-[500] text-blue-600 hover:text-blue-700 transition-colors">
-            View all <ArrowRight size={13} />
-          </Link>
+      {/* ── Alert banners ───────────────────────────────────────── */}
+      {(stats?.overdueRecoveries ?? 0) > 0 && (
+        <div className="rounded-xl px-4 py-3 flex items-center gap-3" style={{ background: "#feeaea", border: "0.5px solid #f5c0c0" }}>
+          <AlertTriangle size={14} style={{ color: "#c0392b", flexShrink: 0 }} />
+          <p className="text-[12px]" style={{ color: "#c0392b" }}>
+            <span className="font-[600]">{stats?.overdueRecoveries}</span> overdue recovery amount{stats!.overdueRecoveries !== 1 ? "s" : ""}.{" "}
+            <Link to="/recoveries" className="underline">Review now</Link>
+          </p>
         </div>
-        <div className="px-5 py-3">
-          <RecentRequests requests={recentRequests} />
+      )}
+      {(stats?.overdueSettlements ?? 0) > 0 && (
+        <div className="rounded-xl px-4 py-3 flex items-center gap-3" style={{ background: "#fef5e4", border: "0.5px solid #f5dfa0" }}>
+          <AlertTriangle size={14} style={{ color: "#b7700a", flexShrink: 0 }} />
+          <p className="text-[12px]" style={{ color: "#b7700a" }}>
+            <span className="font-[600]">{stats?.overdueSettlements}</span> overdue settlement{stats!.overdueSettlements !== 1 ? "s" : ""}.{" "}
+            <Link to="/settlements" className="underline">Review now</Link>
+          </p>
+        </div>
+      )}
+
+      {/* ── KPI strip (4 cards) ──────────────────────────────────── */}
+      {statsLoading ? (
+        <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
+          {[0,1,2,3].map(i => <Skeleton key={i} h={96} />)}
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
+          <KpiCard
+            label="Total Employees" value={stats?.totalEmployees ?? 0}
+            sub="on payroll"
+            icon={<UsersRound size={14} />} iconBg="#ecfdf5" iconColor="#059669"
+          />
+          <KpiCard
+            label="App Activated" value={stats?.appActivatedEmployees ?? 0}
+            sub={`${activationRate}% of total`}
+            icon={<BadgeCheck size={14} />} iconBg="#e8f0fe" iconColor="#1a56cc"
+          />
+          <KpiCard
+            label="Pending Requests" value={stats?.pendingSalaryRequests ?? 0}
+            sub="awaiting approval"
+            icon={<Clock3 size={14} />} iconBg="#fef5e4" iconColor="#b7700a"
+          />
+          <KpiCard
+            label="Outstanding" value={formatCurrency(stats?.outstandingAmount ?? 0)}
+            sub="total balance due"
+            icon={<CircleDollarSign size={14} />} iconBg="rgba(255,255,255,0.15)" iconColor="#fff"
+            highlight
+          />
+        </div>
+      )}
+
+      {/* ── Row 2: Trend chart + Recoveries & Settlements ───────── */}
+      <div className="grid gap-3" style={{ gridTemplateColumns: "1.4fr 1fr" }}>
+
+        {/* Trend */}
+        <div className="rounded-xl p-4" style={{ background: "#fff", border: "0.5px solid #e8ddd5" }}>
+          <div className="flex items-start justify-between mb-3">
+            <div>
+              <p className="text-[13px] font-[600]" style={{ color: "#1a1a1a" }}>Request trend</p>
+              <p className="text-[11px] mt-0.5" style={{ color: "#aaa" }}>Salary advances over last 6 months</p>
+            </div>
+            <div className="flex items-center gap-3 flex-shrink-0">
+              {[
+                { color: "#059669", label: "Requested", solid: true },
+                { color: "#1a7a40", label: "Approved",  solid: false },
+                { color: "#1a56cc", label: "Disbursed", solid: false },
+              ].map(({ color, label, solid }) => (
+                <span key={label} className="flex items-center gap-1" style={{ fontSize: "10px", color: "#888" }}>
+                  <span style={{
+                    display: "inline-block", width: 16, height: 2,
+                    background: color,
+                    borderTop: solid ? "none" : `2px dashed ${color}`,
+                    opacity: solid ? 1 : 0.8,
+                  }} />
+                  {label}
+                </span>
+              ))}
+            </div>
+          </div>
+          {trendsLoading ? <Skeleton h={100} /> : <TrendChart trends={trends} />}
+        </div>
+
+        {/* Recoveries & Settlements */}
+        <div className="rounded-xl p-4" style={{ background: "#fff", border: "0.5px solid #e8ddd5" }}>
+          <p className="text-[13px] font-[600] mb-3" style={{ color: "#1a1a1a" }}>Recoveries & Settlements</p>
+
+          {[
+            { icon: <RefreshCcw size={12} />, label: "Scheduled recoveries", value: stats?.scheduledRecoveries ?? 0, badge: "on track",    badgeBg: "#e6f4ec", badgeColor: "#1a7a40" },
+            { icon: <AlertTriangle size={12} style={{ color: "#c0392b" }} />, label: "Overdue recoveries", value: stats?.overdueRecoveries ?? 0, badge: "action needed", badgeBg: "#feeaea", badgeColor: "#c0392b" },
+            { icon: <Landmark size={12} />, label: "Pending settlements", value: stats?.pendingSettlements ?? 0, badge: "due soon",    badgeBg: "#fef5e4", badgeColor: "#b7700a" },
+            { icon: <CircleDollarSign size={12} />, label: "Amount due",  value: formatCurrency(stats?.recoveryAmountDue ?? 0), badge: null, badgeBg: "", badgeColor: "" },
+          ].map((row, i) => (
+            <div
+              key={i}
+              className="flex items-center justify-between py-2"
+              style={{ borderBottom: i < 3 ? "0.5px solid #ecfdf5" : "none" }}
+            >
+              <span className="flex items-center gap-1.5 text-[11px]" style={{ color: "#555" }}>
+                <span style={{ color: "#aaa" }}>{row.icon}</span>
+                {row.label}
+              </span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[13px] font-[600]" style={{ color: "#1a1a1a" }}>{row.value}</span>
+                {row.badge && (
+                  <span className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: row.badgeBg, color: row.badgeColor }}>
+                    {row.badge}
+                  </span>
+                )}
+              </div>
+            </div>
+          ))}
+
+          {statsLoading ? (
+            <Skeleton h={16} className="mt-3" />
+          ) : (
+            <div className="mt-3">
+              <ProgressBar value={recoveryDone} max={recoveryTotal} />
+            </div>
+          )}
         </div>
       </div>
+
+      {/* ── Row 3: Donut + Recent Activity + Insight ────────────── */}
+      <div className="grid gap-3" style={{ gridTemplateColumns: "0.75fr 1.6fr 0.75fr" }}>
+
+        {/* Donut — disbursement split */}
+        <div className="rounded-xl p-4" style={{ background: "#fff", border: "0.5px solid #e8ddd5" }}>
+          <p className="text-[13px] font-[600]" style={{ color: "#1a1a1a" }}>Request split</p>
+          <p className="text-[11px] mt-0.5 mb-3" style={{ color: "#aaa" }}>This month</p>
+
+          {statsLoading ? <Skeleton h={110} /> : (
+            <DonutChart
+              approved={stats?.approvedRequests ?? 0}
+              disbursed={stats?.disbursedRequests ?? 0}
+              pending={stats?.pendingSalaryRequests ?? 0}
+            />
+          )}
+
+          <div className="mt-3 space-y-1.5">
+            {[
+              { color: "#059669", label: "Approved",  count: stats?.approvedRequests ?? 0 },
+              { color: "#022c22", label: "Disbursed", count: stats?.disbursedRequests ?? 0 },
+              { color: "#6ee7b7", label: "Pending",   count: stats?.pendingSalaryRequests ?? 0 },
+            ].map(({ color, label, count }) => (
+              <div key={label} className="flex items-center justify-between" style={{ fontSize: "11px" }}>
+                <span className="flex items-center gap-1.5" style={{ color: "#555" }}>
+                  <span className="w-2 h-2 rounded-sm flex-shrink-0" style={{ background: color }} />
+                  {label}
+                </span>
+                <span style={{ fontWeight: 600, color: "#1a1a1a" }}>
+                  {totalRequests > 0 ? Math.round((count / totalRequests) * 100) : 0}%
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Recent activity */}
+        <div className="rounded-xl overflow-hidden" style={{ background: "#fff", border: "0.5px solid #e8ddd5" }}>
+          <div className="px-4 py-3 flex items-center justify-between" style={{ borderBottom: "0.5px solid #ecfdf5" }}>
+            <div>
+              <p className="text-[13px] font-[600]" style={{ color: "#1a1a1a" }}>Recent activity</p>
+              <p className="text-[11px] mt-0.5" style={{ color: "#aaa" }}>Latest salary advance requests</p>
+            </div>
+            <Link
+              to="/salary-requests"
+              className="flex items-center gap-1 text-[11px] font-[500] hover:underline"
+              style={{ color: "#059669" }}
+            >
+              View all <ArrowRight size={12} />
+            </Link>
+          </div>
+          <div className="px-4 py-2">
+            {statsLoading ? (
+              <div className="space-y-2 py-2">
+                {[0,1,2,3].map(i => <Skeleton key={i} h={36} />)}
+              </div>
+            ) : (
+              <RecentActivity rows={recentActivity} />
+            )}
+          </div>
+        </div>
+
+        {/* Insight card */}
+        <div
+          className="rounded-xl p-4 flex flex-col justify-between"
+          style={{ background: "#022c22", minHeight: "200px" }}
+        >
+          <div>
+            <div
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full mb-3"
+              style={{ background: "rgba(255,255,255,0.15)", fontSize: "10px", color: "rgba(255,255,255,0.8)" }}
+            >
+              <Sparkles size={11} />
+              Insight
+            </div>
+            <p className="text-[12px] leading-relaxed" style={{ color: "rgba(255,255,255,0.85)" }}>
+              {activationRate >= 70
+                ? <>App activation is at <span style={{ color: "#f4a57a", fontWeight: 600 }}>{activationRate}%</span> — great adoption! Employees with app access get faster request approvals.</>
+                : activationRate > 0
+                ? <>Only <span style={{ color: "#f4a57a", fontWeight: 600 }}>{activationRate}%</span> of employees have activated the app. Encourage the remaining <span style={{ color: "#f4a57a", fontWeight: 600 }}>{100 - activationRate}%</span> for faster processing.</>
+                : <>Encourage employees to activate the MobPae app for instant salary advance access and faster approvals.</>
+              }
+            </p>
+          </div>
+          <div className="flex items-center justify-between mt-4">
+            <div className="flex gap-1">
+              <span className="w-1.5 h-1.5 rounded-full" style={{ background: "#f4a57a" }} />
+              <span className="w-1.5 h-1.5 rounded-full" style={{ background: "rgba(255,255,255,0.25)" }} />
+              <span className="w-1.5 h-1.5 rounded-full" style={{ background: "rgba(255,255,255,0.25)" }} />
+            </div>
+            <Link
+              to="/employees"
+              className="text-[10px] flex items-center gap-1 hover:opacity-80 transition-opacity"
+              style={{ color: "#f4a57a" }}
+            >
+              View employees <ArrowRight size={10} />
+            </Link>
+          </div>
+        </div>
+
+      </div>
+
+      {/* ── Row 4: Employees & Salary Requests summary ──────────── */}
+      <div className="grid grid-cols-2 xl:grid-cols-3 gap-3">
+        <div className="rounded-xl p-4" style={{ background: "#fff", border: "0.5px solid #e8ddd5" }}>
+          <p className="text-[11px] font-[700] uppercase tracking-[0.06em] mb-3" style={{ color: "#bbb" }}>Employees</p>
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { label: "Total",     val: stats?.totalEmployees ?? 0,        icon: <UsersRound size={12} />,  color: "#059669" },
+              { label: "Active",    val: stats?.activeEmployees ?? 0,       icon: <ShieldCheck size={12} />, color: "#1a7a40" },
+              { label: "On App",    val: stats?.appActivatedEmployees ?? 0, icon: <BadgeCheck size={12} />,  color: "#1a56cc" },
+            ].map(({ label, val, icon, color }) => (
+              <div key={label} className="text-center">
+                <div className="w-7 h-7 rounded-lg mx-auto mb-1.5 flex items-center justify-center" style={{ background: `${color}15`, color }}>
+                  {icon}
+                </div>
+                <p className="text-[16px] font-[700]" style={{ color: "#1a1a1a" }}>{val}</p>
+                <p className="text-[10px]" style={{ color: "#bbb" }}>{label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-xl p-4" style={{ background: "#fff", border: "0.5px solid #e8ddd5" }}>
+          <p className="text-[11px] font-[700] uppercase tracking-[0.06em] mb-3" style={{ color: "#bbb" }}>Salary Requests</p>
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { label: "Pending",   val: stats?.pendingSalaryRequests ?? 0, color: "#b7700a" },
+              { label: "Approved",  val: stats?.approvedRequests ?? 0,      color: "#1a7a40" },
+              { label: "Disbursed", val: stats?.disbursedRequests ?? 0,     color: "#1a56cc" },
+            ].map(({ label, val, color }) => (
+              <div key={label} className="text-center">
+                <p className="text-[16px] font-[700]" style={{ color: "#1a1a1a" }}>{val}</p>
+                <p className="text-[10px]" style={{ color }}>{label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-xl p-4 hidden xl:block" style={{ background: "#fff", border: "0.5px solid #e8ddd5" }}>
+          <p className="text-[11px] font-[700] uppercase tracking-[0.06em] mb-3" style={{ color: "#bbb" }}>Settlements</p>
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { label: "Pending",     val: stats?.pendingSettlements ?? 0,              color: "#b7700a" },
+              { label: "Overdue",     val: stats?.overdueSettlements ?? 0,              color: "#c0392b" },
+              { label: "Outstanding", val: formatCurrency(stats?.outstandingAmount ?? 0), color: "#059669" },
+            ].map(({ label, val, color }) => (
+              <div key={label} className="text-center">
+                <p className="text-[14px] font-[700] leading-tight" style={{ color: "#1a1a1a" }}>{val}</p>
+                <p className="text-[10px] mt-0.5" style={{ color }}>{label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
     </div>
   );
 }

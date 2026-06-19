@@ -1,7 +1,7 @@
 import { Check, ChevronRight, Search, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useToast } from "../../hooks/useToast";
-import { getApiErrorMessage } from "../../services/api-errors";
+import { getApiErrorMessage, isForbidden } from "../../services/api-errors";
 import { salaryRequestService } from "../../services/salary-request.service";
 import type { SalaryRequest, SalaryRequestStatus } from "../../types";
 import { formatCurrency, formatDate } from "../../utils/formatters";
@@ -113,7 +113,10 @@ export function SalaryRequestsPage() {
       toast.success("Request approved", selected.requestId);
       setSelected(null);
     } catch (err) {
-      toast.error("Approval failed", getApiErrorMessage(err));
+      const msg = isForbidden(err)
+        ? "You don't have permission to approve this request."
+        : getApiErrorMessage(err);
+      toast.error("Approval failed", msg);
     } finally { setAction(null); }
   };
 
@@ -127,7 +130,10 @@ export function SalaryRequestsPage() {
       setSelected(null);
       setRemarks("");
     } catch (err) {
-      toast.error("Rejection failed", getApiErrorMessage(err));
+      const msg = isForbidden(err)
+        ? "You don't have permission to reject this request."
+        : getApiErrorMessage(err);
+      toast.error("Rejection failed", msg);
     } finally { setAction(null); }
   };
 
