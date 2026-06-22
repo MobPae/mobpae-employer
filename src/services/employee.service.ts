@@ -24,7 +24,7 @@ export const employeeService = {
   },
 
   async updateEmployee(id: string, payload: Partial<EmployeePayload>): Promise<Employee> {
-    const { data } = await httpClient.put(`/employees/${id}`, payload);
+    const { data } = await httpClient.patch(`/employees/${id}`, payload);
     return mapEmployee(unwrapItem(data, ["employee"]));
   },
 

@@ -3,10 +3,10 @@ import type { ButtonHTMLAttributes, ReactNode } from "react";
 type ButtonVariant = "primary" | "secondary" | "danger" | "ghost";
 
 const variants: Record<ButtonVariant, string> = {
-  primary: "bg-blue-600 text-white shadow-sm shadow-blue-600/20 hover:bg-blue-700 disabled:bg-blue-300",
-  secondary: "border border-blue-100 bg-white text-blue-900 hover:bg-blue-50 disabled:text-slate-400",
-  danger: "bg-rose-600 text-white hover:bg-rose-700 disabled:bg-rose-300",
-  ghost: "text-blue-800 hover:bg-blue-50 disabled:text-slate-400"
+  primary:   "bg-[#7679FF] text-white shadow-sm shadow-[#7679FF]/20 hover:bg-[#5659D9] disabled:bg-[#A5A7FF]",
+  secondary: "border border-[#E4E4EF] bg-white text-[#191A2E] hover:bg-[#F0F0F8] disabled:text-[#62657A]",
+  danger:    "bg-red-600 text-white hover:bg-red-700 disabled:bg-red-300",
+  ghost:     "text-[#5659D9] hover:bg-[#ECEBFF] disabled:text-[#62657A]",
 };
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -17,7 +17,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 export function Button({ className = "", variant = "primary", icon, children, ...props }: ButtonProps) {
   return (
     <button
-      className={`inline-flex min-h-9 items-center justify-center gap-2 rounded-md px-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:shadow-none ${variants[variant]} ${className}`}
+      className={`inline-flex min-h-9 items-center justify-center gap-2 rounded-lg px-3 text-[13px] font-[600] transition disabled:cursor-not-allowed disabled:shadow-none ${variants[variant]} ${className}`}
       {...props}
     >
       {icon}

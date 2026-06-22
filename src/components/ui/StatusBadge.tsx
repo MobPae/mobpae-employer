@@ -4,19 +4,24 @@ import { readableStatus } from "../../utils/formatters";
 type Status = EmploymentStatus | SalaryRequestStatus | RepaymentStatus | "ACTIVE_ACCESS" | "NO_ACCESS";
 
 const toneByStatus: Record<Status, string> = {
-  ACTIVE: "bg-emerald-50 text-emerald-700 ring-emerald-200",
-  INACTIVE: "bg-blue-50 text-blue-700 ring-blue-100",
-  SUBMITTED: "bg-amber-50 text-amber-700 ring-amber-200",
-  UNDER_REVIEW: "bg-sky-50 text-sky-700 ring-sky-200",
-  APPROVED: "bg-indigo-50 text-indigo-700 ring-indigo-200",
-  REJECTED: "bg-rose-50 text-rose-700 ring-rose-200",
-  DISBURSED: "bg-violet-50 text-violet-700 ring-violet-200",
-  REPAID: "bg-emerald-50 text-emerald-700 ring-emerald-200",
-  PENDING: "bg-amber-50 text-amber-700 ring-amber-200",
-  PAID: "bg-emerald-50 text-emerald-700 ring-emerald-200",
-  OVERDUE: "bg-rose-50 text-rose-700 ring-rose-200",
-  ACTIVE_ACCESS: "bg-cyan-50 text-cyan-700 ring-cyan-200",
-  NO_ACCESS: "bg-blue-50 text-blue-700 ring-blue-100"
+  ACTIVE:              "bg-[#EBF6E3] text-[#3B6D11] ring-[#9FD5B0]",
+  INACTIVE:            "bg-[#F0F0F8] text-[#62657A] ring-[#D4D5E0]",
+  SUBMITTED:           "bg-amber-50 text-amber-700 ring-amber-200",
+  UNDER_REVIEW:        "bg-amber-50 text-amber-700 ring-amber-200",
+  EMPLOYER_APPROVED:   "bg-[#E7F1FC] text-[#185FA5] ring-[#B5D4F4]",
+  EMPLOYER_REJECTED:   "bg-red-50 text-red-600 ring-red-200",
+  APPROVED:            "bg-[#E7F1FC] text-[#185FA5] ring-[#B5D4F4]",
+  REJECTED:            "bg-red-50 text-red-600 ring-red-200",
+  READY_FOR_DISBURSAL: "bg-lime-50 text-lime-700 ring-lime-200",
+  DISBURSED:           "bg-[#EBF6E3] text-[#3B6D11] ring-[#9FD5B0]",
+  REPAYMENT_SCHEDULED: "bg-[#FEF1E7] text-[#9A4910] ring-[#F5CBA7]",
+  REPAID:              "bg-[#D4EDE5] text-[#1A5944] ring-[#A8D5C5]",
+  PENDING:             "bg-amber-50 text-amber-700 ring-amber-200",
+  SCHEDULED:           "bg-[#FEF1E7] text-[#9A4910] ring-[#F5CBA7]",
+  PAID:                "bg-[#EBF6E3] text-[#3B6D11] ring-[#9FD5B0]",
+  OVERDUE:             "bg-red-50 text-red-600 ring-red-200",
+  ACTIVE_ACCESS:       "bg-[#EBF6E3] text-[#3B6D11] ring-[#9FD5B0]",
+  NO_ACCESS:           "bg-[#F0F0F8] text-[#62657A] ring-[#D4D5E0]",
 };
 
 export function StatusBadge({ status, label }: { status: Status; label?: string }) {

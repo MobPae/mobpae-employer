@@ -1,6 +1,5 @@
 import {
   AlertTriangle,
-  ArrowDownCircle,
   ArrowRight,
   BadgeCheck,
   CircleDollarSign,
@@ -28,14 +27,14 @@ const STATUS_STYLES: Record<string, { bg: string; text: string; dot: string }> =
   PENDING:      { bg: "#fef5e4", text: "#b7700a", dot: "#b7700a" },
   SUBMITTED:    { bg: "#e8f4fd", text: "#1a6fa0", dot: "#1a6fa0" },
   UNDER_REVIEW: { bg: "#f0eafe", text: "#6b3fa0", dot: "#6b3fa0" },
-  APPROVED:     { bg: "#e6f4ec", text: "#1a7a40", dot: "#1a7a40" },
+  APPROVED:     { bg: "#e6f4ec", text: "#5659D9", dot: "#5659D9" },
   REJECTED:     { bg: "#feeaea", text: "#c0392b", dot: "#c0392b" },
   DISBURSED:    { bg: "#e8f0fe", text: "#1a56cc", dot: "#1a56cc" },
-  REPAID:       { bg: "#f2f2f2", text: "#777",    dot: "#bbb"    },
+  REPAID:       { bg: "#f2f2f2", text: "#777",    dot: "#B7B9C7"    },
 };
 
 function StatusPill({ status }: { status: string }) {
-  const s = STATUS_STYLES[status] ?? { bg: "#f2f2f2", text: "#777", dot: "#bbb" };
+  const s = STATUS_STYLES[status] ?? { bg: "#f2f2f2", text: "#777", dot: "#B7B9C7" };
   const label = status.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
   return (
     <span
@@ -62,12 +61,12 @@ function KpiCard({
     <div
       className="rounded-xl p-4 flex flex-col gap-3"
       style={{
-        background: highlight ? "#059669" : "#fff",
-        border: highlight ? "none" : "0.5px solid #e8ddd5",
+        background: highlight ? "#7679FF" : "#fff",
+        border: highlight ? "none" : "0.5px solid #E4E4EF",
       }}
     >
       <div className="flex items-center justify-between">
-        <span className="text-[11px] font-[500]" style={{ color: highlight ? "rgba(255,255,255,0.6)" : "#999" }}>
+        <span className="text-[11px] font-[500]" style={{ color: highlight ? "rgba(255,255,255,0.6)" : "#8D90A3" }}>
           {label}
         </span>
         <div
@@ -80,12 +79,12 @@ function KpiCard({
       <div>
         <p
           className="text-[22px] font-[700] leading-none tracking-tight"
-          style={{ color: highlight ? "#fff" : "#1a1a1a" }}
+          style={{ color: highlight ? "#fff" : "#191A2E" }}
         >
           {value}
         </p>
         {sub && (
-          <p className="text-[10px] mt-1" style={{ color: highlight ? "rgba(255,255,255,0.4)" : "#bbb" }}>
+          <p className="text-[11px] mt-1" style={{ color: highlight ? "rgba(255,255,255,0.4)" : "#B7B9C7" }}>
             {sub}
           </p>
         )}
@@ -140,11 +139,11 @@ function TrendChart({ trends }: { trends: DashboardTrend[] }) {
           {
             label: "Requested",
             data: trends.map(t => t.requestCount),
-            borderColor: "#059669",
-            backgroundColor: "rgba(5,150,105,0.07)",
+            borderColor: "#7679FF",
+            backgroundColor: "rgba(118,121,255,0.07)",
             fill: true,
             tension: 0.45,
-            pointBackgroundColor: "#059669",
+            pointBackgroundColor: "#7679FF",
             pointRadius: 3,
             pointHoverRadius: 5,
             borderWidth: 2,
@@ -152,11 +151,11 @@ function TrendChart({ trends }: { trends: DashboardTrend[] }) {
           {
             label: "Approved",
             data: trends.map(t => t.approvedCount),
-            borderColor: "#1a7a40",
+            borderColor: "#5659D9",
             backgroundColor: "transparent",
             fill: false,
             tension: 0.45,
-            pointBackgroundColor: "#1a7a40",
+            pointBackgroundColor: "#5659D9",
             pointRadius: 3,
             pointHoverRadius: 5,
             borderWidth: 1.5,
@@ -194,11 +193,11 @@ function TrendChart({ trends }: { trends: DashboardTrend[] }) {
         scales: {
           x: {
             grid: { display: false },
-            ticks: { font: { size: 10 }, color: "#bbb" },
+            ticks: { font: { size: 10 }, color: "#B7B9C7" },
           },
           y: {
             grid: { color: "rgba(0,0,0,0.04)" },
-            ticks: { font: { size: 10 }, color: "#bbb", stepSize: 5 },
+            ticks: { font: { size: 10 }, color: "#B7B9C7", stepSize: 5 },
             beginAtZero: true,
           },
         },
@@ -214,7 +213,7 @@ function TrendChart({ trends }: { trends: DashboardTrend[] }) {
   if (!trends.length) {
     return (
       <div className="h-[100px] flex items-center justify-center">
-        <p className="text-[11px]" style={{ color: "#ccc" }}>Trend data not yet available</p>
+        <p className="text-[11px]" style={{ color: "#B7B9C7" }}>Trend data not yet available</p>
       </div>
     );
   }
@@ -241,7 +240,7 @@ function DonutChart({ approved, disbursed, pending }: { approved: number; disbur
         labels: ["Approved", "Disbursed", "Pending"],
         datasets: [{
           data: [approved, disbursed, pending],
-          backgroundColor: ["#059669", "#022c22", "#6ee7b7"],
+          backgroundColor: ["#7679FF", "#5659D9", "#ECEBFF"],
           borderWidth: 0,
           hoverOffset: 4,
         }],
@@ -277,11 +276,11 @@ function RecentActivity({ rows }: { rows: SalaryRequest[] }) {
   if (!rows.length) {
     return (
       <div className="flex flex-col items-center justify-center py-8 text-center">
-        <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-2" style={{ background: "#ecfdf5" }}>
-          <WalletCards size={16} style={{ color: "#059669" }} />
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-2" style={{ background: "#ECEBFF" }}>
+          <WalletCards size={16} style={{ color: "#7679FF" }} />
         </div>
-        <p className="text-[12px] font-[500]" style={{ color: "#555" }}>No recent activity</p>
-        <p className="text-[11px] mt-1" style={{ color: "#bbb" }}>Salary requests will appear here</p>
+        <p className="text-[12px] font-[500]" style={{ color: "#62657A" }}>No recent activity</p>
+        <p className="text-[11px] mt-1" style={{ color: "#B7B9C7" }}>Salary requests will appear here</p>
       </div>
     );
   }
@@ -290,37 +289,37 @@ function RecentActivity({ rows }: { rows: SalaryRequest[] }) {
     <div className="overflow-x-auto">
       <table className="w-full" style={{ fontSize: "12px", borderCollapse: "collapse" }}>
         <thead>
-          <tr style={{ borderBottom: "0.5px solid #f0ebe7" }}>
-            <th className="text-left pb-2" style={{ fontSize: "10px", fontWeight: 600, color: "#bbb", textTransform: "uppercase", letterSpacing: "0.05em", paddingRight: "12px" }}>Employee</th>
-            <th className="text-right pb-2" style={{ fontSize: "10px", fontWeight: 600, color: "#bbb", textTransform: "uppercase", letterSpacing: "0.05em", paddingRight: "12px" }}>Requested</th>
-            <th className="text-left pb-2" style={{ fontSize: "10px", fontWeight: 600, color: "#bbb", textTransform: "uppercase", letterSpacing: "0.05em", paddingRight: "12px" }}>Status</th>
-            <th className="text-right pb-2" style={{ fontSize: "10px", fontWeight: 600, color: "#bbb", textTransform: "uppercase", letterSpacing: "0.05em" }}>Date</th>
+          <tr style={{ borderBottom: "0.5px solid #F0F0F8" }}>
+            <th className="text-left pb-2" style={{ fontSize: "10px", fontWeight: 600, color: "#B7B9C7", textTransform: "uppercase", letterSpacing: "0.05em", paddingRight: "12px" }}>Employee</th>
+            <th className="text-right pb-2" style={{ fontSize: "10px", fontWeight: 600, color: "#B7B9C7", textTransform: "uppercase", letterSpacing: "0.05em", paddingRight: "12px" }}>Requested</th>
+            <th className="text-left pb-2" style={{ fontSize: "10px", fontWeight: 600, color: "#B7B9C7", textTransform: "uppercase", letterSpacing: "0.05em", paddingRight: "12px" }}>Status</th>
+            <th className="text-right pb-2" style={{ fontSize: "10px", fontWeight: 600, color: "#B7B9C7", textTransform: "uppercase", letterSpacing: "0.05em" }}>Date</th>
           </tr>
         </thead>
         <tbody>
           {rows.map(r => (
-            <tr key={r.id} style={{ borderTop: "0.5px solid #ecfdf5" }}>
+            <tr key={r.id} style={{ borderTop: "0.5px solid #E4E4EF" }}>
               <td style={{ padding: "7px 12px 7px 0" }}>
                 <div className="flex items-center gap-2">
                   <div
                     className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
-                    style={{ background: "#ecfdf5", fontSize: "9px", fontWeight: 700, color: "#059669" }}
+                    style={{ background: "#ECEBFF", fontSize: "9px", fontWeight: 700, color: "#7679FF" }}
                   >
                     {(r.employeeName ?? "?").slice(0, 2).toUpperCase()}
                   </div>
                   <div>
-                    <p style={{ fontWeight: 500, color: "#1a1a1a", lineHeight: 1 }}>{r.employeeName}</p>
-                    <p style={{ fontSize: "10px", color: "#bbb", marginTop: 2 }}>{r.requestId}</p>
+                    <p style={{ fontWeight: 500, color: "#191A2E", lineHeight: 1 }}>{r.employeeName}</p>
+                    <p style={{ fontSize: "10px", color: "#B7B9C7", marginTop: 2 }}>{r.requestId}</p>
                   </div>
                 </div>
               </td>
-              <td className="text-right" style={{ padding: "7px 12px 7px 0", fontWeight: 600, color: "#1a1a1a", fontVariantNumeric: "tabular-nums" }}>
+              <td className="text-right" style={{ padding: "7px 12px 7px 0", fontWeight: 600, color: "#191A2E", fontVariantNumeric: "tabular-nums" }}>
                 {formatCurrency(r.requestedAmount)}
               </td>
               <td style={{ padding: "7px 12px 7px 0" }}>
                 <StatusPill status={r.status} />
               </td>
-              <td className="text-right" style={{ padding: "7px 0", color: "#bbb", fontVariantNumeric: "tabular-nums" }}>
+              <td className="text-right" style={{ padding: "7px 0", color: "#B7B9C7", fontVariantNumeric: "tabular-nums" }}>
                 {formatDate(r.createdDate)}
               </td>
             </tr>
@@ -335,15 +334,15 @@ function RecentActivity({ rows }: { rows: SalaryRequest[] }) {
 // Progress bar
 // ─────────────────────────────────────────────────────────────────────────────
 
-function ProgressBar({ value, max, color = "#059669" }: { value: number; max: number; color?: string }) {
+function ProgressBar({ value, max, color = "#7679FF" }: { value: number; max: number; color?: string }) {
   const pct = max > 0 ? Math.min(100, Math.round((value / max) * 100)) : 0;
   return (
     <div>
       <div className="flex justify-between mb-1">
-        <span style={{ fontSize: "10px", color: "#aaa" }}>Recovery progress</span>
+        <span style={{ fontSize: "10px", color: "#8D90A3" }}>Recovery progress</span>
         <span style={{ fontSize: "10px", fontWeight: 600, color }}>{pct}%</span>
       </div>
-      <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "#f0ebe7" }}>
+      <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "#F0F0F8" }}>
         <div className="h-full rounded-full" style={{ width: `${pct}%`, background: color }} />
       </div>
     </div>
@@ -370,7 +369,7 @@ function Skeleton({ h, className = "" }: { h: number; className?: string }) {
 export function DashboardPage() {
   const { user } = useAuth();
 
-  const { data: stats, loading: statsLoading, error: statsError } = useFetch<DashboardStats>(
+  const { data: stats, loading: statsLoading, error: statsError, refresh: refreshStats } = useFetch<DashboardStats>(
     () => dashboardService.getDashboardStats(), []
   );
   const { data: trends = [], loading: trendsLoading } = useFetch<DashboardTrend[]>(
@@ -396,6 +395,13 @@ export function DashboardPage() {
       <div className="rounded-xl p-5" style={{ background: "#feeaea", border: "0.5px solid #f5c0c0" }}>
         <p className="text-[13px] font-[500]" style={{ color: "#c0392b" }}>Failed to load dashboard</p>
         <p className="text-[11px] mt-1" style={{ color: "#e07070" }}>{statsError}</p>
+        <button
+          type="button"
+          onClick={() => void refreshStats()}
+          className="mt-3 h-8 px-3 rounded-lg bg-white border border-red-200 text-[12px] font-[600] text-red-700 hover:bg-red-50"
+        >
+          Try again
+        </button>
       </div>
     );
   }
@@ -406,12 +412,12 @@ export function DashboardPage() {
       {/* ── Page header ─────────────────────────────────────────── */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-[16px] font-[600]" style={{ color: "#1a1a1a" }}>
+          <h1 className="text-[16px] font-[600]" style={{ color: "#191A2E" }}>
             Welcome back, {user?.companyName ?? "Employer"}
           </h1>
-          <p className="text-[12px] mt-0.5" style={{ color: "#aaa" }}>Here's what's happening with your team</p>
+          <p className="text-[12px] mt-0.5" style={{ color: "#8D90A3" }}>Here's what's happening with your team</p>
         </div>
-        <p className="text-[11px]" style={{ color: "#bbb" }}>
+        <p className="text-[11px]" style={{ color: "#B7B9C7" }}>
           {new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" })}
         </p>
       </div>
@@ -446,7 +452,7 @@ export function DashboardPage() {
           <KpiCard
             label="Total Employees" value={stats?.totalEmployees ?? 0}
             sub="on payroll"
-            icon={<UsersRound size={14} />} iconBg="#ecfdf5" iconColor="#059669"
+            icon={<UsersRound size={14} />} iconBg="#ECEBFF" iconColor="#7679FF"
           />
           <KpiCard
             label="App Activated" value={stats?.appActivatedEmployees ?? 0}
@@ -471,19 +477,19 @@ export function DashboardPage() {
       <div className="grid gap-3" style={{ gridTemplateColumns: "1.4fr 1fr" }}>
 
         {/* Trend */}
-        <div className="rounded-xl p-4" style={{ background: "#fff", border: "0.5px solid #e8ddd5" }}>
+        <div className="rounded-xl p-4" style={{ background: "#fff", border: "0.5px solid #E4E4EF" }}>
           <div className="flex items-start justify-between mb-3">
             <div>
-              <p className="text-[13px] font-[600]" style={{ color: "#1a1a1a" }}>Request trend</p>
-              <p className="text-[11px] mt-0.5" style={{ color: "#aaa" }}>Salary advances over last 6 months</p>
+              <p className="text-[13px] font-[600]" style={{ color: "#191A2E" }}>Request trend</p>
+              <p className="text-[11px] mt-0.5" style={{ color: "#8D90A3" }}>Salary advances over last 6 months</p>
             </div>
             <div className="flex items-center gap-3 flex-shrink-0">
               {[
-                { color: "#059669", label: "Requested", solid: true },
-                { color: "#1a7a40", label: "Approved",  solid: false },
+                { color: "#7679FF", label: "Requested", solid: true },
+                { color: "#5659D9", label: "Approved",  solid: false },
                 { color: "#1a56cc", label: "Disbursed", solid: false },
               ].map(({ color, label, solid }) => (
-                <span key={label} className="flex items-center gap-1" style={{ fontSize: "10px", color: "#888" }}>
+                <span key={label} className="flex items-center gap-1" style={{ fontSize: "10px", color: "#8D90A3" }}>
                   <span style={{
                     display: "inline-block", width: 16, height: 2,
                     background: color,
@@ -495,15 +501,15 @@ export function DashboardPage() {
               ))}
             </div>
           </div>
-          {trendsLoading ? <Skeleton h={100} /> : <TrendChart trends={trends} />}
+          {trendsLoading ? <Skeleton h={100} /> : <TrendChart trends={trends ?? []} />}
         </div>
 
         {/* Recoveries & Settlements */}
-        <div className="rounded-xl p-4" style={{ background: "#fff", border: "0.5px solid #e8ddd5" }}>
-          <p className="text-[13px] font-[600] mb-3" style={{ color: "#1a1a1a" }}>Recoveries & Settlements</p>
+        <div className="rounded-xl p-4" style={{ background: "#fff", border: "0.5px solid #E4E4EF" }}>
+          <p className="text-[13px] font-[600] mb-3" style={{ color: "#191A2E" }}>Recoveries & Settlements</p>
 
           {[
-            { icon: <RefreshCcw size={12} />, label: "Scheduled recoveries", value: stats?.scheduledRecoveries ?? 0, badge: "on track",    badgeBg: "#e6f4ec", badgeColor: "#1a7a40" },
+            { icon: <RefreshCcw size={12} />, label: "Scheduled recoveries", value: stats?.scheduledRecoveries ?? 0, badge: "on track",    badgeBg: "#e6f4ec", badgeColor: "#5659D9" },
             { icon: <AlertTriangle size={12} style={{ color: "#c0392b" }} />, label: "Overdue recoveries", value: stats?.overdueRecoveries ?? 0, badge: "action needed", badgeBg: "#feeaea", badgeColor: "#c0392b" },
             { icon: <Landmark size={12} />, label: "Pending settlements", value: stats?.pendingSettlements ?? 0, badge: "due soon",    badgeBg: "#fef5e4", badgeColor: "#b7700a" },
             { icon: <CircleDollarSign size={12} />, label: "Amount due",  value: formatCurrency(stats?.recoveryAmountDue ?? 0), badge: null, badgeBg: "", badgeColor: "" },
@@ -511,16 +517,16 @@ export function DashboardPage() {
             <div
               key={i}
               className="flex items-center justify-between py-2"
-              style={{ borderBottom: i < 3 ? "0.5px solid #ecfdf5" : "none" }}
+              style={{ borderBottom: i < 3 ? "0.5px solid #E4E4EF" : "none" }}
             >
-              <span className="flex items-center gap-1.5 text-[11px]" style={{ color: "#555" }}>
-                <span style={{ color: "#aaa" }}>{row.icon}</span>
+              <span className="flex items-center gap-1.5 text-[11px]" style={{ color: "#62657A" }}>
+                <span style={{ color: "#8D90A3" }}>{row.icon}</span>
                 {row.label}
               </span>
               <div className="flex items-center gap-1.5">
-                <span className="text-[13px] font-[600]" style={{ color: "#1a1a1a" }}>{row.value}</span>
+                <span className="text-[13px] font-[600]" style={{ color: "#191A2E" }}>{row.value}</span>
                 {row.badge && (
-                  <span className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: row.badgeBg, color: row.badgeColor }}>
+                  <span className="text-[11px] px-2 py-0.5 rounded-full" style={{ background: row.badgeBg, color: row.badgeColor }}>
                     {row.badge}
                   </span>
                 )}
@@ -542,9 +548,9 @@ export function DashboardPage() {
       <div className="grid gap-3" style={{ gridTemplateColumns: "0.75fr 1.6fr 0.75fr" }}>
 
         {/* Donut — disbursement split */}
-        <div className="rounded-xl p-4" style={{ background: "#fff", border: "0.5px solid #e8ddd5" }}>
-          <p className="text-[13px] font-[600]" style={{ color: "#1a1a1a" }}>Request split</p>
-          <p className="text-[11px] mt-0.5 mb-3" style={{ color: "#aaa" }}>This month</p>
+        <div className="rounded-xl p-4" style={{ background: "#fff", border: "0.5px solid #E4E4EF" }}>
+          <p className="text-[13px] font-[600]" style={{ color: "#191A2E" }}>Request split</p>
+          <p className="text-[11px] mt-0.5 mb-3" style={{ color: "#8D90A3" }}>This month</p>
 
           {statsLoading ? <Skeleton h={110} /> : (
             <DonutChart
@@ -556,16 +562,16 @@ export function DashboardPage() {
 
           <div className="mt-3 space-y-1.5">
             {[
-              { color: "#059669", label: "Approved",  count: stats?.approvedRequests ?? 0 },
-              { color: "#022c22", label: "Disbursed", count: stats?.disbursedRequests ?? 0 },
-              { color: "#6ee7b7", label: "Pending",   count: stats?.pendingSalaryRequests ?? 0 },
+              { color: "#7679FF", label: "Approved",  count: stats?.approvedRequests ?? 0 },
+              { color: "#5659D9", label: "Disbursed", count: stats?.disbursedRequests ?? 0 },
+              { color: "#ECEBFF", label: "Pending",   count: stats?.pendingSalaryRequests ?? 0 },
             ].map(({ color, label, count }) => (
               <div key={label} className="flex items-center justify-between" style={{ fontSize: "11px" }}>
-                <span className="flex items-center gap-1.5" style={{ color: "#555" }}>
+                <span className="flex items-center gap-1.5" style={{ color: "#62657A" }}>
                   <span className="w-2 h-2 rounded-sm flex-shrink-0" style={{ background: color }} />
                   {label}
                 </span>
-                <span style={{ fontWeight: 600, color: "#1a1a1a" }}>
+                <span style={{ fontWeight: 600, color: "#191A2E" }}>
                   {totalRequests > 0 ? Math.round((count / totalRequests) * 100) : 0}%
                 </span>
               </div>
@@ -574,16 +580,16 @@ export function DashboardPage() {
         </div>
 
         {/* Recent activity */}
-        <div className="rounded-xl overflow-hidden" style={{ background: "#fff", border: "0.5px solid #e8ddd5" }}>
-          <div className="px-4 py-3 flex items-center justify-between" style={{ borderBottom: "0.5px solid #ecfdf5" }}>
+        <div className="rounded-xl overflow-hidden" style={{ background: "#fff", border: "0.5px solid #E4E4EF" }}>
+          <div className="px-4 py-3 flex items-center justify-between" style={{ borderBottom: "0.5px solid #E4E4EF" }}>
             <div>
-              <p className="text-[13px] font-[600]" style={{ color: "#1a1a1a" }}>Recent activity</p>
-              <p className="text-[11px] mt-0.5" style={{ color: "#aaa" }}>Latest salary advance requests</p>
+              <p className="text-[13px] font-[600]" style={{ color: "#191A2E" }}>Recent activity</p>
+              <p className="text-[11px] mt-0.5" style={{ color: "#8D90A3" }}>Latest salary advance requests</p>
             </div>
             <Link
               to="/salary-requests"
               className="flex items-center gap-1 text-[11px] font-[500] hover:underline"
-              style={{ color: "#059669" }}
+              style={{ color: "#7679FF" }}
             >
               View all <ArrowRight size={12} />
             </Link>
@@ -602,7 +608,7 @@ export function DashboardPage() {
         {/* Insight card */}
         <div
           className="rounded-xl p-4 flex flex-col justify-between"
-          style={{ background: "#022c22", minHeight: "200px" }}
+          style={{ background: "#191A2E", minHeight: "200px" }}
         >
           <div>
             <div
@@ -629,7 +635,7 @@ export function DashboardPage() {
             </div>
             <Link
               to="/employees"
-              className="text-[10px] flex items-center gap-1 hover:opacity-80 transition-opacity"
+              className="text-[11px] flex items-center gap-1 hover:opacity-80 transition-opacity"
               style={{ color: "#f4a57a" }}
             >
               View employees <ArrowRight size={10} />
@@ -641,52 +647,52 @@ export function DashboardPage() {
 
       {/* ── Row 4: Employees & Salary Requests summary ──────────── */}
       <div className="grid grid-cols-2 xl:grid-cols-3 gap-3">
-        <div className="rounded-xl p-4" style={{ background: "#fff", border: "0.5px solid #e8ddd5" }}>
-          <p className="text-[11px] font-[700] uppercase tracking-[0.06em] mb-3" style={{ color: "#bbb" }}>Employees</p>
+        <div className="rounded-xl p-4" style={{ background: "#fff", border: "0.5px solid #E4E4EF" }}>
+          <p className="text-[11px] font-[700] uppercase tracking-[0.06em] mb-3" style={{ color: "#B7B9C7" }}>Employees</p>
           <div className="grid grid-cols-3 gap-2">
             {[
-              { label: "Total",     val: stats?.totalEmployees ?? 0,        icon: <UsersRound size={12} />,  color: "#059669" },
-              { label: "Active",    val: stats?.activeEmployees ?? 0,       icon: <ShieldCheck size={12} />, color: "#1a7a40" },
+              { label: "Total",     val: stats?.totalEmployees ?? 0,        icon: <UsersRound size={12} />,  color: "#7679FF" },
+              { label: "Active",    val: stats?.activeEmployees ?? 0,       icon: <ShieldCheck size={12} />, color: "#5659D9" },
               { label: "On App",    val: stats?.appActivatedEmployees ?? 0, icon: <BadgeCheck size={12} />,  color: "#1a56cc" },
             ].map(({ label, val, icon, color }) => (
               <div key={label} className="text-center">
                 <div className="w-7 h-7 rounded-lg mx-auto mb-1.5 flex items-center justify-center" style={{ background: `${color}15`, color }}>
                   {icon}
                 </div>
-                <p className="text-[16px] font-[700]" style={{ color: "#1a1a1a" }}>{val}</p>
-                <p className="text-[10px]" style={{ color: "#bbb" }}>{label}</p>
+                <p className="text-[16px] font-[700]" style={{ color: "#191A2E" }}>{val}</p>
+                <p className="text-[11px]" style={{ color: "#B7B9C7" }}>{label}</p>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="rounded-xl p-4" style={{ background: "#fff", border: "0.5px solid #e8ddd5" }}>
-          <p className="text-[11px] font-[700] uppercase tracking-[0.06em] mb-3" style={{ color: "#bbb" }}>Salary Requests</p>
+        <div className="rounded-xl p-4" style={{ background: "#fff", border: "0.5px solid #E4E4EF" }}>
+          <p className="text-[11px] font-[700] uppercase tracking-[0.06em] mb-3" style={{ color: "#B7B9C7" }}>Salary Requests</p>
           <div className="grid grid-cols-3 gap-2">
             {[
               { label: "Pending",   val: stats?.pendingSalaryRequests ?? 0, color: "#b7700a" },
-              { label: "Approved",  val: stats?.approvedRequests ?? 0,      color: "#1a7a40" },
+              { label: "Approved",  val: stats?.approvedRequests ?? 0,      color: "#5659D9" },
               { label: "Disbursed", val: stats?.disbursedRequests ?? 0,     color: "#1a56cc" },
             ].map(({ label, val, color }) => (
               <div key={label} className="text-center">
-                <p className="text-[16px] font-[700]" style={{ color: "#1a1a1a" }}>{val}</p>
-                <p className="text-[10px]" style={{ color }}>{label}</p>
+                <p className="text-[16px] font-[700]" style={{ color: "#191A2E" }}>{val}</p>
+                <p className="text-[11px]" style={{ color }}>{label}</p>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="rounded-xl p-4 hidden xl:block" style={{ background: "#fff", border: "0.5px solid #e8ddd5" }}>
-          <p className="text-[11px] font-[700] uppercase tracking-[0.06em] mb-3" style={{ color: "#bbb" }}>Settlements</p>
+        <div className="rounded-xl p-4 hidden xl:block" style={{ background: "#fff", border: "0.5px solid #E4E4EF" }}>
+          <p className="text-[11px] font-[700] uppercase tracking-[0.06em] mb-3" style={{ color: "#B7B9C7" }}>Settlements</p>
           <div className="grid grid-cols-3 gap-2">
             {[
               { label: "Pending",     val: stats?.pendingSettlements ?? 0,              color: "#b7700a" },
               { label: "Overdue",     val: stats?.overdueSettlements ?? 0,              color: "#c0392b" },
-              { label: "Outstanding", val: formatCurrency(stats?.outstandingAmount ?? 0), color: "#059669" },
+              { label: "Outstanding", val: formatCurrency(stats?.outstandingAmount ?? 0), color: "#7679FF" },
             ].map(({ label, val, color }) => (
               <div key={label} className="text-center">
-                <p className="text-[14px] font-[700] leading-tight" style={{ color: "#1a1a1a" }}>{val}</p>
-                <p className="text-[10px] mt-0.5" style={{ color }}>{label}</p>
+                <p className="text-[14px] font-[700] leading-tight" style={{ color: "#191A2E" }}>{val}</p>
+                <p className="text-[11px] mt-0.5" style={{ color }}>{label}</p>
               </div>
             ))}
           </div>

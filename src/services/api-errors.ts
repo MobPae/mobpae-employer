@@ -6,6 +6,9 @@ export const isForbidden = (error: unknown) =>
 export const isUnauthorized = (error: unknown) =>
   axios.isAxiosError(error) && error.response?.status === 401;
 
+export const isNotFound = (error: unknown) =>
+  axios.isAxiosError(error) && error.response?.status === 404;
+
 export const getApiErrorMessage = (error: unknown, fallback = "Something went wrong. Please try again.") => {
   if (!axios.isAxiosError(error)) return fallback;
 

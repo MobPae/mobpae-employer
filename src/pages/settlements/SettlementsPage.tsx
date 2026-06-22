@@ -6,23 +6,27 @@ import {
   CircleDollarSign,
   Clock3,
   CreditCard,
+  FileText,
   Info,
   Landmark,
+  Loader2,
   ShieldCheck,
   X,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useFetch } from "../../hooks/useFetch";
+import { useToast } from "../../hooks/useToast";
 import { settlementService } from "../../services/settlement.service";
 import type { EmployerSettlement, SettlementStatus } from "../../types";
 import { formatCurrency, formatDate } from "../../utils/formatters";
+import { getApiErrorMessage } from "../../services/api-errors";
 
 // ── status config ─────────────────────────────────────────────────────────────
 
 const STATUS_CFG: Record<SettlementStatus, { label: string; bg: string; text: string; dot: string; border: string }> = {
   PENDING:        { label: "Pending",        bg: "bg-amber-50",   text: "text-amber-700",   dot: "bg-amber-400",   border: "border-amber-200" },
-  PARTIALLY_PAID: { label: "Partially Paid", bg: "bg-sky-50",     text: "text-sky-700",     dot: "bg-sky-400",     border: "border-sky-200"   },
-  PAID:           { label: "Paid",           bg: "bg-emerald-50", text: "text-emerald-700", dot: "bg-emerald-400", border: "border-emerald-200"},
+  PARTIALLY_PAID: { label: "Partially Paid", bg: "bg-[#E7F1FC]", text: "text-[#185FA5]", dot: "bg-[#378ADD]", border: "border-[#B5D4F4]" },
+  PAID:           { label: "Paid",           bg: "bg-[#EBF6E3]", text: "text-[#3B6D11]", dot: "bg-[#4E8A18]", border: "border-[#9FD5B0]" },
   OVERDUE:        { label: "Overdue",        bg: "bg-red-50",     text: "text-red-700",     dot: "bg-red-400",     border: "border-red-200"   },
 };
 
@@ -67,14 +71,14 @@ function SummaryCard({ label, value, icon, iconBg, iconColor, highlight, sub }: 
   iconBg: string; iconColor: string; highlight?: boolean; sub?: string;
 }) {
   return (
-    <div className={`rounded-xl p-4 flex flex-col gap-3 border ${highlight ? "bg-[#059669] border-[#047857]" : "bg-white border-slate-100"}`}>
+    <div className={`rounded-xl p-4 flex flex-col gap-3 border ${highlight ? "bg-[#7679FF] border-[#5659D9]" : "bg-white border-[#E4E4EF]"}`}>
       <div className="flex items-center justify-between">
-        <span className={`text-[12px] font-[500] ${highlight ? "text-white/50" : "text-slate-500"}`}>{label}</span>
+        <span className={`text-[12px] font-[500] ${highlight ? "text-white/50" : "text-[#62657A]"}`}>{label}</span>
         <div className={`w-7 h-7 rounded-lg ${iconBg} flex items-center justify-center ${iconColor}`}>{icon}</div>
       </div>
       <div>
-        <p className={`text-[22px] font-[700] tracking-[-0.02em] leading-none ${highlight ? "text-white" : "text-slate-900"}`}>{value}</p>
-        {sub && <p className={`text-[11px] mt-1 ${highlight ? "text-white/40" : "text-slate-400"}`}>{sub}</p>}
+        <p className={`text-[22px] font-[700] tracking-[-0.02em] leading-none ${highlight ? "text-white" : "text-[#191A2E]"}`}>{value}</p>
+        {sub && <p className={`text-[11px] mt-1 ${highlight ? "text-white/40" : "text-[#62657A]"}`}>{sub}</p>}
       </div>
     </div>
   );
@@ -95,14 +99,14 @@ function Timeline({ settlement }: { settlement: EmployerSettlement }) {
       {steps.map((step, i) => (
         <div key={step.label} className="flex gap-3">
           <div className="flex flex-col items-center">
-            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] flex-shrink-0 border-2 ${step.done ? "border-emerald-400 bg-emerald-50" : "border-slate-200 bg-white"}`}>
-              {step.done ? <CheckCircle2 size={12} className="text-emerald-600" /> : <span className="w-2 h-2 rounded-full bg-slate-300" />}
+            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] flex-shrink-0 border-2 ${step.done ? "border-[#7679FF] bg-[#ECEBFF]" : "border-[#E4E4EF] bg-white"}`}>
+              {step.done ? <CheckCircle2 size={12} className="text-[#7679FF]" /> : <span className="w-2 h-2 rounded-full bg-[#D4D5E0]" />}
             </div>
-            {i < steps.length - 1 && <div className={`w-px flex-1 my-1 ${step.done ? "bg-emerald-200" : "bg-slate-100"}`} style={{ minHeight: 20 }} />}
+            {i < steps.length - 1 && <div className={`w-px flex-1 my-1 ${step.done ? "bg-[#C8C9FF]" : "bg-[#F0F0F8]"}`} style={{ minHeight: 20 }} />}
           </div>
           <div className="pb-4">
-            <p className={`text-[12px] font-[500] leading-none ${step.done ? "text-slate-800" : "text-slate-400"}`}>{step.label}</p>
-            {step.date && <p className="text-[11px] text-slate-400 mt-0.5">{formatDate(step.date)}</p>}
+            <p className={`text-[12px] font-[500] leading-none ${step.done ? "text-[#191A2E]" : "text-[#62657A]"}`}>{step.label}</p>
+            {step.date && <p className="text-[11px] text-[#62657A] mt-0.5">{formatDate(step.date)}</p>}
           </div>
         </div>
       ))}
@@ -116,7 +120,7 @@ function DrawerPanel({ open, onClose, children }: { open: boolean; onClose: () =
   return (
     <>
       {open && <div className="fixed inset-0 z-30 bg-black/20 backdrop-blur-[1px]" onClick={onClose} />}
-      <div className={`fixed inset-y-0 right-0 z-40 w-[460px] bg-white border-l border-slate-200 shadow-xl flex flex-col transition-transform duration-200 ${open ? "translate-x-0" : "translate-x-full"}`}>
+      <div className={`fixed inset-y-0 right-0 z-40 w-[460px] bg-white border-l border-[#E4E4EF] shadow-xl flex flex-col transition-transform duration-200 ${open ? "translate-x-0" : "translate-x-full"}`}>
         {children}
       </div>
     </>
@@ -125,9 +129,9 @@ function DrawerPanel({ open, onClose, children }: { open: boolean; onClose: () =
 
 function InfoRow({ label, value, accent }: { label: string; value: React.ReactNode; accent?: boolean }) {
   return (
-    <div className="flex items-center justify-between py-2.5 border-b border-slate-50 last:border-0">
-      <span className="text-[12px] text-slate-500">{label}</span>
-      <span className={`text-[12px] font-[500] ${accent ? "text-red-600" : "text-slate-800"}`}>{value}</span>
+    <div className="flex items-center justify-between py-2.5 border-b border-[#F0F0F8] last:border-0">
+      <span className="text-[12px] text-[#62657A]">{label}</span>
+      <span className={`text-[12px] font-[500] ${accent ? "text-red-600" : "text-[#191A2E]"}`}>{value}</span>
     </div>
   );
 }
@@ -135,12 +139,27 @@ function InfoRow({ label, value, accent }: { label: string; value: React.ReactNo
 // ── page ──────────────────────────────────────────────────────────────────────
 
 export function SettlementsPage() {
-  const [filter,   setFilter]   = useState<"ALL" | SettlementStatus>("ALL");
-  const [selected, setSelected] = useState<EmployerSettlement | null>(null);
+  const toast = useToast();
+  const [filter,        setFilter]        = useState<"ALL" | SettlementStatus>("ALL");
+  const [selected,      setSelected]      = useState<EmployerSettlement | null>(null);
+  const [sendingReport, setSendingReport] = useState(false);
+
+  const handleSendReport = async () => {
+    if (!selected) return;
+    setSendingReport(true);
+    try {
+      await settlementService.sendReport(selected.id);
+      toast.success("Report sent", "Settlement report emailed to your account.");
+    } catch (err) {
+      toast.error("Failed to send report", getApiErrorMessage(err));
+    } finally {
+      setSendingReport(false);
+    }
+  };
 
   const { data: summaryRaw } =
     useFetch(() => settlementService.getSettlementSummary(), []);
-  const { data: settlementsRaw, loading, error } =
+  const { data: settlementsRaw, loading, error, refresh } =
     useFetch(() => settlementService.getSettlements(), []);
 
   const summary     = summaryRaw    ?? null;
@@ -163,9 +182,12 @@ export function SettlementsPage() {
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-100 rounded-xl p-5">
-        <p className="text-[13px] font-[500] text-red-700">Failed to load settlements</p>
-        <p className="text-[12px] text-red-500 mt-1">{error}</p>
+      <div className="bg-white border border-red-100 rounded-xl px-6 py-14 text-center">
+        <p className="text-[13px] font-[500] text-red-600">Failed to load settlements</p>
+        <p className="text-[12px] text-[#62657A] mt-1">{error}</p>
+        <button onClick={refresh} className="mt-4 h-8 px-4 text-[12px] font-[500] bg-white border border-[#E4E4EF] rounded-lg hover:bg-[#F7F7FB] transition-colors text-[#62657A]">
+          Retry
+        </button>
       </div>
     );
   }
@@ -203,7 +225,7 @@ export function SettlementsPage() {
           label="Paid Settlements"
           value={summary?.paidSettlements ?? 0}
           icon={<CheckCircle2 size={14} />}
-          iconBg="bg-emerald-50" iconColor="text-emerald-600"
+          iconBg="bg-[#ECEBFF]" iconColor="text-[#7679FF]"
           sub="settled with MobPae"
         />
       </div>
@@ -237,7 +259,7 @@ export function SettlementsPage() {
               </p>
             </div>
             {riskGood && (
-              <span className="inline-flex items-center gap-1 text-[11px] font-[600] text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full flex-shrink-0">
+              <span className="inline-flex items-center gap-1 text-[11px] font-[600] text-[#5659D9] bg-[#ECEBFF] border border-[#C8C9FF] px-2 py-0.5 rounded-full flex-shrink-0">
                 <ShieldCheck size={11} /> Good standing
               </span>
             )}
@@ -246,9 +268,9 @@ export function SettlementsPage() {
       )}
 
       {/* Business flow info */}
-      <div className="bg-blue-50/60 border border-blue-100 rounded-xl px-4 py-3 flex items-start gap-3">
-        <Landmark size={15} className="text-blue-500 mt-0.5 flex-shrink-0" />
-        <p className="text-[12px] text-blue-700 leading-relaxed">
+      <div className="bg-[#ECEBFF]/60 border border-[#E4E4EF] rounded-xl px-4 py-3 flex items-start gap-3">
+        <Landmark size={15} className="text-[#7679FF] mt-0.5 flex-shrink-0" />
+        <p className="text-[12px] text-[#5659D9] leading-relaxed">
           Settlements represent amounts your company owes to MobPae. Remit payment to MobPae directly — your MobPae account manager will confirm receipt and mark it as paid.
         </p>
       </div>
@@ -261,13 +283,13 @@ export function SettlementsPage() {
             onClick={() => setFilter(f.value)}
             className={`h-7 px-3 rounded-full text-[12px] font-[500] transition-colors flex items-center gap-1.5 ${
               filter === f.value
-                ? "bg-[#059669] text-white"
-                : "bg-white border border-slate-200 text-slate-600 hover:border-slate-300"
+                ? "bg-[#7679FF] text-white"
+                : "bg-white border border-[#E4E4EF] text-[#62657A] hover:border-[#E4E4EF]"
             }`}
           >
             {f.label}
             {counts[f.value] !== undefined && (
-              <span className={`text-[10px] font-[700] ${filter === f.value ? "text-white/60" : "text-slate-400"}`}>
+              <span className={`text-[11px] font-[700] ${filter === f.value ? "text-white/60" : "text-[#62657A]"}`}>
                 {counts[f.value]}
               </span>
             )}
@@ -276,18 +298,29 @@ export function SettlementsPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-white border border-slate-100 rounded-xl overflow-hidden">
+      <div className="bg-white border border-[#E4E4EF] rounded-xl overflow-hidden">
         {loading ? (
-          <div className="py-16 text-center">
-            <p className="text-[13px] text-slate-400">Loading settlements…</p>
+          <div>
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="flex items-center gap-4 px-5 py-3.5 border-b border-[#F0F0F8] last:border-0">
+                <div className="w-7 h-7 rounded-lg bg-[#F0F0F8] animate-pulse flex-shrink-0" />
+                <div className="flex-1 space-y-1.5">
+                  <div className="h-2.5 w-28 bg-[#F0F0F8] rounded animate-pulse" />
+                  <div className="h-2 w-20 bg-[#F0F0F8] rounded animate-pulse" />
+                </div>
+                <div className="h-2.5 w-20 bg-[#F0F0F8] rounded animate-pulse" />
+                <div className="h-2.5 w-16 bg-[#F0F0F8] rounded animate-pulse" />
+                <div className="h-4 w-16 bg-[#F0F0F8] rounded-full animate-pulse" />
+              </div>
+            ))}
           </div>
         ) : !filtered.length ? (
           <div className="py-16 text-center">
-            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center mb-3 mx-auto">
-              <CreditCard size={18} className="text-slate-400" />
+            <div className="w-10 h-10 rounded-xl bg-[#F0F0F8] flex items-center justify-center mb-3 mx-auto">
+              <CreditCard size={18} className="text-[#62657A]" />
             </div>
-            <p className="text-[13px] font-[500] text-slate-500">No settlements found</p>
-            <p className="text-[12px] text-slate-400 mt-1">Settlements appear here once employees' recovered amounts are due to MobPae</p>
+            <p className="text-[13px] font-[500] text-[#62657A]">No settlements found</p>
+            <p className="text-[12px] text-[#62657A] mt-1">Settlements appear here once employees' recovered amounts are due to MobPae</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -303,36 +336,36 @@ export function SettlementsPage() {
                 <col style={{ width: "8%" }} />
               </colgroup>
               <thead>
-                <tr className="border-b border-slate-100">
+                <tr className="border-b border-[#E4E4EF]">
                   {["Payroll Month", "Total Amount", "Outstanding", "Late Fee", "Due Date", "Grace Period", "Status", ""].map(h => (
-                    <th key={h} className="px-5 py-3 text-left text-[11px] font-[500] text-slate-400">{h}</th>
+                    <th key={h} className="px-5 py-3 text-left text-[11px] font-[500] text-[#62657A]">{h}</th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-50">
+              <tbody className="divide-y divide-[#F0F0F8]">
                 {filtered.map(s => (
                   <tr
                     key={s.id}
                     onClick={() => setSelected(s)}
-                    className={`cursor-pointer hover:bg-slate-50/60 transition-colors ${selected?.id === s.id ? "bg-blue-50/30" : ""} ${isOverdue(s) ? "bg-red-50/20" : ""}`}
+                    className={`cursor-pointer hover:bg-[#F7F7FB]/60 transition-colors ${selected?.id === s.id ? "bg-[#ECEBFF]/30" : ""} ${isOverdue(s) ? "bg-red-50/20" : ""}`}
                   >
-                    <td className="px-5 py-3 font-[500] text-slate-800">{formatPayrollMonth(s.payrollMonth)}</td>
-                    <td className="px-5 py-3 tabular-nums font-[600] text-slate-800">{formatCurrency(s.totalAmount)}</td>
-                    <td className={`px-5 py-3 tabular-nums font-[600] ${s.outstandingAmount > 0 ? "text-red-600" : "text-slate-400"}`}>
-                      {s.outstandingAmount > 0 ? formatCurrency(s.outstandingAmount) : "—"}
+                    <td className="px-5 py-3 font-[500] text-[#191A2E]">{formatPayrollMonth(s.payrollMonth)}</td>
+                    <td className="px-5 py-3 tabular-nums font-[600] text-[#191A2E]">{formatCurrency(s.totalAmount)}</td>
+                    <td className={`px-5 py-3 tabular-nums font-[600] ${s.outstandingAmount > 0 ? "text-red-600" : "text-[#7679FF]"}`}>
+                      {s.outstandingAmount > 0 ? formatCurrency(s.outstandingAmount) : "No dues"}
                     </td>
-                    <td className="px-5 py-3 tabular-nums text-slate-500">
-                      {s.lateFeeAmount > 0 ? formatCurrency(s.lateFeeAmount) : <span className="text-slate-300">—</span>}
+                    <td className="px-5 py-3 tabular-nums text-[#62657A]">
+                      {s.lateFeeAmount > 0 ? formatCurrency(s.lateFeeAmount) : <span className="text-[#62657A]">—</span>}
                     </td>
-                    <td className={`px-5 py-3 tabular-nums font-[500] ${isOverdue(s) ? "text-red-600" : "text-slate-600"}`}>
+                    <td className={`px-5 py-3 tabular-nums font-[500] ${isOverdue(s) ? "text-red-600" : "text-[#62657A]"}`}>
                       {formatDate(s.dueDate)}
                     </td>
-                    <td className="px-5 py-3 tabular-nums text-slate-500">
-                      {s.gracePeriodEnd ? formatDate(s.gracePeriodEnd) : <span className="text-slate-300">—</span>}
+                    <td className="px-5 py-3 tabular-nums text-[#62657A]">
+                      {s.gracePeriodEnd ? formatDate(s.gracePeriodEnd) : <span className="text-[#62657A]">—</span>}
                     </td>
                     <td className="px-5 py-3"><StatusPill status={s.status} /></td>
                     <td className="px-5 py-3">
-                      <span className="flex items-center gap-1 text-[12px] font-[500] text-blue-500">
+                      <span className="flex items-center gap-1 text-[12px] font-[500] text-[#7679FF]">
                         Details <ChevronRight size={12} />
                       </span>
                     </td>
@@ -349,25 +382,25 @@ export function SettlementsPage() {
         {selected && (
           <>
             {/* Header */}
-            <div className="px-5 pt-5 pb-4 border-b border-slate-100">
+            <div className="px-5 pt-5 pb-4 border-b border-[#E4E4EF]">
               <div className="flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-2 mb-1.5">
                     <StatusPill status={selected.status} />
                     {selected.referenceNumber && (
-                      <span className="text-[10px] font-[500] text-slate-400 bg-slate-100 px-2 py-0.5 rounded">
+                      <span className="text-[11px] font-[500] text-[#62657A] bg-[#F0F0F8] px-2 py-0.5 rounded">
                         Ref: {selected.referenceNumber}
                       </span>
                     )}
                   </div>
-                  <p className="text-[16px] font-[700] text-slate-900 leading-tight">
+                  <p className="text-[16px] font-[700] text-[#191A2E] leading-tight">
                     {formatPayrollMonth(selected.payrollMonth)}
                   </p>
-                  <p className="text-[12px] text-slate-400 mt-0.5">Settlement period</p>
+                  <p className="text-[12px] text-[#62657A] mt-0.5">Settlement period</p>
                 </div>
                 <button
                   onClick={() => setSelected(null)}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg border border-slate-200 text-slate-400 hover:text-slate-700 transition-colors"
+                  className="w-7 h-7 flex items-center justify-center rounded-lg border border-[#E4E4EF] text-[#62657A] hover:text-[#62657A] transition-colors"
                 >
                   <X size={14} />
                 </button>
@@ -390,16 +423,16 @@ export function SettlementsPage() {
 
               {/* Amount breakdown */}
               <div>
-                <p className="text-[11px] font-[600] text-slate-400 uppercase tracking-[0.07em] mb-2">Amount Breakdown</p>
-                <div className="bg-white border border-slate-100 rounded-xl px-4 py-1">
+                <p className="text-[11px] font-[600] text-[#62657A] uppercase tracking-[0.07em] mb-2">Amount Breakdown</p>
+                <div className="bg-white border border-[#E4E4EF] rounded-xl px-4 py-1">
                   <InfoRow label="Principal amount"   value={formatCurrency(selected.principalAmount)} />
                   <InfoRow label="Interest amount"    value={formatCurrency(selected.interestAmount)} />
                   {selected.lateFeeAmount > 0 && (
                     <InfoRow label="Late fee"         value={formatCurrency(selected.lateFeeAmount)} accent />
                   )}
-                  <div className="flex items-center justify-between py-3 border-t border-slate-100 mt-1">
-                    <span className="text-[12px] font-[600] text-slate-800">Total amount</span>
-                    <span className="text-[14px] font-[700] text-slate-900 tabular-nums">{formatCurrency(selected.totalAmount)}</span>
+                  <div className="flex items-center justify-between py-3 border-t border-[#E4E4EF] mt-1">
+                    <span className="text-[12px] font-[600] text-[#191A2E]">Total amount</span>
+                    <span className="text-[14px] font-[700] text-[#191A2E] tabular-nums">{formatCurrency(selected.totalAmount)}</span>
                   </div>
                   {selected.outstandingAmount > 0 && (
                     <div className="flex items-center justify-between py-2.5 border-t border-red-100">
@@ -412,8 +445,8 @@ export function SettlementsPage() {
 
               {/* Dates */}
               <div>
-                <p className="text-[11px] font-[600] text-slate-400 uppercase tracking-[0.07em] mb-2">Key Dates</p>
-                <div className="bg-white border border-slate-100 rounded-xl px-4 py-1">
+                <p className="text-[11px] font-[600] text-[#62657A] uppercase tracking-[0.07em] mb-2">Key Dates</p>
+                <div className="bg-white border border-[#E4E4EF] rounded-xl px-4 py-1">
                   <InfoRow label="Due date"         value={formatDate(selected.dueDate)} accent={isOverdue(selected)} />
                   {selected.gracePeriodEnd && (
                     <InfoRow label="Grace period ends" value={formatDate(selected.gracePeriodEnd)} />
@@ -427,29 +460,42 @@ export function SettlementsPage() {
 
               {/* Timeline */}
               <div>
-                <p className="text-[11px] font-[600] text-slate-400 uppercase tracking-[0.07em] mb-3">Status timeline</p>
+                <p className="text-[11px] font-[600] text-[#62657A] uppercase tracking-[0.07em] mb-3">Status timeline</p>
                 <Timeline settlement={selected} />
               </div>
 
               {/* Notes */}
               {selected.notes && (
                 <div>
-                  <p className="text-[11px] font-[600] text-slate-400 uppercase tracking-[0.07em] mb-2">Notes</p>
-                  <div className="bg-slate-50 border border-slate-100 rounded-xl px-4 py-3">
-                    <p className="text-[12px] text-slate-600 leading-relaxed">{selected.notes}</p>
+                  <p className="text-[11px] font-[600] text-[#62657A] uppercase tracking-[0.07em] mb-2">Notes</p>
+                  <div className="bg-[#F7F7FB] border border-[#E4E4EF] rounded-xl px-4 py-3">
+                    <p className="text-[12px] text-[#62657A] leading-relaxed">{selected.notes}</p>
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Footer — Pay Now info panel */}
-            {selected.status !== "PAID" && (
-              <div className="px-5 py-4 border-t border-slate-100">
-                <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3.5 flex items-start gap-3">
-                  <Info size={15} className="text-blue-500 mt-0.5 flex-shrink-0" />
+            {/* Footer */}
+            <div className="px-5 py-4 border-t border-[#E4E4EF] space-y-3">
+              {/* Send Report button — always visible */}
+              <button
+                onClick={() => void handleSendReport()}
+                disabled={sendingReport}
+                className="w-full h-8 rounded-md border border-[#E4E4EF] text-[12px] font-[500] text-[#62657A] hover:bg-[#F7F7FB] flex items-center justify-center gap-1.5 transition-colors disabled:opacity-40"
+              >
+                {sendingReport
+                  ? <Loader2 size={12} className="animate-spin" />
+                  : <FileText size={12} />}
+                {sendingReport ? "Sending…" : "Send Report via Email"}
+              </button>
+
+              {/* Pay Now info panel — only when outstanding */}
+              {selected.status !== "PAID" && (
+                <div className="bg-[#ECEBFF] border border-[#E4E4EF] rounded-xl px-4 py-3.5 flex items-start gap-3">
+                  <Info size={15} className="text-[#7679FF] mt-0.5 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-[12px] font-[600] text-blue-800 mb-1">Pay Now</p>
-                    <p className="text-[12px] text-blue-700 leading-relaxed">
+                    <p className="text-[12px] font-[600] text-[#5659D9] mb-1">Pay Now</p>
+                    <p className="text-[12px] text-[#5659D9] leading-relaxed">
                       Remit{" "}
                       <strong>
                         {formatCurrency(
@@ -468,8 +514,8 @@ export function SettlementsPage() {
                     )}
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </>
         )}
       </DrawerPanel>

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 72" fill="none">
+  <defs><clipPath id="hw-clip"><rect width="72" height="72" rx="14" ry="14"/></clipPath></defs>
+  <rect width="72" height="72" rx="14" ry="14" fill="rgba(255,255,255,0.2)"/>
+  <g clip-path="url(#hw-clip)">
+    <polygon points="4,72 13,72 49,0 40,0" fill="white" opacity="0.95"/>
+    <polygon points="22,72 31,72 67,0 58,0" fill="white" opacity="0.95"/>
+    <polygon points="40,72 49,72 72,23 72,6" fill="white" opacity="0.95"/>
+  </g>
+  <text x="90" y="50" font-family="DM Sans, Inter, -apple-system, sans-serif" font-weight="700" font-size="36" fill="white" letter-spacing="-0.5">MobPae</text>
+</svg>

@@ -78,13 +78,13 @@ export default function AddEmployeeDrawer({
         "
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-200">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-[#E4E4EF]">
           <div>
-            <h2 className="text-lg font-semibold text-slate-900">
+            <h2 className="text-lg font-semibold text-[#191A2E]">
               Add Employee
             </h2>
 
-            <p className="text-sm text-slate-500 mt-1">
+            <p className="text-sm text-[#62657A] mt-1">
               Create a new employee account
             </p>
           </div>
@@ -96,11 +96,11 @@ export default function AddEmployeeDrawer({
               w-9
               rounded-xl
               border
-              border-slate-200
+              border-[#E4E4EF]
               flex
               items-center
               justify-center
-              hover:bg-slate-50
+              hover:bg-[#F7F7FB]
             "
           >
             <X size={16} />
@@ -150,7 +150,7 @@ export default function AddEmployeeDrawer({
           />
 
           {/* Footer */}
-          <div className="pt-6 border-t border-slate-200 flex items-center justify-end gap-3">
+          <div className="pt-6 border-t border-[#E4E4EF] flex items-center justify-end gap-3">
             <button
               type="button"
               onClick={onClose}
@@ -159,10 +159,10 @@ export default function AddEmployeeDrawer({
                 py-2
                 rounded-xl
                 border
-                border-slate-200
+                border-[#E4E4EF]
                 text-sm
                 font-medium
-                hover:bg-slate-50
+                hover:bg-[#F7F7FB]
               "
             >
               Cancel
@@ -175,11 +175,11 @@ export default function AddEmployeeDrawer({
                 px-4
                 py-2
                 rounded-xl
-                bg-blue-600
+                bg-[#7679FF]
                 text-white
                 text-sm
                 font-medium
-                hover:bg-blue-700
+                hover:bg-[#5659D9]
                 disabled:opacity-50
               "
             >
@@ -209,7 +209,7 @@ function FormField({
 }: FormFieldProps) {
   return (
     <div>
-      <label className="block text-sm font-medium text-slate-700 mb-2">
+      <label className="block text-sm font-medium text-[#62657A] mb-2">
         {label}
       </label>
 
@@ -224,12 +224,12 @@ function FormField({
           py-3
           text-sm
           border
-          border-slate-200
+          border-[#E4E4EF]
           rounded-xl
           focus:outline-none
           focus:ring-2
-          focus:ring-blue-100
-          focus:border-blue-500
+          focus:ring-[#7679FF]/10
+          focus:border-[#7679FF]
         "
       />
     </div>

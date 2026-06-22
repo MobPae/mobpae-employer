@@ -64,7 +64,7 @@ const normalizeEmploymentStatus = (value: unknown): EmploymentStatus =>
 
 const normalizeSalaryRequestStatus = (value: unknown): SalaryRequestStatus => {
   const normalized = String(value ?? "SUBMITTED").toUpperCase();
-  const allowed: SalaryRequestStatus[] = ["PENDING", "SUBMITTED", "UNDER_REVIEW", "APPROVED", "REJECTED", "DISBURSED", "REPAID"];
+  const allowed: SalaryRequestStatus[] = ["PENDING", "SUBMITTED", "UNDER_REVIEW", "EMPLOYER_APPROVED", "EMPLOYER_REJECTED", "APPROVED", "REJECTED", "READY_FOR_DISBURSAL", "DISBURSED", "REPAYMENT_SCHEDULED", "REPAID"];
   return allowed.includes(normalized as SalaryRequestStatus) ? (normalized as SalaryRequestStatus) : "SUBMITTED";
 };
 

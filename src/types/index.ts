@@ -4,9 +4,13 @@ export type SalaryRequestStatus =
   | "PENDING"
   | "SUBMITTED"
   | "UNDER_REVIEW"
+  | "EMPLOYER_APPROVED"
+  | "EMPLOYER_REJECTED"
   | "APPROVED"
   | "REJECTED"
+  | "READY_FOR_DISBURSAL"
   | "DISBURSED"
+  | "REPAYMENT_SCHEDULED"
   | "REPAID";
 
 export type RepaymentStatus = "SCHEDULED" | "PENDING" | "PAID" | "OVERDUE";
@@ -122,7 +126,7 @@ export interface EmployerProfile {
 }
 
 export interface EmployerProfilePayload {
-  companyName: string;
+  companyName?: string;
   contactPerson: string;
   companyEmail: string;
   phone: string;

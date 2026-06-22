@@ -3,8 +3,8 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import { authService } from "../../services/auth.service";
 
-const B  = "#059669";
-const BD = "#047857";
+const B  = "#7679FF";
+const BD = "#5659D9";
 
 export function ResetPasswordPage() {
   const navigate = useNavigate();
@@ -43,26 +43,29 @@ export function ResetPasswordPage() {
         {/* Logo */}
         <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 40 }}>
           <div style={{ width: 30, height: 30, borderRadius: 8, background: B, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <svg width="14" height="10" viewBox="0 0 22 16" fill="none">
-              <path d="M1 14C1 14 4 3 7 8C10 13 11 2 14 8C17 14 21 3 21 3" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
+            <svg width="13" height="15" viewBox="0 0 20 22" fill="none">
+                <rect x="1" y="1" width="18" height="20" rx="4" fill="none" stroke="white" strokeWidth="2.5"/>
+                <rect x="3.5" y="14.5" width="3.5" height="4.5" rx="0.8" fill="white"/>
+                <rect x="8.25" y="11" width="3.5" height="8" rx="0.8" fill="white"/>
+                <rect x="13" y="7" width="3.5" height="12" rx="0.8" fill="white"/>
+              </svg>
           </div>
-          <span style={{ fontSize: 15, fontWeight: 700, color: "#1a1a1a", letterSpacing: "-0.01em" }}>MobPae</span>
+          <span style={{ fontSize: 15, fontWeight: 700, color: "#191A2E", letterSpacing: "-0.01em" }}>MobPae</span>
         </div>
 
         {done ? (
           <>
-            <div style={{ width: 48, height: 48, borderRadius: 12, background: "#f0fdf4", border: "1px solid #bbf7d0", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <div style={{ width: 48, height: 48, borderRadius: 12, background: "#ECEBFF", border: "1px solid #C8C9FF", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7679FF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
             </div>
             <h2 style={{ fontSize: 26, fontWeight: 800, color: "#111", letterSpacing: "-0.025em", margin: "0 0 10px" }}>Password updated</h2>
-            <p style={{ fontSize: 14, color: "#888", lineHeight: 1.6, marginBottom: 28 }}>
+            <p style={{ fontSize: 14, color: "#8D90A3", lineHeight: 1.6, marginBottom: 28 }}>
               Your password has been reset. All active sessions have been signed out — please sign in again.
             </p>
             <button onClick={() => navigate("/login")} style={{
               width: "100%", height: 48, background: `linear-gradient(135deg, ${BD} 0%, ${B} 100%)`,
               color: "white", borderRadius: 10, border: "none", fontSize: 14, fontWeight: 700,
-              cursor: "pointer", boxShadow: "0 4px 16px rgba(5,150,105,0.30)",
+              cursor: "pointer", boxShadow: "0 4px 16px rgba(118,121,255,0.30)",
             }}>
               Sign in
             </button>
@@ -70,7 +73,7 @@ export function ResetPasswordPage() {
         ) : (
           <>
             <h2 style={{ fontSize: 28, fontWeight: 800, color: "#111", letterSpacing: "-0.025em", margin: "0 0 10px" }}>Set new password</h2>
-            <p style={{ fontSize: 14, color: "#888", lineHeight: 1.6, marginBottom: 28 }}>
+            <p style={{ fontSize: 14, color: "#8D90A3", lineHeight: 1.6, marginBottom: 28 }}>
               Choose a strong password. All active sessions will be signed out.
             </p>
 
@@ -82,7 +85,7 @@ export function ResetPasswordPage() {
                 <div key={label}>
                   <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#333", marginBottom: 8 }}>{label}</label>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, background: "white", border: "1.5px solid #e8e0d8", borderRadius: 10, padding: "11px 14px", transition: "border-color 0.15s" }}>
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#aaa" strokeWidth="2" strokeLinecap="round"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8D90A3" strokeWidth="2" strokeLinecap="round"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                     <input
                       type={show ? "text" : "password"} value={val} onChange={e => set(e.target.value)}
                       placeholder="••••••••" required
@@ -90,7 +93,7 @@ export function ResetPasswordPage() {
                       onFocus={e => { (e.target.closest("div") as HTMLElement).style.borderColor = B; }}
                       onBlur={e  => { (e.target.closest("div") as HTMLElement).style.borderColor = "#e8e0d8"; }}
                     />
-                    <button type="button" onClick={toggleShow} style={{ color: "#bbb", background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex" }}>
+                    <button type="button" onClick={toggleShow} style={{ color: "#B7B9C7", background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex" }}>
                       {show ? <EyeOff size={15} /> : <Eye size={15} />}
                     </button>
                   </div>
@@ -109,7 +112,7 @@ export function ResetPasswordPage() {
                 color: "white", borderRadius: 10, border: "none", fontSize: 14, fontWeight: 700,
                 display: "flex", alignItems: "center", justifyContent: "center",
                 cursor: loading ? "not-allowed" : "pointer",
-                boxShadow: loading ? "none" : "0 4px 16px rgba(5,150,105,0.30)", transition: "all 0.15s",
+                boxShadow: loading ? "none" : "0 4px 16px rgba(118,121,255,0.30)", transition: "all 0.15s",
               }}>
                 {loading ? "Resetting…" : "Reset password"}
               </button>

@@ -37,4 +37,21 @@ export const salaryRequestService = {
     const { data } = await httpClient.post(`/salary-requests/${id}/reject`, { remarks });
     return mapSalaryRequest(unwrapItem(data, ["salaryRequest", "request"]));
   },
+
+  async bulkAction(
+    action: "APPROVE" | "REJECT",
+    ids: string[],
+    remarks?: string
+  ): Promise<{ succeeded: string[]; failed: string[] }> {
+    const { data } = await httpClient.post("/salary-requests/bulk-action", {
+      action,
+      ids,
+      ...(remarks ? { remarks } : {}),
+    });
+    const d = data as Record<string, unknown>;
+    return {
+      succeeded: (Array.isArray(d.succeeded) ? d.succeeded : []) as string[],
+      failed:    (Array.isArray(d.failed)    ? d.failed    : []) as string[],
+    };
+  },
 };

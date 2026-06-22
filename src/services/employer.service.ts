@@ -1,4 +1,5 @@
 import type { EmployerProfile, EmployerProfilePayload } from "../types";
+import { isNotFound } from "./api-errors";
 import { mapEmployerProfile, unwrapItem } from "./api-mappers";
 import { authService } from "./auth.service";
 import { httpClient } from "./http-client";
@@ -14,7 +15,6 @@ const emptyProfile = {
 };
 
 const toEmployerProfileApiPayload = (payload: EmployerProfilePayload) => ({
-  companyName: payload.companyName,
   contactPerson: payload.contactPerson,
   email: payload.companyEmail,
   phone: payload.phone
@@ -27,7 +27,9 @@ export const employerService = {
     try {
       const { data } = await httpClient.get("/employers/profile");
       return mapEmployerProfile(unwrapItem(data, ["profile", "employer"]));
-    } catch {
+    } catch (err) {
+      // Only fall back to auth user data on 404 — auth/server errors should surface
+      if (!isNotFound(err)) throw err;
       if (!currentUser) throw new Error("Unable to load employer profile");
 
       return {

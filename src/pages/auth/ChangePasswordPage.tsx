@@ -4,8 +4,8 @@ import { Eye, EyeOff, KeyRound, Lock, ShieldCheck } from "lucide-react";
 import { authService } from "../../services/auth.service";
 import { getApiErrorMessage } from "../../services/api-errors";
 
-const BRAND = "#059669";
-const BRAND_LIGHT = "#ecfdf5";
+const BRAND = "#7679FF";
+const BRAND_LIGHT = "#ECEBFF";
 
 export function ChangePasswordPage() {
   const navigate = useNavigate();
@@ -64,22 +64,22 @@ export function ChangePasswordPage() {
 
         {/* Heading */}
         <div className="text-center mb-7">
-          <h1 className="text-[22px] font-[700] text-slate-900 tracking-[-0.02em]">Change Password</h1>
-          <p className="text-[13px] text-slate-500 mt-1.5 leading-relaxed">
+          <h1 className="text-[22px] font-[700] text-[#191A2E] tracking-[-0.02em]">Change Password</h1>
+          <p className="text-[13px] text-[#62657A] mt-1.5 leading-relaxed">
             Set a new password for your Employer account.
           </p>
         </div>
 
         {success ? (
-          <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-5 text-center">
-            <ShieldCheck size={28} className="text-emerald-600 mx-auto mb-2" />
-            <p className="text-[14px] font-[600] text-emerald-800">Password changed successfully!</p>
-            <p className="text-[12px] text-emerald-600 mt-1">Redirecting to dashboard…</p>
+          <div className="bg-[#ECEBFF] border border-[#C8C9FF] rounded-xl p-5 text-center">
+            <ShieldCheck size={28} className="text-[#7679FF] mx-auto mb-2" />
+            <p className="text-[14px] font-[600] text-[#191A2E]">Password changed successfully!</p>
+            <p className="text-[12px] text-[#7679FF] mt-1">Redirecting to dashboard…</p>
           </div>
         ) : (
           <form
             onSubmit={handleSubmit}
-            className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm space-y-4"
+            className="bg-white border border-[#E4E4EF] rounded-2xl p-6 shadow-sm space-y-4"
           >
             <Field
               label="Current Password"
@@ -146,9 +146,9 @@ function Field({
 }) {
   return (
     <div>
-      <label className="block text-[12px] font-[500] text-slate-700 mb-1.5">{label}</label>
+      <label className="block text-[12px] font-[500] text-[#62657A] mb-1.5">{label}</label>
       <div className="relative">
-        <Lock size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+        <Lock size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#62657A]" />
         <input
           type={show ? "text" : "password"}
           value={value}
@@ -156,12 +156,12 @@ function Field({
           placeholder={placeholder}
           autoComplete={autoComplete}
           required
-          className="w-full h-10 pl-9 pr-10 text-[13px] bg-white border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 outline-none focus:border-[#059669] focus:ring-2 focus:ring-[#059669]/10 transition"
+          className="w-full h-10 pl-9 pr-10 text-[13px] bg-white border border-[#E4E4EF] rounded-lg text-[#191A2E] placeholder-[#B7B9C7] outline-none focus:border-[#7679FF] focus:ring-2 focus:ring-[#7679FF]/10 transition"
         />
         <button
           type="button"
           onClick={onToggle}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-[#62657A] hover:text-[#62657A]"
         >
           {show ? <EyeOff size={13} /> : <Eye size={13} />}
         </button>

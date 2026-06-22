@@ -1,6 +1,5 @@
 import type { DashboardStats, DashboardTrend, NotificationItem, SalaryRequest } from "../types";
 import { mapDashboardStats, unwrapItem, unwrapList } from "./api-mappers";
-import { authService } from "./auth.service";
 import { httpClient } from "./http-client";
 
 type NotificationApiRecord = Record<string, unknown>;
@@ -65,10 +64,7 @@ export const dashboardService = {
 
   async getRecentNotifications(): Promise<NotificationItem[]> {
     try {
-      const currentUser = await authService.getCurrentUser();
-      if (!currentUser?.id) return [];
-
-      const { data } = await httpClient.get(`/notifications/user/${currentUser.id}`);
+      const { data } = await httpClient.get("/notifications/me");
       return unwrapList(data, ["notifications"]).map(mapNotification).slice(0, 5);
     } catch {
       return [];

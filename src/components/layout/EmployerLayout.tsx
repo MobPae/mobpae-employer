@@ -1,6 +1,5 @@
 import {
   ArrowDownCircle,
-  Bell,
   CalendarDays,
   ChevronRight,
   ClipboardList,
@@ -16,6 +15,8 @@ import {
 import { useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
+import { NotificationBell } from "./NotificationBell";
+import { ConfirmModal } from "../ui/ConfirmModal";
 
 const NAV = [
   { label: "Dashboard",       to: "/dashboard",       icon: LayoutDashboard  },
@@ -44,6 +45,7 @@ function initials(name: string) {
 function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [confirmLogout, setConfirmLogout] = useState(false);
 
   const handleLogout = async () => {
     await logout();
@@ -57,19 +59,27 @@ function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
       )}
       <aside
         className={`fixed inset-y-0 left-0 z-40 flex w-[220px] flex-col transition-transform duration-200 ${open ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}
-        style={{ background: "linear-gradient(180deg, #022c22 0%, #065f46 45%, #047857 100%)" }}
+        style={{ background: "#F0F0F8", borderRight: "1px solid #E4E4EF" }}
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="flex items-center justify-between px-4 h-[52px] border-b border-white/10">
+          <div className="flex items-center justify-between px-4 h-[52px]" style={{ borderBottom: "1px solid #E4E4EF" }}>
             <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center text-white font-[700] text-[12px] flex-shrink-0">M</div>
+              <svg width="26" height="26" viewBox="0 0 100 100" fill="none" aria-hidden="true" style={{flexShrink:0}}>
+                <defs><clipPath id="emp-sb-clip"><rect width="100" height="100" rx="20" ry="20"/></clipPath></defs>
+                <rect width="100" height="100" rx="20" ry="20" fill="#7679FF"/>
+                <g clipPath="url(#emp-sb-clip)">
+                  <polygon points="6,100 18,100 68,0 56,0" fill="white" opacity="0.95"/>
+                  <polygon points="30,100 42,100 92,0 80,0" fill="white" opacity="0.95"/>
+                  <polygon points="54,100 66,100 100,32 100,8" fill="white" opacity="0.95"/>
+                </g>
+              </svg>
               <div>
-                <p className="text-[13px] font-[600] text-white leading-none">MobPae</p>
-                <p className="text-[9px] text-white/40 leading-none mt-0.5 uppercase tracking-[0.1em]">Employer</p>
+                <p className="text-[13px] font-[700] leading-none tracking-[-0.02em]" style={{ color: "#191A2E" }}>MobPae</p>
+                <p className="text-[9px] leading-none mt-0.5 uppercase font-[600]" style={{ color: "#8D90A3", letterSpacing: "0.08em" }}>Employer</p>
               </div>
             </div>
-            <button onClick={onClose} className="lg:hidden w-7 h-7 flex items-center justify-center text-white/50 hover:text-white rounded"><X size={15} /></button>
+            <button aria-label="Close navigation" onClick={onClose} className="lg:hidden w-7 h-7 flex items-center justify-center rounded" style={{ color: "#8D90A3" }}><X size={15} /></button>
           </div>
 
           {/* Nav */}
@@ -77,13 +87,17 @@ function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
             {NAV.map(({ label, to, icon: Icon }) => (
               <NavLink
                 key={to} to={to} onClick={onClose}
-                className={({ isActive }) => `flex items-center gap-2.5 px-2.5 py-[7px] rounded-lg text-[12.5px] transition-colors ${isActive ? "bg-white/15 text-white font-[600]" : "text-white/55 font-[500] hover:text-white hover:bg-white/10"}`}
+                className={({ isActive }) => `flex items-center gap-2.5 px-2.5 py-[7px] rounded-lg text-[12.5px] transition-colors ${isActive ? "font-[600]" : "font-[500] hover:bg-black/[0.05]"}`}
+                style={({ isActive }) => isActive
+                  ? { background: "rgba(118,121,255,0.12)", color: "#5659D9" }
+                  : { color: "#62657A" }
+                }
               >
                 {({ isActive }) => (
                   <>
-                    <Icon size={15} className={isActive ? "text-white" : "text-white/40"} />
+                    <Icon size={15} style={{ color: isActive ? "#7679FF" : "#8D90A3" }} />
                     {label}
-                    {isActive && <ChevronRight size={12} className="ml-auto text-white/40" />}
+                    {isActive && <ChevronRight size={12} className="ml-auto" style={{ color: "#7679FF" }} />}
                   </>
                 )}
               </NavLink>
@@ -91,28 +105,38 @@ function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
           </nav>
 
           {/* Footer */}
-          <div className="px-3 py-3 border-t border-white/10">
+          <div className="px-3 py-3" style={{ borderTop: "1px solid #E4E4EF" }}>
             <div className="flex items-center gap-2.5 px-1 py-2">
-              <div className="w-7 h-7 rounded-lg bg-white/15 flex items-center justify-center flex-shrink-0">
-                <span className="text-[10px] font-[700] text-white">{user?.companyCode?.slice(0, 2).toUpperCase() ?? "MP"}</span>
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "#7679FF" }}>
+                <span className="text-[11px] font-[700] text-white">{user?.companyCode?.slice(0, 2).toUpperCase() ?? "MP"}</span>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[12px] font-[600] text-white truncate leading-none">{user?.companyName ?? "Company"}</p>
-                <p className="text-[10px] text-white/40 mt-0.5 truncate">{user?.companyCode}</p>
+                <p className="text-[12px] font-[600] truncate leading-none" style={{ color: "#191A2E" }}>{user?.companyName ?? "Company"}</p>
+                <p className="text-[11px] mt-0.5 truncate" style={{ color: "#8D90A3" }}>{user?.companyCode}</p>
               </div>
             </div>
             <button
               onClick={() => navigate("/change-password")}
-              className="mt-1 w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-[12px] font-[500] text-white/50 hover:text-white hover:bg-white/10 transition-colors"
+              className="mt-1 w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-[12px] font-[500] transition-colors hover:bg-black/[0.05]"
+              style={{ color: "#62657A" }}
             >
               <KeyRound size={13} />Change Password
             </button>
-            <button onClick={handleLogout} className="mt-0.5 w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-[12px] font-[500] text-white/50 hover:text-red-300 hover:bg-red-900/30 transition-colors">
+            <button onClick={() => setConfirmLogout(true)} className="mt-0.5 w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-[12px] font-[500] transition-colors hover:bg-red-50 hover:text-red-500" style={{ color: "#62657A" }}>
               <LogOut size={13} />Sign out
             </button>
           </div>
         </div>
       </aside>
+      <ConfirmModal
+        open={confirmLogout}
+        title="Sign out of MobPae?"
+        description="You will need to sign in again to manage employees and salary requests."
+        confirmLabel="Sign out"
+        loading={false}
+        onConfirm={() => void handleLogout()}
+        onCancel={() => setConfirmLogout(false)}
+      />
     </>
   );
 }
@@ -122,36 +146,36 @@ function Header({ onMenuClick }: { onMenuClick: () => void }) {
   const navigate = useNavigate();
   const location = useLocation();
   const pageTitle = PAGE_TITLES[location.pathname] ?? "MobPae";
+  const displayName = user?.name && !user.name.includes("@")
+    ? user.name
+    : user?.companyName || "Employer admin";
 
   return (
-    <header className="sticky top-0 z-20 h-[52px] flex items-center justify-between px-5 bg-white" style={{ borderBottom: "1px solid #e2e8f0" }}>
+    <header className="sticky top-0 z-20 h-[52px] flex items-center justify-between px-5 bg-white" style={{ borderBottom: "1px solid #E4E4EF" }}>
       <div className="flex items-center gap-3">
-        <button onClick={onMenuClick} className="lg:hidden w-8 h-8 flex items-center justify-center rounded-lg text-[#6b7280] hover:bg-[#ecfdf5] hover:text-[#059669]" style={{ border: "1px solid #e2e8f0" }}>
+        <button aria-label="Open navigation" onClick={onMenuClick} className="lg:hidden w-8 h-8 flex items-center justify-center rounded-lg transition-colors" style={{ border: "1px solid #E4E4EF", color: "#8D90A3" }}>
           <Menu size={16} />
         </button>
-        <h1 className="text-[14px] font-[600]" style={{ color: "#1a1a1a" }}>{pageTitle}</h1>
+        <h1 className="text-[14px] font-[600]" style={{ color: "#191A2E" }}>{pageTitle}</h1>
       </div>
       <div className="flex items-center gap-1.5">
-        <button className="relative w-8 h-8 flex items-center justify-center rounded-lg transition-colors text-[#6b7280] hover:text-[#059669] hover:bg-[#ecfdf5]" style={{ border: "1px solid #e2e8f0" }}>
-          <Bell size={15} />
-          <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-[#059669]" />
-        </button>
+        <NotificationBell />
         <button
           onClick={() => navigate("/change-password")}
           title="Change Password"
-          className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors text-[#6b7280] hover:text-[#059669] hover:bg-[#ecfdf5]"
-          style={{ border: "1px solid #e2e8f0" }}
+          className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors"
+          style={{ border: "1px solid #E4E4EF", color: "#8D90A3" }}
         >
           <KeyRound size={14} />
         </button>
-        <div className="w-px h-4 mx-1" style={{ background: "#e8ddd5" }} />
+        <div className="w-px h-4 mx-1" style={{ background: "#E4E4EF" }} />
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-full bg-[#059669] flex items-center justify-center flex-shrink-0">
-            <span className="text-[10px] font-[700] text-white">{user ? initials(user.name) : "?"}</span>
+          <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: "#7679FF" }}>
+            <span className="text-[11px] font-[700] text-white">{user ? initials(displayName) : "?"}</span>
           </div>
           <div className="hidden sm:block">
-            <p className="text-[12px] font-[600] leading-none" style={{ color: "#1a1a1a" }}>{user?.name}</p>
-            <p className="text-[10px] mt-0.5" style={{ color: "#6b7280" }}>{user?.email}</p>
+            <p className="text-[12px] font-[600] leading-none" style={{ color: "#191A2E" }}>{displayName}</p>
+            <p className="text-[11px] mt-0.5" style={{ color: "#8D90A3" }}>{user?.email}</p>
           </div>
         </div>
       </div>
@@ -162,7 +186,7 @@ function Header({ onMenuClick }: { onMenuClick: () => void }) {
 export function EmployerLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   return (
-    <div className="min-h-screen" style={{ background: "#f8fafc" }}>
+    <div className="employer-portal min-h-screen" style={{ background: "#F7F7FB" }}>
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="lg:pl-[220px] flex flex-col min-h-screen">
         <Header onMenuClick={() => setSidebarOpen(true)} />

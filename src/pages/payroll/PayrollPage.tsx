@@ -62,9 +62,9 @@ interface PayrollRow {
 // ── helpers ───────────────────────────────────────────────────────────────────
 
 const inputCls =
-  "w-full h-9 px-3 text-[13px] bg-white border border-slate-200 rounded-lg " +
-  "text-slate-900 focus:outline-none focus:border-blue-400 focus:ring-2 " +
-  "focus:ring-blue-100 transition tabular-nums";
+  "w-full h-9 px-3 text-[13px] bg-white border border-[#E4E4EF] rounded-lg " +
+  "text-[#191A2E] focus:outline-none focus:border-[#7679FF] focus:ring-2 " +
+  "focus:ring-[#7679FF]/10 transition tabular-nums";
 
 // ── summary card — uniform white ──────────────────────────────────────────────
 
@@ -73,8 +73,8 @@ function SummaryCard({
   value,
   sub,
   icon,
-  iconBg = "bg-slate-100",
-  iconColor = "text-slate-500",
+  iconBg = "bg-[#F0F0F8]",
+  iconColor = "text-[#62657A]",
 }: {
   label: string;
   value: React.ReactNode;
@@ -84,16 +84,16 @@ function SummaryCard({
   iconColor?: string;
 }) {
   return (
-    <div className="bg-white border border-slate-100 rounded-xl p-4 flex items-start gap-3">
+    <div className="bg-white border border-[#E4E4EF] rounded-xl p-4 flex items-start gap-3">
       <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${iconBg} ${iconColor}`}>
         {icon}
       </div>
       <div className="min-w-0">
-        <p className="text-[11px] font-[500] text-slate-400">{label}</p>
-        <p className="text-[20px] font-[700] leading-tight mt-0.5 tabular-nums text-slate-900">
+        <p className="text-[11px] font-[500] text-[#62657A]">{label}</p>
+        <p className="text-[20px] font-[700] leading-tight mt-0.5 tabular-nums text-[#191A2E]">
           {value}
         </p>
-        {sub && <p className="text-[11px] mt-0.5 text-slate-400">{sub}</p>}
+        {sub && <p className="text-[11px] mt-0.5 text-[#62657A]">{sub}</p>}
       </div>
     </div>
   );
@@ -111,7 +111,7 @@ function AmountCell({
   prefix?: string;
 }) {
   if (amount === 0) {
-    return <span className="tabular-nums text-slate-300">—</span>;
+    return <span className="tabular-nums text-[#62657A]">—</span>;
   }
   return (
     <span className={`tabular-nums font-[500] ${activeColor}`}>
@@ -140,32 +140,32 @@ function ProcessConfirmDialog({
       <div className="fixed inset-0 z-40 bg-black/30 backdrop-blur-[2px]" onClick={!processing ? onCancel : undefined} />
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[420px] overflow-hidden">
-          <div className="px-5 pt-5 pb-4 flex items-start justify-between border-b border-slate-100">
+          <div className="px-5 pt-5 pb-4 flex items-start justify-between border-b border-[#E4E4EF]">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center flex-shrink-0">
                 <AlertTriangle size={18} className="text-amber-600" />
               </div>
               <div>
-                <p className="text-[14px] font-[700] text-slate-900 leading-tight">Process Payroll Recoveries</p>
-                <p className="text-[12px] text-slate-400 mt-0.5">This will mark scheduled recoveries as recovered</p>
+                <p className="text-[14px] font-[700] text-[#191A2E] leading-tight">Process Payroll Recoveries</p>
+                <p className="text-[12px] text-[#62657A] mt-0.5">This will mark scheduled recoveries as recovered</p>
               </div>
             </div>
             {!processing && (
               <button type="button" onClick={onCancel}
-                className="w-7 h-7 flex items-center justify-center rounded-lg border border-slate-200 text-slate-400 hover:text-slate-700 transition-colors flex-shrink-0">
+                className="w-7 h-7 flex items-center justify-center rounded-lg border border-[#E4E4EF] text-[#62657A] hover:text-[#62657A] transition-colors flex-shrink-0">
                 <X size={14} />
               </button>
             )}
           </div>
           <div className="px-5 py-4 space-y-3">
-            <div className="bg-slate-50 rounded-xl p-4 grid grid-cols-2 gap-3">
+            <div className="bg-[#F7F7FB] rounded-xl p-4 grid grid-cols-2 gap-3">
               <div>
-                <p className="text-[11px] font-[500] text-slate-400 mb-0.5">Employees affected</p>
-                <p className="text-[22px] font-[700] text-slate-900 tabular-nums leading-none">{employeesAffected}</p>
+                <p className="text-[11px] font-[500] text-[#62657A] mb-0.5">Employees affected</p>
+                <p className="text-[22px] font-[700] text-[#191A2E] tabular-nums leading-none">{employeesAffected}</p>
               </div>
               <div>
-                <p className="text-[11px] font-[500] text-slate-400 mb-0.5">Total recovery</p>
-                <p className="text-[22px] font-[700] text-slate-900 tabular-nums leading-none">{formatCurrency(totalAmount)}</p>
+                <p className="text-[11px] font-[500] text-[#62657A] mb-0.5">Total recovery</p>
+                <p className="text-[22px] font-[700] text-[#191A2E] tabular-nums leading-none">{formatCurrency(totalAmount)}</p>
               </div>
             </div>
             <div className="bg-amber-50 border border-amber-100 rounded-xl px-4 py-3">
@@ -177,11 +177,11 @@ function ProcessConfirmDialog({
           </div>
           <div className="px-5 pb-5 flex items-center gap-2">
             <button type="button" onClick={onCancel} disabled={processing}
-              className="flex-1 h-10 rounded-lg border border-slate-200 text-[13px] font-[600] text-slate-700 hover:bg-slate-50 disabled:opacity-50 transition-colors">
+              className="flex-1 h-10 rounded-lg border border-[#E4E4EF] text-[13px] font-[600] text-[#62657A] hover:bg-[#F7F7FB] disabled:opacity-50 transition-colors">
               Cancel
             </button>
             <button type="button" onClick={onConfirm} disabled={processing}
-              className="flex-1 h-10 rounded-lg bg-[#059669] hover:bg-[#047857] text-white text-[13px] font-[600] flex items-center justify-center gap-2 disabled:opacity-60 transition-colors">
+              className="flex-1 h-10 rounded-lg bg-[#7679FF] hover:bg-[#5659D9] text-white text-[13px] font-[600] flex items-center justify-center gap-2 disabled:opacity-60 transition-colors">
               {processing ? (
                 <><span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />Processing…</>
               ) : (
@@ -202,9 +202,9 @@ export function PayrollPage() {
 
   const { data: summary, loading: summaryLoading, error: summaryErr, refresh: refreshSummary } =
     useFetch(() => payrollService.getPayrollSummary(), []);
-  const { data: recoveries, loading: recLoading, refresh: refreshRecoveries } =
+  const { data: recoveries, loading: recLoading, error: recErr, refresh: refreshRecoveries } =
     useFetch(() => payrollService.getUpcomingRecoveries(), []);
-  const { data: employees, loading: empLoading, refresh: refreshEmployees } =
+  const { data: employees, loading: empLoading, error: empErr, refresh: refreshEmployees } =
     useFetch(() => employeeService.getEmployees(), []);
 
   const [showConfirm, setShowConfirm]   = useState(false);
@@ -318,15 +318,19 @@ export function PayrollPage() {
       )}
 
       {summaryErr && (
-        <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3">
-          <p className="text-[12px] text-red-700">{summaryErr}</p>
+        <div className="bg-white border border-red-100 rounded-xl px-6 py-10 text-center">
+          <p className="text-[13px] font-[500] text-red-600">Failed to load payroll summary</p>
+          <p className="text-[12px] text-[#62657A] mt-1">{summaryErr}</p>
+          <button onClick={refreshSummary} className="mt-4 h-8 px-4 text-[12px] font-[500] bg-white border border-[#E4E4EF] rounded-lg hover:bg-[#F7F7FB] transition-colors text-[#62657A]">
+            Retry
+          </button>
         </div>
       )}
 
       {/* ── Payroll header ─────────────────────────────────────────────────── */}
-      <div className="bg-[#059669] rounded-2xl px-5 py-4 flex items-center justify-between gap-4 flex-wrap">
+      <div className="bg-[#7679FF] rounded-2xl px-5 py-4 flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <p className="text-[10px] font-[600] text-white/50 uppercase tracking-[0.1em] mb-1">Current Cycle</p>
+          <p className="text-[11px] font-[600] text-white/50 uppercase tracking-[0.1em] mb-1">Current Cycle</p>
           <p className="text-[20px] font-[700] text-white leading-tight">
             Payroll for {currentPayrollMonth()}
           </p>
@@ -353,20 +357,20 @@ export function PayrollPage() {
 
       {/* ── Post-processing success ────────────────────────────────────────── */}
       {processResult && (
-        <div className="bg-emerald-50 border border-emerald-100 rounded-xl px-5 py-4">
+        <div className="bg-[#ECEBFF] border border-[#ECEBFF] rounded-xl px-5 py-4">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-emerald-100 flex items-center justify-center flex-shrink-0">
-                <CheckCircle2 size={18} className="text-emerald-600" />
+              <div className="w-9 h-9 rounded-xl bg-[#ECEBFF] flex items-center justify-center flex-shrink-0">
+                <CheckCircle2 size={18} className="text-[#7679FF]" />
               </div>
               <div>
-                <p className="text-[13px] font-[700] text-emerald-900">Payroll processed successfully</p>
-                <p className="text-[12px] text-emerald-600 mt-0.5">
+                <p className="text-[13px] font-[700] text-[#191A2E]">Payroll processed successfully</p>
+                <p className="text-[12px] text-[#7679FF] mt-0.5">
                   {processResult.processedCount} repayment{processResult.processedCount !== 1 ? "s" : ""} marked as recovered
                 </p>
               </div>
             </div>
-            <button type="button" onClick={() => setProcessResult(null)} className="text-emerald-400 hover:text-emerald-600">
+            <button type="button" onClick={() => setProcessResult(null)} className="text-[#A5A7FF] hover:text-[#7679FF]">
               <X size={14} />
             </button>
           </div>
@@ -377,9 +381,9 @@ export function PayrollPage() {
               { label: "Due date", value: formatDate(processResult.dueDate) },
               { label: "Settlement ID", value: processResult.settlementId.slice(0,8) + "…" },
             ].map(({ label, value }) => (
-              <div key={label} className="bg-white rounded-xl px-3 py-2.5 border border-emerald-100">
-                <p className="text-[10px] font-[500] text-emerald-500 mb-0.5">{label}</p>
-                <p className="text-[12px] font-[700] text-emerald-900 tabular-nums truncate">{value}</p>
+              <div key={label} className="bg-white rounded-xl px-3 py-2.5 border border-[#ECEBFF]">
+                <p className="text-[11px] font-[500] text-[#7679FF] mb-0.5">{label}</p>
+                <p className="text-[12px] font-[700] text-[#191A2E] tabular-nums truncate">{value}</p>
               </div>
             ))}
           </div>
@@ -393,8 +397,8 @@ export function PayrollPage() {
           value={loading ? "—" : formatCurrency(totals.grossPayroll)}
           sub="Total salary in hand"
           icon={<Wallet size={16} />}
-          iconBg="bg-[#ecfdf5]"
-          iconColor="text-[#059669]"
+          iconBg="bg-[#ECEBFF]"
+          iconColor="text-[#7679FF]"
         />
         <SummaryCard
           label="Total Recovery"
@@ -409,41 +413,41 @@ export function PayrollPage() {
           value={loading ? "—" : formatCurrency(totals.netPayroll)}
           sub="After MobPae deductions"
           icon={<Wallet size={16} />}
-          iconBg="bg-emerald-50"
-          iconColor="text-emerald-600"
+          iconBg="bg-[#ECEBFF]"
+          iconColor="text-[#7679FF]"
         />
         <SummaryCard
           label="With Recoveries"
           value={loading ? "—" : totals.employeesWithRec}
           sub="Employees this cycle"
           icon={<Users size={16} />}
-          iconBg="bg-slate-100"
-          iconColor="text-slate-500"
+          iconBg="bg-[#F0F0F8]"
+          iconColor="text-[#62657A]"
         />
       </div>
 
       {/* ── Payroll settings + process button ─────────────────────────────── */}
-      <div className="bg-white border border-slate-100 rounded-xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-slate-50 flex items-center justify-between gap-4">
+      <div className="bg-white border border-[#E4E4EF] rounded-xl overflow-hidden">
+        <div className="px-5 py-4 border-b border-[#F0F0F8] flex items-center justify-between gap-4">
           <div>
-            <p className="text-[13px] font-[600] text-slate-900 flex items-center gap-2">
-              <CalendarDays size={14} className="text-slate-400" />
+            <p className="text-[13px] font-[600] text-[#191A2E] flex items-center gap-2">
+              <CalendarDays size={14} className="text-[#62657A]" />
               Payroll Schedule
             </p>
-            <p className="text-[12px] text-slate-400 mt-0.5">
+            <p className="text-[12px] text-[#62657A] mt-0.5">
               Configure your payroll and cutoff dates
             </p>
           </div>
           {summary && (
-            <div className="flex items-center gap-3 text-[12px] text-slate-500 flex-shrink-0">
+            <div className="flex items-center gap-3 text-[12px] text-[#62657A] flex-shrink-0">
               <span className="flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                <span className="font-[600] text-slate-700">{summary.pendingRecoveries}</span> scheduled
+                <span className="font-[600] text-[#62657A]">{summary.pendingRecoveries}</span> scheduled
               </span>
-              <span className="w-px h-3 bg-slate-200" />
+              <span className="w-px h-3 bg-[#E4E4EF]" />
               <span className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                <span className="font-[600] text-slate-700">{summary.completedRecoveries}</span> recovered
+                <span className="w-1.5 h-1.5 rounded-full bg-[#7679FF]" />
+                <span className="font-[600] text-[#62657A]">{summary.completedRecoveries}</span> recovered
               </span>
             </div>
           )}
@@ -452,7 +456,7 @@ export function PayrollPage() {
         <form onSubmit={handleSave} className="px-5 py-4">
           <div className="flex items-end gap-3">
             <div className="flex-1">
-              <label className="block text-[11px] font-[500] text-slate-500 mb-1.5">
+              <label className="block text-[11px] font-[500] text-[#62657A] mb-1.5">
                 Payroll day (1–31)
               </label>
               <input
@@ -463,7 +467,7 @@ export function PayrollPage() {
               />
             </div>
             <div className="flex-1">
-              <label className="block text-[11px] font-[500] text-slate-500 mb-1.5">
+              <label className="block text-[11px] font-[500] text-[#62657A] mb-1.5">
                 Cutoff day (1–31)
               </label>
               <input
@@ -475,14 +479,14 @@ export function PayrollPage() {
             </div>
             <button
               type="submit" disabled={saving}
-              className="h-9 px-4 flex items-center gap-2 rounded-lg bg-[#059669] hover:bg-[#047857] text-white text-[12px] font-[600] disabled:opacity-50 transition-colors flex-shrink-0"
+              className="h-9 px-4 flex items-center gap-2 rounded-lg bg-[#7679FF] hover:bg-[#5659D9] text-white text-[12px] font-[600] disabled:opacity-50 transition-colors flex-shrink-0"
             >
               <Save size={13} />
               {saving ? "Saving…" : "Save"}
             </button>
           </div>
           {saved && (
-            <div className="mt-3 flex items-center gap-1.5 text-[12px] text-emerald-600 font-[500]">
+            <div className="mt-3 flex items-center gap-1.5 text-[12px] text-[#7679FF] font-[500]">
               <CheckCircle2 size={13} /> Settings saved
             </div>
           )}
@@ -490,13 +494,13 @@ export function PayrollPage() {
       </div>
 
       {/* ── Employee payroll table ─────────────────────────────────────────── */}
-      <div className="bg-white border border-slate-100 rounded-xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-4">
+      <div className="bg-white border border-[#E4E4EF] rounded-xl overflow-hidden">
+        <div className="px-5 py-4 border-b border-[#E4E4EF] flex items-center justify-between gap-4">
           <div>
-            <p className="text-[13px] font-[600] text-slate-900">
+            <p className="text-[13px] font-[600] text-[#191A2E]">
               {hasScheduled ? "Current Cycle — Payout Breakdown" : `Next Payroll · ${nextPayrollMonth()}`}
             </p>
-            <p className="text-[12px] text-slate-400 mt-0.5">
+            <p className="text-[12px] text-[#62657A] mt-0.5">
               {hasScheduled
                 ? "Net Payable = Salary In Hand − Total Recovery"
                 : "No recoveries this cycle — all salaries paid in full"}
@@ -504,7 +508,7 @@ export function PayrollPage() {
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             {!hasScheduled && (
-              <span className="text-[11px] font-[600] text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full">
+              <span className="text-[11px] font-[600] text-[#62657A] bg-[#F0F0F8] px-2.5 py-1 rounded-full">
                 {daysToPayday}d away
               </span>
             )}
@@ -517,7 +521,7 @@ export function PayrollPage() {
                 : !isPayrollWindow ? `Available from the ${formatPayrollDay(payrollDay)}`
                 : undefined
               }
-              className="h-8 px-3.5 flex items-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[12px] font-[600] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="h-8 px-3.5 flex items-center gap-1.5 rounded-lg bg-[#7679FF] hover:bg-[#5659D9] text-white text-[12px] font-[600] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <Play size={11} />
               Process Payroll
@@ -525,52 +529,63 @@ export function PayrollPage() {
           </div>
         </div>
 
-        {loading ? (
-          <div className="divide-y divide-slate-50">
+        {(recErr || empErr) ? (
+          <div className="py-10 text-center">
+            <p className="text-[13px] font-[500] text-red-600">Failed to load payroll data</p>
+            <p className="text-[12px] text-[#62657A] mt-1">{recErr ?? empErr}</p>
+            <button
+              onClick={() => { if (recErr) refreshRecoveries(); if (empErr) refreshEmployees(); }}
+              className="mt-4 h-8 px-4 text-[12px] font-[500] bg-white border border-[#E4E4EF] rounded-lg hover:bg-[#F7F7FB] transition-colors text-[#62657A]"
+            >
+              Retry
+            </button>
+          </div>
+        ) : (recLoading || empLoading) ? (
+          <div className="divide-y divide-[#F0F0F8]">
             {[...Array(5)].map((_, i) => (
               <div key={i} className="px-5 py-3.5 flex items-center gap-4">
-                <div className="h-2.5 w-32 bg-slate-100 rounded animate-pulse" />
-                <div className="h-2.5 w-20 bg-slate-100 rounded animate-pulse ml-auto" />
-                <div className="h-2.5 w-20 bg-slate-100 rounded animate-pulse" />
-                <div className="h-2.5 w-20 bg-slate-100 rounded animate-pulse" />
-                <div className="h-2.5 w-24 bg-slate-100 rounded animate-pulse" />
+                <div className="h-2.5 w-32 bg-[#F0F0F8] rounded animate-pulse" />
+                <div className="h-2.5 w-20 bg-[#F0F0F8] rounded animate-pulse ml-auto" />
+                <div className="h-2.5 w-20 bg-[#F0F0F8] rounded animate-pulse" />
+                <div className="h-2.5 w-20 bg-[#F0F0F8] rounded animate-pulse" />
+                <div className="h-2.5 w-24 bg-[#F0F0F8] rounded animate-pulse" />
               </div>
             ))}
           </div>
         ) : rows.length === 0 ? (
           <div className="py-16 text-center">
-            <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center mx-auto mb-3">
-              <Users size={18} className="text-slate-400" />
+            <div className="w-10 h-10 rounded-xl bg-[#F0F0F8] flex items-center justify-center mx-auto mb-3">
+              <Users size={18} className="text-[#62657A]" />
             </div>
-            <p className="text-[13px] font-[500] text-slate-700">No payroll records available</p>
-            <p className="text-[12px] text-slate-400 mt-1">Payroll information will appear after employees are onboarded.</p>
+            <p className="text-[13px] font-[500] text-[#62657A]">No payroll records available</p>
+            <p className="text-[12px] text-[#62657A] mt-1">Payroll information will appear after employees are onboarded.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-[12px]">
               <thead>
-                <tr className="border-b border-slate-100 bg-slate-50/80">
-                  <th className="px-5 py-3 text-left text-[10px] font-[700] text-slate-400 uppercase tracking-[0.08em]">Employee</th>
-                  <th className="px-4 py-3 text-right text-[10px] font-[700] text-slate-400 uppercase tracking-[0.08em]">Salary</th>
-                  <th className="px-4 py-3 text-right text-[10px] font-[700] text-slate-400 uppercase tracking-[0.08em]">Advance</th>
-                  <th className="px-4 py-3 text-right text-[10px] font-[700] text-slate-400 uppercase tracking-[0.08em]">Interest</th>
-                  <th className="px-4 py-3 text-right text-[10px] font-[700] text-slate-400 uppercase tracking-[0.08em]">Recovery</th>
-                  <th className="px-5 py-3 text-right text-[10px] font-[700] text-slate-400 uppercase tracking-[0.08em]">Net Payable</th>
+                <tr className="border-b border-[#E4E4EF] bg-[#F7F7FB]/80">
+                  <th className="px-5 py-3 text-left text-[11px] font-[700] text-[#62657A] uppercase tracking-[0.08em]">Employee</th>
+                  <th className="px-4 py-3 text-right text-[11px] font-[700] text-[#62657A] uppercase tracking-[0.08em]">Salary</th>
+                  <th className="px-4 py-3 text-right text-[11px] font-[700] text-[#62657A] uppercase tracking-[0.08em]">Advance</th>
+                  <th className="px-4 py-3 text-right text-[11px] font-[700] text-[#62657A] uppercase tracking-[0.08em]">Interest</th>
+                  <th className="px-4 py-3 text-right text-[11px] font-[700] text-[#62657A] uppercase tracking-[0.08em]">Recovery</th>
+                  <th className="px-5 py-3 text-right text-[11px] font-[700] text-[#62657A] uppercase tracking-[0.08em]">Net Payable</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-50">
+              <tbody className="divide-y divide-[#F0F0F8]">
                 {rows.map((row) => {
                   const hasRecovery = row.totalRecoveryAmount > 0;
                   return (
-                    <tr key={row.employeeId} className={`hover:bg-slate-50/60 transition-colors ${hasRecovery ? "bg-amber-50/20" : ""}`}>
+                    <tr key={row.employeeId} className={`hover:bg-[#F7F7FB]/60 transition-colors ${hasRecovery ? "bg-amber-50/20" : ""}`}>
                       {/* Employee */}
                       <td className="px-5 py-3.5">
-                        <p className="font-[600] text-slate-800 leading-snug">{row.employeeName}</p>
-                        <p className="text-[10px] text-slate-400 mt-0.5 font-[500]">{row.employeeCode}</p>
+                        <p className="font-[600] text-[#191A2E] leading-snug">{row.employeeName}</p>
+                        <p className="text-[11px] text-[#62657A] mt-0.5 font-[500]">{row.employeeCode}</p>
                       </td>
 
                       {/* Salary In Hand */}
-                      <td className="px-4 py-3.5 text-right tabular-nums text-slate-700 font-[500]">
+                      <td className="px-4 py-3.5 text-right tabular-nums text-[#62657A] font-[500]">
                         {formatCurrency(row.salaryInHand)}
                       </td>
 
@@ -591,7 +606,7 @@ export function PayrollPage() {
 
                       {/* Net Payable */}
                       <td className="px-5 py-3.5 text-right">
-                        <span className={`tabular-nums font-[700] text-[13px] ${row.netSalaryPayable >= 0 ? "text-emerald-700" : "text-red-600"}`}>
+                        <span className={`tabular-nums font-[700] text-[13px] ${row.netSalaryPayable >= 0 ? "text-[#5659D9]" : "text-red-600"}`}>
                           {formatCurrency(row.netSalaryPayable)}
                         </span>
                       </td>
@@ -602,25 +617,25 @@ export function PayrollPage() {
 
               {rows.length > 1 && (
                 <tfoot>
-                  <tr className="border-t-2 border-slate-100 bg-slate-50">
+                  <tr className="border-t-2 border-[#E4E4EF] bg-[#F7F7FB]">
                     <td className="px-5 py-3.5">
-                      <span className="text-[11px] font-[700] text-slate-500">
+                      <span className="text-[11px] font-[700] text-[#62657A]">
                         {rows.length} employees · {totals.employeesWithRec} with recovery
                       </span>
                     </td>
-                    <td className="px-4 py-3.5 text-right tabular-nums font-[700] text-slate-700">
+                    <td className="px-4 py-3.5 text-right tabular-nums font-[700] text-[#62657A]">
                       {formatCurrency(totals.grossPayroll)}
                     </td>
                     <td className="px-4 py-3.5 text-right tabular-nums font-[700] text-amber-600">
-                      {totals.totalRecovery > 0 ? formatCurrency(rows.reduce((s, r) => s + r.advanceAmount, 0)) : <span className="text-slate-300">—</span>}
+                      {totals.totalRecovery > 0 ? formatCurrency(rows.reduce((s, r) => s + r.advanceAmount, 0)) : <span className="text-[#62657A]">—</span>}
                     </td>
                     <td className="px-4 py-3.5 text-right tabular-nums font-[700] text-amber-700">
-                      {totals.totalRecovery > 0 ? formatCurrency(rows.reduce((s, r) => s + r.interestAmount, 0)) : <span className="text-slate-300">—</span>}
+                      {totals.totalRecovery > 0 ? formatCurrency(rows.reduce((s, r) => s + r.interestAmount, 0)) : <span className="text-[#62657A]">—</span>}
                     </td>
                     <td className="px-4 py-3.5 text-right tabular-nums font-[700] text-red-500">
-                      {totals.totalRecovery > 0 ? `−${formatCurrency(totals.totalRecovery)}` : <span className="text-slate-300">—</span>}
+                      {totals.totalRecovery > 0 ? `−${formatCurrency(totals.totalRecovery)}` : <span className="text-[#62657A]">—</span>}
                     </td>
-                    <td className="px-5 py-3.5 text-right tabular-nums font-[700] text-emerald-700 text-[13px]">
+                    <td className="px-5 py-3.5 text-right tabular-nums font-[700] text-[#5659D9] text-[13px]">
                       {formatCurrency(totals.netPayroll)}
                     </td>
                   </tr>

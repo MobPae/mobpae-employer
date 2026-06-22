@@ -14,8 +14,8 @@ const FALLBACK: EmployerProfile = {
 function Field({ label, icon, children }: { label: string; icon?: React.ReactNode; children: React.ReactNode }) {
   return (
     <div>
-      <label className="flex items-center gap-1.5 text-[11px] font-[500] text-slate-500 mb-1.5">
-        {icon && <span className="text-slate-400">{icon}</span>}
+      <label className="flex items-center gap-1.5 text-[11px] font-[500] text-[#62657A] mb-1.5">
+        {icon && <span className="text-[#62657A]">{icon}</span>}
         {label}
       </label>
       {children}
@@ -23,7 +23,7 @@ function Field({ label, icon, children }: { label: string; icon?: React.ReactNod
   );
 }
 
-const inputCls = "w-full h-9 px-3 text-[13px] bg-white border border-slate-200 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed";
+const inputCls = "w-full h-9 px-3 text-[13px] bg-white border border-[#E4E4EF] rounded-lg text-[#191A2E] placeholder-[#B7B9C7] focus:outline-none focus:border-[#7679FF] focus:ring-2 focus:ring-[#7679FF]/10 transition disabled:bg-[#F7F7FB] disabled:text-[#62657A] disabled:cursor-not-allowed";
 
 export function SettingsPage() {
   const toast = useToast();
@@ -47,7 +47,6 @@ export function SettingsPage() {
     setSaving(true);
     try {
       const updated = await employerService.updateEmployerProfile({
-        companyName:    profile.companyName,
         contactPerson:  profile.contactPerson,
         companyEmail:   profile.companyEmail,
         phone:          profile.phone,
@@ -63,10 +62,10 @@ export function SettingsPage() {
   return (
     <div className="max-w-2xl space-y-4">
       {/* Company identity (read-only) */}
-      <div className="bg-white border border-slate-100 rounded-xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-slate-100">
-          <p className="text-[13px] font-[600] text-slate-900">Company identity</p>
-          <p className="text-[12px] text-slate-400 mt-0.5">Read-only — set by your MobPae administrator</p>
+      <div className="bg-white border border-[#E4E4EF] rounded-xl overflow-hidden">
+        <div className="px-5 py-4 border-b border-[#E4E4EF]">
+          <p className="text-[13px] font-[600] text-[#191A2E]">Company identity</p>
+          <p className="text-[12px] text-[#62657A] mt-0.5">Read-only — set by your MobPae administrator</p>
         </div>
         <div className="px-5 py-4 grid grid-cols-2 gap-4">
           <Field label="Company name" icon={<Building2 size={11} />}>
@@ -81,36 +80,28 @@ export function SettingsPage() {
           <Field label="Account status" icon={<CheckCircle2 size={11} />}>
             <div className="h-9 px-3 flex items-center">
               {profile.status ? (
-                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-[500] bg-emerald-50 text-emerald-700">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-[500] bg-[#EBF6E3] text-[#3B6D11]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#4E8A18]" />
                   {profile.status}
                 </span>
-              ) : <span className="text-[12px] text-slate-400">—</span>}
+              ) : <span className="text-[12px] text-[#62657A]">—</span>}
             </div>
           </Field>
         </div>
-        <div className="px-5 py-3 bg-blue-50/40 border-t border-blue-100">
-          <p className="text-[11px] text-blue-600">
+        <div className="px-5 py-3 bg-[#ECEBFF]/40 border-t border-[#E4E4EF]">
+          <p className="text-[11px] text-[#7679FF]">
             Login email is used for authentication and cannot be changed here. Contact support to update it.
           </p>
         </div>
       </div>
 
       {/* Editable contact info */}
-      <div className="bg-white border border-slate-100 rounded-xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-slate-100">
-          <p className="text-[13px] font-[600] text-slate-900">Contact information</p>
-          <p className="text-[12px] text-slate-400 mt-0.5">Update company contact and billing details</p>
+      <div className="bg-white border border-[#E4E4EF] rounded-xl overflow-hidden">
+        <div className="px-5 py-4 border-b border-[#E4E4EF]">
+          <p className="text-[13px] font-[600] text-[#191A2E]">Contact information</p>
+          <p className="text-[12px] text-[#62657A] mt-0.5">Update company contact and billing details</p>
         </div>
         <form onSubmit={handleSubmit} className="px-5 py-4 space-y-4">
-          <Field label="Company name" icon={<Building2 size={11} />}>
-            <input
-              className={inputCls}
-              value={profile.companyName}
-              onChange={e => set("companyName", e.target.value)}
-              placeholder="Acme Corp"
-            />
-          </Field>
           <Field label="Contact person" icon={<User size={11} />}>
             <input
               className={inputCls}
@@ -143,13 +134,13 @@ export function SettingsPage() {
             <button
               type="submit"
               disabled={saving}
-              className="h-9 px-4 flex items-center gap-2 rounded-lg bg-[#059669] hover:bg-[#047857] text-white text-[12px] font-[600] disabled:opacity-50 transition-colors"
+              className="h-9 px-4 flex items-center gap-2 rounded-lg bg-[#7679FF] hover:bg-[#5659D9] text-white text-[12px] font-[600] disabled:opacity-50 transition-colors"
             >
               <Save size={13} />
               {saving ? "Saving…" : "Save changes"}
             </button>
             {saved && (
-              <div className="flex items-center gap-1.5 text-[12px] font-[500] text-emerald-700">
+              <div className="flex items-center gap-1.5 text-[12px] font-[500] text-[#5659D9]">
                 <CheckCircle2 size={13} />Changes saved
               </div>
             )}
