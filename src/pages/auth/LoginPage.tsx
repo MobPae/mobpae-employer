@@ -1,5 +1,5 @@
 import { Clock, Eye, EyeOff } from "lucide-react";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { isForbidden, getApiErrorMessage } from "../../services/api-errors";
@@ -24,6 +24,13 @@ export function LoginPage() {
   const [pending,  setPending]  = useState(false);
   const [loading,  setLoading]  = useState(false);
   const loginAttempted = useRef(false);
+
+  useEffect(() => {
+    if (sessionStorage.getItem("mobpae_session_expired")) {
+      sessionStorage.removeItem("mobpae_session_expired");
+      setError("Your session has expired. Please sign in again.");
+    }
+  }, []);
 
   if (authLoading) return null;
   if (!loginAttempted.current && isAuthenticated) return <Navigate to="/dashboard" replace />;
