@@ -27,3 +27,7 @@ export async function getNotificationCount(): Promise<number> {
   const d = data as Record<string, unknown>;
   return typeof d.unread === "number" ? d.unread : 0;
 }
+
+export async function markAllNotificationsRead(): Promise<void> {
+  await httpClient.post("/notifications/me/read-all");
+}

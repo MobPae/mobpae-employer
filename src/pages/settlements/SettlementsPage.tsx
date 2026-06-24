@@ -23,18 +23,19 @@ import { getApiErrorMessage } from "../../services/api-errors";
 
 // ── status config ─────────────────────────────────────────────────────────────
 
-const STATUS_CFG: Record<SettlementStatus, { label: string; bg: string; text: string; dot: string; border: string }> = {
-  PENDING:        { label: "Pending",        bg: "bg-amber-50",   text: "text-amber-700",   dot: "bg-amber-400",   border: "border-amber-200" },
-  PARTIALLY_PAID: { label: "Partially Paid", bg: "bg-[#E7F1FC]", text: "text-[#185FA5]", dot: "bg-[#378ADD]", border: "border-[#B5D4F4]" },
-  PAID:           { label: "Paid",           bg: "bg-[#EBF6E3]", text: "text-[#3B6D11]", dot: "bg-[#4E8A18]", border: "border-[#9FD5B0]" },
-  OVERDUE:        { label: "Overdue",        bg: "bg-red-50",     text: "text-red-700",     dot: "bg-red-400",     border: "border-red-200"   },
+const STATUS_CFG: Record<string, { label: string; bg: string; text: string }> = {
+  NO_DUES:        { label: "N/A",            bg: "#F3F4F6", text: "#6B7280" },
+  PENDING:        { label: "Pending",        bg: "#FEF3C7", text: "#D97706" },
+  PARTIALLY_PAID: { label: "Partially Paid", bg: "#DBEAFE", text: "#1D4ED8" },
+  PAID:           { label: "Paid",           bg: "#DCFCE7", text: "#16A34A" },
+  OVERDUE:        { label: "Overdue",        bg: "#FEE2E2", text: "#DC2626" },
 };
 
-function StatusPill({ status }: { status: SettlementStatus }) {
-  const c = STATUS_CFG[status];
+function StatusPill({ status }: { status: string }) {
+  const c = STATUS_CFG[status as SettlementStatus] ?? { label: status, bg: "#F3F4F6", text: "#6B7280" };
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-[500] ${c.bg} ${c.text}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${c.dot}`} />
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "2px 9px", borderRadius: 999, fontSize: 11, fontWeight: 500, background: c.bg, color: c.text }}>
+      <span style={{ width: 6, height: 6, borderRadius: "50%", background: c.text, flexShrink: 0 }} />
       {c.label}
     </span>
   );
@@ -71,14 +72,19 @@ function SummaryCard({ label, value, icon, iconBg, iconColor, highlight, sub }: 
   iconBg: string; iconColor: string; highlight?: boolean; sub?: string;
 }) {
   return (
-    <div className={`rounded-xl p-4 flex flex-col gap-3 border ${highlight ? "bg-[#7679FF] border-[#5659D9]" : "bg-white border-[#E4E4EF]"}`}>
-      <div className="flex items-center justify-between">
-        <span className={`text-[12px] font-[500] ${highlight ? "text-white/50" : "text-[#62657A]"}`}>{label}</span>
-        <div className={`w-7 h-7 rounded-lg ${iconBg} flex items-center justify-center ${iconColor}`}>{icon}</div>
+    <div style={{
+      borderRadius: 16, padding: 16, display: "flex", flexDirection: "column", gap: 12,
+      background: highlight ? "#6C4CFF" : "white",
+      border: highlight ? "1px solid #5B34FF" : "1px solid #E5E7EB",
+      boxShadow: highlight ? "0 4px 14px rgba(108,76,255,0.25)" : "0 1px 4px rgba(17,24,39,0.04)"
+    }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <span style={{ fontSize: 12, fontWeight: 500, color: highlight ? "rgba(255,255,255,0.6)" : "#6B7280" }}>{label}</span>
+        <div className={`w-7 h-7 rounded-lg ${iconBg} flex items-center justify-center ${iconColor}`} style={{ flexShrink: 0 }}>{icon}</div>
       </div>
       <div>
-        <p className={`text-[22px] font-[700] tracking-[-0.02em] leading-none ${highlight ? "text-white" : "text-[#191A2E]"}`}>{value}</p>
-        {sub && <p className={`text-[11px] mt-1 ${highlight ? "text-white/40" : "text-[#62657A]"}`}>{sub}</p>}
+        <p style={{ fontSize: 22, fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1, color: highlight ? "white" : "#111827" }}>{value}</p>
+        {sub && <p style={{ fontSize: 11, marginTop: 4, color: highlight ? "rgba(255,255,255,0.5)" : "#6B7280" }}>{sub}</p>}
       </div>
     </div>
   );
@@ -99,14 +105,14 @@ function Timeline({ settlement }: { settlement: EmployerSettlement }) {
       {steps.map((step, i) => (
         <div key={step.label} className="flex gap-3">
           <div className="flex flex-col items-center">
-            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] flex-shrink-0 border-2 ${step.done ? "border-[#7679FF] bg-[#ECEBFF]" : "border-[#E4E4EF] bg-white"}`}>
-              {step.done ? <CheckCircle2 size={12} className="text-[#7679FF]" /> : <span className="w-2 h-2 rounded-full bg-[#D4D5E0]" />}
+            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] flex-shrink-0 border-2 ${step.done ? "border-[#6C4CFF] bg-[#F3F0FF]" : "border-[#E5E7EB] bg-white"}`}>
+              {step.done ? <CheckCircle2 size={12} className="text-[#6C4CFF]" /> : <span className="w-2 h-2 rounded-full bg-[#D4D5E0]" />}
             </div>
-            {i < steps.length - 1 && <div className={`w-px flex-1 my-1 ${step.done ? "bg-[#C8C9FF]" : "bg-[#F0F0F8]"}`} style={{ minHeight: 20 }} />}
+            {i < steps.length - 1 && <div className={`w-px flex-1 my-1 ${step.done ? "bg-[#C8C9FF]" : "bg-[#F3F4F6]"}`} style={{ minHeight: 20 }} />}
           </div>
           <div className="pb-4">
-            <p className={`text-[12px] font-[500] leading-none ${step.done ? "text-[#191A2E]" : "text-[#62657A]"}`}>{step.label}</p>
-            {step.date && <p className="text-[11px] text-[#62657A] mt-0.5">{formatDate(step.date)}</p>}
+            <p className={`text-[12px] font-[500] leading-none ${step.done ? "text-[#111827]" : "text-[#6B7280]"}`}>{step.label}</p>
+            {step.date && <p className="text-[11px] text-[#6B7280] mt-0.5">{formatDate(step.date)}</p>}
           </div>
         </div>
       ))}
@@ -120,7 +126,7 @@ function DrawerPanel({ open, onClose, children }: { open: boolean; onClose: () =
   return (
     <>
       {open && <div className="fixed inset-0 z-30 bg-black/20 backdrop-blur-[1px]" onClick={onClose} />}
-      <div className={`fixed inset-y-0 right-0 z-40 w-[460px] bg-white border-l border-[#E4E4EF] shadow-xl flex flex-col transition-transform duration-200 ${open ? "translate-x-0" : "translate-x-full"}`}>
+      <div className={`fixed inset-y-0 right-0 z-40 w-[460px] bg-white border-l border-[#E5E7EB] shadow-xl flex flex-col transition-transform duration-200 ${open ? "translate-x-0" : "translate-x-full"}`}>
         {children}
       </div>
     </>
@@ -129,9 +135,9 @@ function DrawerPanel({ open, onClose, children }: { open: boolean; onClose: () =
 
 function InfoRow({ label, value, accent }: { label: string; value: React.ReactNode; accent?: boolean }) {
   return (
-    <div className="flex items-center justify-between py-2.5 border-b border-[#F0F0F8] last:border-0">
-      <span className="text-[12px] text-[#62657A]">{label}</span>
-      <span className={`text-[12px] font-[500] ${accent ? "text-red-600" : "text-[#191A2E]"}`}>{value}</span>
+    <div className="flex items-center justify-between py-2.5 border-b border-[#F9FAFB] last:border-0">
+      <span className="text-[12px] text-[#6B7280]">{label}</span>
+      <span className={`text-[12px] font-[500] ${accent ? "text-red-600" : "text-[#111827]"}`}>{value}</span>
     </div>
   );
 }
@@ -184,8 +190,8 @@ export function SettlementsPage() {
     return (
       <div className="bg-white border border-red-100 rounded-xl px-6 py-14 text-center">
         <p className="text-[13px] font-[500] text-red-600">Failed to load settlements</p>
-        <p className="text-[12px] text-[#62657A] mt-1">{error}</p>
-        <button onClick={refresh} className="mt-4 h-8 px-4 text-[12px] font-[500] bg-white border border-[#E4E4EF] rounded-lg hover:bg-[#F7F7FB] transition-colors text-[#62657A]">
+        <p className="text-[12px] text-[#6B7280] mt-1">{error}</p>
+        <button onClick={refresh} className="mt-4 h-8 px-4 text-[12px] font-[500] bg-white border border-[#E5E7EB] rounded-lg hover:bg-[#F7F7FB] transition-colors text-[#6B7280]">
           Retry
         </button>
       </div>
@@ -194,6 +200,12 @@ export function SettlementsPage() {
 
   return (
     <div className="space-y-4">
+      {/* Page header */}
+      <div>
+        <h1 style={{ fontSize: 24, fontWeight: 700, color: "#111827", letterSpacing: "-0.025em", margin: 0 }}>Settlements</h1>
+        <p style={{ fontSize: 13, color: "#6B7280", marginTop: 4 }}>Track and manage amounts owed to MobPae each payroll cycle</p>
+      </div>
+
       {/* Summary cards */}
       <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
         <SummaryCard
@@ -225,7 +237,7 @@ export function SettlementsPage() {
           label="Paid Settlements"
           value={summary?.paidSettlements ?? 0}
           icon={<CheckCircle2 size={14} />}
-          iconBg="bg-[#ECEBFF]" iconColor="text-[#7679FF]"
+          iconBg="bg-[#F3F0FF]" iconColor="text-[#6C4CFF]"
           sub="settled with MobPae"
         />
       </div>
@@ -259,7 +271,7 @@ export function SettlementsPage() {
               </p>
             </div>
             {riskGood && (
-              <span className="inline-flex items-center gap-1 text-[11px] font-[600] text-[#5659D9] bg-[#ECEBFF] border border-[#C8C9FF] px-2 py-0.5 rounded-full flex-shrink-0">
+              <span className="inline-flex items-center gap-1 text-[11px] font-[600] text-[#5B34FF] bg-[#F3F0FF] border border-[#C8C9FF] px-2 py-0.5 rounded-full flex-shrink-0">
                 <ShieldCheck size={11} /> Good standing
               </span>
             )}
@@ -268,9 +280,9 @@ export function SettlementsPage() {
       )}
 
       {/* Business flow info */}
-      <div className="bg-[#ECEBFF]/60 border border-[#E4E4EF] rounded-xl px-4 py-3 flex items-start gap-3">
-        <Landmark size={15} className="text-[#7679FF] mt-0.5 flex-shrink-0" />
-        <p className="text-[12px] text-[#5659D9] leading-relaxed">
+      <div className="bg-[#F3F0FF]/60 border border-[#E5E7EB] rounded-xl px-4 py-3 flex items-start gap-3">
+        <Landmark size={15} className="text-[#6C4CFF] mt-0.5 flex-shrink-0" />
+        <p className="text-[12px] text-[#5B34FF] leading-relaxed">
           Settlements represent amounts your company owes to MobPae. Remit payment to MobPae directly — your MobPae account manager will confirm receipt and mark it as paid.
         </p>
       </div>
@@ -283,13 +295,13 @@ export function SettlementsPage() {
             onClick={() => setFilter(f.value)}
             className={`h-7 px-3 rounded-full text-[12px] font-[500] transition-colors flex items-center gap-1.5 ${
               filter === f.value
-                ? "bg-[#7679FF] text-white"
-                : "bg-white border border-[#E4E4EF] text-[#62657A] hover:border-[#E4E4EF]"
+                ? "bg-[#111827] text-white"
+                : "bg-white border border-[#E5E7EB] text-[#6B7280] hover:border-[#E5E7EB]"
             }`}
           >
             {f.label}
             {counts[f.value] !== undefined && (
-              <span className={`text-[11px] font-[700] ${filter === f.value ? "text-white/60" : "text-[#62657A]"}`}>
+              <span className={`text-[11px] font-[700] ${filter === f.value ? "text-white/60" : "text-[#6B7280]"}`}>
                 {counts[f.value]}
               </span>
             )}
@@ -298,81 +310,83 @@ export function SettlementsPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-white border border-[#E4E4EF] rounded-xl overflow-hidden">
+      <div style={{ background: "white", border: "1px solid #E5E7EB", borderRadius: 16, overflow: "hidden", boxShadow: "0 1px 4px rgba(17,24,39,0.04)" }}>
         {loading ? (
           <div>
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="flex items-center gap-4 px-5 py-3.5 border-b border-[#F0F0F8] last:border-0">
-                <div className="w-7 h-7 rounded-lg bg-[#F0F0F8] animate-pulse flex-shrink-0" />
+              <div key={i} className="flex items-center gap-4 px-5 py-3.5 border-b border-[#F9FAFB] last:border-0">
+                <div className="w-7 h-7 rounded-lg bg-[#F3F4F6] animate-pulse flex-shrink-0" />
                 <div className="flex-1 space-y-1.5">
-                  <div className="h-2.5 w-28 bg-[#F0F0F8] rounded animate-pulse" />
-                  <div className="h-2 w-20 bg-[#F0F0F8] rounded animate-pulse" />
+                  <div className="h-2.5 w-28 bg-[#F3F4F6] rounded animate-pulse" />
+                  <div className="h-2 w-20 bg-[#F3F4F6] rounded animate-pulse" />
                 </div>
-                <div className="h-2.5 w-20 bg-[#F0F0F8] rounded animate-pulse" />
-                <div className="h-2.5 w-16 bg-[#F0F0F8] rounded animate-pulse" />
-                <div className="h-4 w-16 bg-[#F0F0F8] rounded-full animate-pulse" />
+                <div className="h-2.5 w-20 bg-[#F3F4F6] rounded animate-pulse" />
+                <div className="h-2.5 w-16 bg-[#F3F4F6] rounded animate-pulse" />
+                <div className="h-4 w-16 bg-[#F3F4F6] rounded-full animate-pulse" />
               </div>
             ))}
           </div>
         ) : !filtered.length ? (
           <div className="py-16 text-center">
-            <div className="w-10 h-10 rounded-xl bg-[#F0F0F8] flex items-center justify-center mb-3 mx-auto">
-              <CreditCard size={18} className="text-[#62657A]" />
+            <div className="w-10 h-10 rounded-xl bg-[#F3F4F6] flex items-center justify-center mb-3 mx-auto">
+              <CreditCard size={18} className="text-[#6B7280]" />
             </div>
-            <p className="text-[13px] font-[500] text-[#62657A]">No settlements found</p>
-            <p className="text-[12px] text-[#62657A] mt-1">Settlements appear here once employees' recovered amounts are due to MobPae</p>
+            <p className="text-[13px] font-[500] text-[#6B7280]">No settlements found</p>
+            <p className="text-[12px] text-[#6B7280] mt-1">Settlements appear here once employees' recovered amounts are due to MobPae</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full table-fixed text-[12px]">
-              <colgroup>
-                <col style={{ width: "14%" }} />
-                <col style={{ width: "14%" }} />
-                <col style={{ width: "13%" }} />
-                <col style={{ width: "13%" }} />
-                <col style={{ width: "14%" }} />
-                <col style={{ width: "13%" }} />
-                <col style={{ width: "11%" }} />
-                <col style={{ width: "8%" }} />
-              </colgroup>
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
-                <tr className="border-b border-[#E4E4EF]">
+                <tr style={{ background: "#FAFAFA", borderBottom: "1px solid #F3F4F6" }}>
                   {["Payroll Month", "Total Amount", "Outstanding", "Late Fee", "Due Date", "Grace Period", "Status", ""].map(h => (
-                    <th key={h} className="px-5 py-3 text-left text-[11px] font-[500] text-[#62657A]">{h}</th>
+                    <th key={h} style={{ padding: "14px 20px", textAlign: "left", fontSize: 11.5, fontWeight: 600, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: "0.07em", whiteSpace: "nowrap" }}>{h}</th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#F0F0F8]">
-                {filtered.map(s => (
-                  <tr
-                    key={s.id}
-                    onClick={() => setSelected(s)}
-                    className={`cursor-pointer hover:bg-[#F7F7FB]/60 transition-colors ${selected?.id === s.id ? "bg-[#ECEBFF]/30" : ""} ${isOverdue(s) ? "bg-red-50/20" : ""}`}
-                  >
-                    <td className="px-5 py-3 font-[500] text-[#191A2E]">{formatPayrollMonth(s.payrollMonth)}</td>
-                    <td className="px-5 py-3 tabular-nums font-[600] text-[#191A2E]">{formatCurrency(s.totalAmount)}</td>
-                    <td className={`px-5 py-3 tabular-nums font-[600] ${s.outstandingAmount > 0 ? "text-red-600" : "text-[#7679FF]"}`}>
-                      {s.outstandingAmount > 0 ? formatCurrency(s.outstandingAmount) : "No dues"}
-                    </td>
-                    <td className="px-5 py-3 tabular-nums text-[#62657A]">
-                      {s.lateFeeAmount > 0 ? formatCurrency(s.lateFeeAmount) : <span className="text-[#62657A]">—</span>}
-                    </td>
-                    <td className={`px-5 py-3 tabular-nums font-[500] ${isOverdue(s) ? "text-red-600" : "text-[#62657A]"}`}>
-                      {formatDate(s.dueDate)}
-                    </td>
-                    <td className="px-5 py-3 tabular-nums text-[#62657A]">
-                      {s.gracePeriodEnd ? formatDate(s.gracePeriodEnd) : <span className="text-[#62657A]">—</span>}
-                    </td>
-                    <td className="px-5 py-3"><StatusPill status={s.status} /></td>
-                    <td className="px-5 py-3">
-                      <span className="flex items-center gap-1 text-[12px] font-[500] text-[#7679FF]">
-                        Details <ChevronRight size={12} />
-                      </span>
-                    </td>
-                  </tr>
-                ))}
+              <tbody>
+                {filtered.map(s => {
+                  const isSelected = selected?.id === s.id;
+                  const overdue = isOverdue(s);
+                  return (
+                    <tr
+                      key={s.id}
+                      onClick={() => setSelected(s)}
+                      style={{ borderBottom: "1px solid #F9FAFB", background: isSelected ? "#F3F0FF4D" : overdue ? "#FFF1F14D" : "transparent", cursor: "pointer", transition: "background 0.1s" }}
+                      onMouseEnter={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.background = "#FAFAFC"; }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = isSelected ? "#F3F0FF4D" : overdue ? "#FFF1F14D" : "transparent"; }}
+                    >
+                      <td style={{ padding: "16px 20px", fontSize: 13.5, fontWeight: 600, color: "#111827", verticalAlign: "middle" }}>{formatPayrollMonth(s.payrollMonth)}</td>
+                      <td style={{ padding: "16px 20px", fontSize: 13.5, fontWeight: 700, color: "#111827", fontVariantNumeric: "tabular-nums", verticalAlign: "middle" }}>{formatCurrency(s.totalAmount)}</td>
+                      <td style={{ padding: "16px 20px", fontSize: 13.5, fontWeight: 600, color: s.outstandingAmount > 0 ? "#DC2626" : "#6C4CFF", fontVariantNumeric: "tabular-nums", verticalAlign: "middle" }}>
+                        {s.outstandingAmount > 0 ? formatCurrency(s.outstandingAmount) : "No dues"}
+                      </td>
+                      <td style={{ padding: "16px 20px", fontSize: 13.5, color: "#6B7280", fontVariantNumeric: "tabular-nums", verticalAlign: "middle" }}>
+                        {s.lateFeeAmount > 0 ? formatCurrency(s.lateFeeAmount) : "—"}
+                      </td>
+                      <td style={{ padding: "16px 20px", fontSize: 13, fontWeight: overdue ? 600 : 400, color: overdue ? "#DC2626" : "#6B7280", fontVariantNumeric: "tabular-nums", verticalAlign: "middle" }}>
+                        {formatDate(s.dueDate)}
+                      </td>
+                      <td style={{ padding: "16px 20px", fontSize: 13, color: "#6B7280", fontVariantNumeric: "tabular-nums", verticalAlign: "middle" }}>
+                        {s.gracePeriodEnd ? formatDate(s.gracePeriodEnd) : "—"}
+                      </td>
+                      <td style={{ padding: "16px 20px", verticalAlign: "middle" }}><StatusPill status={s.status} /></td>
+                      <td style={{ padding: "16px 20px", verticalAlign: "middle" }}>
+                        <button style={{ height: 30, padding: "0 14px", background: isSelected ? "#6C4CFF" : "#F3F0FF", color: isSelected ? "white" : "#6C4CFF", border: "none", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 4 }}>
+                          Details <ChevronRight size={11} />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
+          </div>
+        )}
+        {/* Footer strip */}
+        {!loading && filtered.length > 0 && (
+          <div style={{ padding: "12px 20px", borderTop: "1px solid #F3F4F6", background: "#FAFAFA" }}>
+            <p style={{ fontSize: 12, color: "#9CA3AF", margin: 0 }}>{filtered.length} {filtered.length === 1 ? "settlement" : "settlements"}</p>
           </div>
         )}
       </div>
@@ -382,25 +396,25 @@ export function SettlementsPage() {
         {selected && (
           <>
             {/* Header */}
-            <div className="px-5 pt-5 pb-4 border-b border-[#E4E4EF]">
+            <div className="px-5 pt-5 pb-4 border-b border-[#E5E7EB]">
               <div className="flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-2 mb-1.5">
                     <StatusPill status={selected.status} />
                     {selected.referenceNumber && (
-                      <span className="text-[11px] font-[500] text-[#62657A] bg-[#F0F0F8] px-2 py-0.5 rounded">
+                      <span className="text-[11px] font-[500] text-[#6B7280] bg-[#F3F4F6] px-2 py-0.5 rounded">
                         Ref: {selected.referenceNumber}
                       </span>
                     )}
                   </div>
-                  <p className="text-[16px] font-[700] text-[#191A2E] leading-tight">
+                  <p className="text-[16px] font-[700] text-[#111827] leading-tight">
                     {formatPayrollMonth(selected.payrollMonth)}
                   </p>
-                  <p className="text-[12px] text-[#62657A] mt-0.5">Settlement period</p>
+                  <p className="text-[12px] text-[#6B7280] mt-0.5">Settlement period</p>
                 </div>
                 <button
                   onClick={() => setSelected(null)}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg border border-[#E4E4EF] text-[#62657A] hover:text-[#62657A] transition-colors"
+                  className="w-7 h-7 flex items-center justify-center rounded-lg border border-[#E5E7EB] text-[#6B7280] hover:text-[#6B7280] transition-colors"
                 >
                   <X size={14} />
                 </button>
@@ -423,16 +437,16 @@ export function SettlementsPage() {
 
               {/* Amount breakdown */}
               <div>
-                <p className="text-[11px] font-[600] text-[#62657A] uppercase tracking-[0.07em] mb-2">Amount Breakdown</p>
-                <div className="bg-white border border-[#E4E4EF] rounded-xl px-4 py-1">
+                <p className="text-[11px] font-[600] text-[#6B7280] uppercase tracking-[0.07em] mb-2">Amount Breakdown</p>
+                <div className="bg-white border border-[#E5E7EB] rounded-xl px-4 py-1">
                   <InfoRow label="Principal amount"   value={formatCurrency(selected.principalAmount)} />
                   <InfoRow label="Interest amount"    value={formatCurrency(selected.interestAmount)} />
                   {selected.lateFeeAmount > 0 && (
                     <InfoRow label="Late fee"         value={formatCurrency(selected.lateFeeAmount)} accent />
                   )}
-                  <div className="flex items-center justify-between py-3 border-t border-[#E4E4EF] mt-1">
-                    <span className="text-[12px] font-[600] text-[#191A2E]">Total amount</span>
-                    <span className="text-[14px] font-[700] text-[#191A2E] tabular-nums">{formatCurrency(selected.totalAmount)}</span>
+                  <div className="flex items-center justify-between py-3 border-t border-[#E5E7EB] mt-1">
+                    <span className="text-[12px] font-[600] text-[#111827]">Total amount</span>
+                    <span className="text-[14px] font-[700] text-[#111827] tabular-nums">{formatCurrency(selected.totalAmount)}</span>
                   </div>
                   {selected.outstandingAmount > 0 && (
                     <div className="flex items-center justify-between py-2.5 border-t border-red-100">
@@ -445,8 +459,8 @@ export function SettlementsPage() {
 
               {/* Dates */}
               <div>
-                <p className="text-[11px] font-[600] text-[#62657A] uppercase tracking-[0.07em] mb-2">Key Dates</p>
-                <div className="bg-white border border-[#E4E4EF] rounded-xl px-4 py-1">
+                <p className="text-[11px] font-[600] text-[#6B7280] uppercase tracking-[0.07em] mb-2">Key Dates</p>
+                <div className="bg-white border border-[#E5E7EB] rounded-xl px-4 py-1">
                   <InfoRow label="Due date"         value={formatDate(selected.dueDate)} accent={isOverdue(selected)} />
                   {selected.gracePeriodEnd && (
                     <InfoRow label="Grace period ends" value={formatDate(selected.gracePeriodEnd)} />
@@ -460,28 +474,28 @@ export function SettlementsPage() {
 
               {/* Timeline */}
               <div>
-                <p className="text-[11px] font-[600] text-[#62657A] uppercase tracking-[0.07em] mb-3">Status timeline</p>
+                <p className="text-[11px] font-[600] text-[#6B7280] uppercase tracking-[0.07em] mb-3">Status timeline</p>
                 <Timeline settlement={selected} />
               </div>
 
               {/* Notes */}
               {selected.notes && (
                 <div>
-                  <p className="text-[11px] font-[600] text-[#62657A] uppercase tracking-[0.07em] mb-2">Notes</p>
-                  <div className="bg-[#F7F7FB] border border-[#E4E4EF] rounded-xl px-4 py-3">
-                    <p className="text-[12px] text-[#62657A] leading-relaxed">{selected.notes}</p>
+                  <p className="text-[11px] font-[600] text-[#6B7280] uppercase tracking-[0.07em] mb-2">Notes</p>
+                  <div className="bg-[#F7F7FB] border border-[#E5E7EB] rounded-xl px-4 py-3">
+                    <p className="text-[12px] text-[#6B7280] leading-relaxed">{selected.notes}</p>
                   </div>
                 </div>
               )}
             </div>
 
             {/* Footer */}
-            <div className="px-5 py-4 border-t border-[#E4E4EF] space-y-3">
+            <div className="px-5 py-4 border-t border-[#E5E7EB] space-y-3">
               {/* Send Report button — always visible */}
               <button
                 onClick={() => void handleSendReport()}
                 disabled={sendingReport}
-                className="w-full h-8 rounded-md border border-[#E4E4EF] text-[12px] font-[500] text-[#62657A] hover:bg-[#F7F7FB] flex items-center justify-center gap-1.5 transition-colors disabled:opacity-40"
+                className="w-full h-8 rounded-md border border-[#E5E7EB] text-[12px] font-[500] text-[#6B7280] hover:bg-[#F7F7FB] flex items-center justify-center gap-1.5 transition-colors disabled:opacity-40"
               >
                 {sendingReport
                   ? <Loader2 size={12} className="animate-spin" />
@@ -491,11 +505,11 @@ export function SettlementsPage() {
 
               {/* Pay Now info panel — only when outstanding */}
               {selected.status !== "PAID" && (
-                <div className="bg-[#ECEBFF] border border-[#E4E4EF] rounded-xl px-4 py-3.5 flex items-start gap-3">
-                  <Info size={15} className="text-[#7679FF] mt-0.5 flex-shrink-0" />
+                <div className="bg-[#F3F0FF] border border-[#E5E7EB] rounded-xl px-4 py-3.5 flex items-start gap-3">
+                  <Info size={15} className="text-[#6C4CFF] mt-0.5 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-[12px] font-[600] text-[#5659D9] mb-1">Pay Now</p>
-                    <p className="text-[12px] text-[#5659D9] leading-relaxed">
+                    <p className="text-[12px] font-[600] text-[#5B34FF] mb-1">Pay Now</p>
+                    <p className="text-[12px] text-[#5B34FF] leading-relaxed">
                       Remit{" "}
                       <strong>
                         {formatCurrency(

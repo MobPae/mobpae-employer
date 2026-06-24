@@ -8,11 +8,6 @@ export const employeeService = {
     return unwrapList(data, ["employees"]).map(mapEmployee);
   },
 
-  async getEmployeeById(id: string): Promise<Employee | undefined> {
-    const { data } = await httpClient.get(`/employees/${id}`);
-    return mapEmployee(unwrapItem(data, ["employee"]));
-  },
-
   async createEmployee(payload: EmployeePayload): Promise<Employee> {
     const { data } = await httpClient.post("/employees", toEmployeeApiPayload(payload));
     return mapEmployee(unwrapItem(data, ["employee"]));

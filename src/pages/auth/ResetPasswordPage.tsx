@@ -42,14 +42,7 @@ export function ResetPasswordPage() {
 
         {/* Logo */}
         <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 40 }}>
-          <div style={{ width: 30, height: 30, borderRadius: 8, background: B, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <svg width="13" height="15" viewBox="0 0 20 22" fill="none">
-                <rect x="1" y="1" width="18" height="20" rx="4" fill="none" stroke="white" strokeWidth="2.5"/>
-                <rect x="3.5" y="14.5" width="3.5" height="4.5" rx="0.8" fill="white"/>
-                <rect x="8.25" y="11" width="3.5" height="8" rx="0.8" fill="white"/>
-                <rect x="13" y="7" width="3.5" height="12" rx="0.8" fill="white"/>
-              </svg>
-          </div>
+          {(() => { const s=20,sc=s/530,ip=Math.round(1500*sc),vw=Math.round(888*sc); return <div style={{width:vw,height:s,overflow:"hidden",flexShrink:0,position:"relative"}}><img src="/logo-icon.svg" alt="MobPae" style={{position:"absolute",width:ip,height:ip,maxWidth:"none",top:-Math.round(485*sc),left:-Math.round(319*sc)}}/></div>; })()}
           <span style={{ fontSize: 15, fontWeight: 700, color: "#191A2E", letterSpacing: "-0.01em" }}>MobPae</span>
         </div>
 

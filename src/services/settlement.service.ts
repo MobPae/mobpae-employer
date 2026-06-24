@@ -18,11 +18,6 @@ export const settlementService = {
     return mapSettlement(unwrapItem(data, ["settlement", "employerSettlement"]));
   },
 
-  async markPaid(id: string): Promise<EmployerSettlement> {
-    const { data } = await httpClient.post(`/employer-settlements/${id}/mark-paid`);
-    return mapSettlement(unwrapItem(data, ["settlement", "employerSettlement"]));
-  },
-
   async sendReport(id: string): Promise<void> {
     await httpClient.post(`/employer-settlements/${id}/send-report`);
   },

@@ -13,28 +13,28 @@ import { formatCurrency, formatDate } from "../../utils/formatters";
 
 // ── status config ─────────────────────────────────────────────────────────────
 
-const STATUS_CFG: Record<string, { label: string; bg: string; text: string; dot: string }> = {
-  PENDING:             { label: "Pending", dot: "bg-amber-400", text: "text-amber-700", bg: "bg-amber-50" },
-  SUBMITTED:           { label: "Submitted", dot: "bg-amber-400", text: "text-amber-700", bg: "bg-amber-50" },
-  UNDER_REVIEW:        { label: "Under review", dot: "bg-amber-400", text: "text-amber-700", bg: "bg-amber-50" },
-  EMPLOYER_APPROVED:   { label: "Approved by you", dot: "bg-[#378ADD]", text: "text-[#185FA5]", bg: "bg-[#E7F1FC]" },
-  EMPLOYER_REJECTED:   { label: "Rejected by you", dot: "bg-red-400", text: "text-red-600", bg: "bg-red-50" },
-  APPROVED:            { label: "Admin approved", dot: "bg-[#378ADD]", text: "text-[#185FA5]", bg: "bg-[#E7F1FC]" },
-  REJECTED:            { label: "Rejected", dot: "bg-red-400", text: "text-red-600", bg: "bg-red-50" },
-  READY_FOR_DISBURSAL: { label: "Ready to disburse", dot: "bg-lime-500", text: "text-lime-700", bg: "bg-lime-50" },
-  DISBURSED:           { label: "Disbursed", dot: "bg-[#4E8A18]", text: "text-[#3B6D11]", bg: "bg-[#EBF6E3]" },
-  REPAYMENT_SCHEDULED: { label: "Repaying", dot: "bg-[#D45F18]", text: "text-[#9A4910]", bg: "bg-[#FEF1E7]" },
-  REPAID:              { label: "Repaid", dot: "bg-[#287A68]", text: "text-[#1A5944]", bg: "bg-[#D4EDE5]" },
+const STATUS_CFG: Record<string, { label: string; bg: string; text: string }> = {
+  PENDING:             { label: "Pending",          bg: "#FEF3C7", text: "#D97706" },
+  SUBMITTED:           { label: "Submitted",         bg: "#FEF3C7", text: "#D97706" },
+  UNDER_REVIEW:        { label: "Under review",      bg: "#FEF3C7", text: "#D97706" },
+  EMPLOYER_APPROVED:   { label: "Approved by you",   bg: "#DBEAFE", text: "#1D4ED8" },
+  EMPLOYER_REJECTED:   { label: "Rejected by you",   bg: "#FEE2E2", text: "#DC2626" },
+  APPROVED:            { label: "Admin approved",    bg: "#DBEAFE", text: "#1D4ED8" },
+  REJECTED:            { label: "Rejected",          bg: "#FEE2E2", text: "#DC2626" },
+  READY_FOR_DISBURSAL: { label: "Ready to disburse", bg: "#DCFCE7", text: "#16A34A" },
+  DISBURSED:           { label: "Disbursed",         bg: "#DCFCE7", text: "#16A34A" },
+  REPAYMENT_SCHEDULED: { label: "Repaying",          bg: "#FEF3C7", text: "#D97706" },
+  REPAID:              { label: "Repaid",             bg: "#F0FDF4", text: "#166534" },
 };
 
 // Employer can only review SUBMITTED requests
 const REVIEWABLE = new Set(["SUBMITTED"]);
 
 function StatusPill({ status }: { status: string }) {
-  const c = STATUS_CFG[status] ?? { label: status, bg: "bg-[#F0F0F8]", text: "text-[#62657A]", dot: "bg-[#B7B9C7]" };
+  const c = STATUS_CFG[status] ?? { label: status, bg: "#F3F4F6", text: "#6B7280" };
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-[500] ${c.bg} ${c.text}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${c.dot}`} />
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "2px 9px", borderRadius: 999, fontSize: 11, fontWeight: 500, background: c.bg, color: c.text }}>
+      <span style={{ width: 6, height: 6, borderRadius: "50%", background: c.text, flexShrink: 0 }} />
       {c.label}
     </span>
   );
@@ -58,7 +58,8 @@ function DrawerPanel({ open, onClose, children }: { open: boolean; onClose: () =
   return (
     <>
       {open && <div className="fixed inset-0 z-30 bg-black/20 backdrop-blur-[1px]" onClick={onClose} />}
-      <div className={`fixed inset-y-0 right-0 z-40 w-[440px] bg-white border-l border-[#E4E4EF] shadow-xl flex flex-col transition-transform duration-200 ${open ? "translate-x-0" : "translate-x-full"}`}>
+      <div className={`fixed inset-y-0 right-0 z-40 w-[440px] bg-white flex flex-col transition-transform duration-200 ${open ? "translate-x-0" : "translate-x-full"}`}
+        style={{ borderLeft: "1px solid #E5E7EB", boxShadow: "0 8px 40px rgba(17,24,39,0.10)" }}>
         {children}
       </div>
     </>
@@ -67,9 +68,9 @@ function DrawerPanel({ open, onClose, children }: { open: boolean; onClose: () =
 
 function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between py-2.5 border-b border-[#F0F0F8] last:border-0">
-      <span className="text-[12px] text-[#62657A]">{label}</span>
-      <span className="text-[12px] font-[500] text-[#191A2E]">{value}</span>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid #F9FAFB" }}>
+      <span style={{ fontSize: 12, color: "#6B7280" }}>{label}</span>
+      <span style={{ fontSize: 12, fontWeight: 500, color: "#111827" }}>{value}</span>
     </div>
   );
 }
@@ -238,77 +239,62 @@ export function SalaryRequestsPage() {
 
   const hasBulkSelection = selectedIds.size > 0;
 
+  const P  = "#6C4CFF";
+  const PS = "#F3F0FF";
+  const T1 = "#111827";
+  const T2 = "#6B7280";
+  const T3 = "#9CA3AF";
+  const BDR = "1px solid #E5E7EB";
+
   return (
-    <div className="space-y-4">
-      {/* Toolbar */}
-      <div className="flex items-center gap-3">
-        <div className="relative flex-1 max-w-[280px]">
-          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#62657A]" />
-          <input
-            value={query}
-            onChange={e => { setQuery(e.target.value); setPage(1); }}
-            placeholder="Search by name, code, ID…"
-            className="w-full h-9 pl-8 pr-3 text-[13px] bg-white border border-[#E4E4EF] rounded-lg focus:outline-none focus:border-[#7679FF] focus:ring-2 focus:ring-[#7679FF]/10 transition placeholder-[#B7B9C7] text-[#191A2E]"
-          />
-        </div>
-        {/* Date range */}
-        <div className="flex items-center gap-1.5">
-          <Calendar size={12} className="text-[#62657A]" />
-          <input
-            type="date"
-            value={dateFrom}
-            onChange={e => { setDateFrom(e.target.value); setPage(1); }}
-            className="h-8 px-2 text-[11px] bg-white border border-[#E4E4EF] rounded-md outline-none focus:border-[#7679FF] transition-colors text-[#62657A]"
-          />
-          <span className="text-[11px] text-[#62657A]">–</span>
-          <input
-            type="date"
-            value={dateTo}
-            onChange={e => { setDateTo(e.target.value); setPage(1); }}
-            className="h-8 px-2 text-[11px] bg-white border border-[#E4E4EF] rounded-md outline-none focus:border-[#7679FF] transition-colors text-[#62657A]"
-          />
-          {(dateFrom || dateTo) && (
-            <button
-              onClick={() => { setDateFrom(""); setDateTo(""); setPage(1); }}
-              className="w-5 h-5 flex items-center justify-center rounded-full bg-[#F0F0F8] text-[#62657A] hover:bg-[#E4E4EF] transition-colors"
-            >
-              <X size={10} />
-            </button>
-          )}
+    <div style={{ display: "flex", flexDirection: "column", gap: 20, fontFamily: "Inter, ui-sans-serif, sans-serif" }}>
+
+      {/* Page header */}
+      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+        <div>
+          <h1 style={{ fontSize: 24, fontWeight: 700, color: T1, letterSpacing: "-0.025em", margin: 0 }}>Salary Requests</h1>
+          <p style={{ fontSize: 14, color: T2, marginTop: 6 }}>Review and manage employee salary advance requests.</p>
         </div>
         <button
-          onClick={() => exportToCsv(filtered.map(r => ({
-            RequestID:       r.requestId,
-            Employee:        r.employeeName,
-            EmployeeCode:    r.employeeCode,
-            RequestedAmount: r.requestedAmount,
-            ApprovedAmount:  r.approvedAmount ?? "",
-            Status:          r.status,
-            Date:            r.createdDate ? new Date(r.createdDate).toLocaleDateString() : "",
-          })), `salary-requests-${Date.now()}`)}
-          className="h-8 px-3 flex items-center gap-1.5 text-[12px] font-[500] text-[#62657A] bg-white border border-[#E4E4EF] rounded-lg hover:bg-[#F7F7FB] transition-colors flex-shrink-0"
-        >
-          <Download size={13} /> Export CSV
+          onClick={() => exportToCsv(filtered.map(r => ({ RequestID: r.requestId, Employee: r.employeeName, EmployeeCode: r.employeeCode, RequestedAmount: r.requestedAmount, ApprovedAmount: r.approvedAmount ?? "", Status: r.status, Date: r.createdDate ? new Date(r.createdDate).toLocaleDateString() : "" })), `salary-requests-${Date.now()}`)}
+          style={{ height: 36, padding: "0 14px", display: "flex", alignItems: "center", gap: 7, fontSize: 13, fontWeight: 500, color: T2, background: "white", border: BDR, borderRadius: 10, cursor: "pointer", fontFamily: "inherit" }}>
+          <Download size={14} />Export CSV
         </button>
       </div>
 
+      {/* Search + date filters */}
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <div style={{ position: "relative", flex: 1, maxWidth: 280 }}>
+          <Search size={14} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: T3 }} />
+          <input value={query} onChange={e => { setQuery(e.target.value); setPage(1); }} placeholder="Search by name, code, ID…"
+            style={{ width: "100%", height: 38, paddingLeft: 36, paddingRight: 12, fontSize: 13, background: "white", border: BDR, borderRadius: 10, color: T1, outline: "none", fontFamily: "inherit" }}
+            onFocus={e => (e.target.style.borderColor = P)} onBlur={e => (e.target.style.borderColor = "#E5E7EB")} />
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <Calendar size={13} color={T3} />
+          <input type="date" value={dateFrom} onChange={e => { setDateFrom(e.target.value); setPage(1); }}
+            style={{ height: 34, padding: "0 10px", fontSize: 12, background: "white", border: BDR, borderRadius: 8, outline: "none", color: T2, fontFamily: "inherit" }} />
+          <span style={{ fontSize: 12, color: T3 }}>–</span>
+          <input type="date" value={dateTo} onChange={e => { setDateTo(e.target.value); setPage(1); }}
+            style={{ height: 34, padding: "0 10px", fontSize: 12, background: "white", border: BDR, borderRadius: 8, outline: "none", color: T2, fontFamily: "inherit" }} />
+          {(dateFrom || dateTo) && (
+            <button onClick={() => { setDateFrom(""); setDateTo(""); setPage(1); }}
+              style={{ width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "50%", background: "#F3F4F6", border: "none", cursor: "pointer", color: T2 }}>
+              <X size={11} />
+            </button>
+          )}
+        </div>
+      </div>
+
       {/* Filter chips */}
-      <div className="flex items-center gap-2 flex-wrap">
+      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
         {FILTERS.map(f => (
-          <button
-            key={f.value}
-            onClick={() => { setFilter(f.value); setPage(1); }}
-            className={`h-7 px-3 rounded-full text-[12px] font-[500] transition-colors flex items-center gap-1.5 ${
-              filter === f.value
-                ? "bg-[#191A2E] text-white"
-                : "bg-white border border-[#E4E4EF] text-[#62657A] hover:border-[#E4E4EF]"
-            }`}
-          >
+          <button key={f.value} onClick={() => { setFilter(f.value); setPage(1); }}
+            style={{ height: 30, padding: "0 12px", borderRadius: 999, fontSize: 12, fontWeight: 500, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, fontFamily: "inherit", transition: "all 0.15s",
+              background: filter === f.value ? T1 : "white", color: filter === f.value ? "white" : T2, border: filter === f.value ? `1px solid ${T1}` : BDR }}>
             {f.label}
             {counts[f.value] !== undefined && (
-              <span className={`text-[11px] font-[700] ${filter === f.value ? "text-white/60" : "text-[#62657A]"}`}>
-                {counts[f.value]}
-              </span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: filter === f.value ? "rgba(255,255,255,0.5)" : T3 }}>{counts[f.value]}</span>
             )}
           </button>
         ))}
@@ -316,160 +302,117 @@ export function SalaryRequestsPage() {
 
       {/* Bulk action bar */}
       {hasBulkSelection && (
-        <div className="flex items-center gap-3 px-4 py-2.5 bg-[#191A2E] text-white rounded-xl">
-          <span className="text-[12px] font-[500]">{selectedIds.size} selected</span>
-          <button
-            onClick={() => setSelectedIds(new Set())}
-            className="text-[11px] text-[#62657A] hover:text-white transition-colors"
-          >
-            Clear
-          </button>
-          <div className="flex-1" />
+        <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 16px", background: T1, borderRadius: 12, color: "white" }}>
+          <span style={{ fontSize: 13, fontWeight: 500 }}>{selectedIds.size} selected</span>
+          <button onClick={() => setSelectedIds(new Set())} style={{ fontSize: 12, color: T3, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>Clear</button>
+          <div style={{ flex: 1 }} />
           {bulkRejectOpen ? (
-            <div className="flex items-center gap-2 flex-1 max-w-sm">
-              <input
-                autoFocus
-                value={bulkRemarks}
-                onChange={e => setBulkRemarks(e.target.value)}
-                placeholder="Rejection remarks (required)…"
-                className="flex-1 h-8 px-3 text-[12px] bg-white/10 border border-white/20 rounded-lg text-white placeholder-[#B7B9C7] focus:outline-none focus:border-white/40"
-              />
-              <button
-                onClick={handleBulkReject}
-                disabled={bulkLoading || !bulkRemarks.trim()}
-                className="h-8 px-3 text-[12px] font-[600] bg-red-500 hover:bg-red-400 text-white rounded-lg disabled:opacity-40 transition-colors flex-shrink-0"
-              >
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1, maxWidth: 380 }}>
+              <input autoFocus value={bulkRemarks} onChange={e => setBulkRemarks(e.target.value)} placeholder="Rejection remarks (required)…"
+                style={{ flex: 1, height: 34, padding: "0 12px", fontSize: 12, background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 8, color: "white", outline: "none", fontFamily: "inherit" }} />
+              <button onClick={handleBulkReject} disabled={bulkLoading || !bulkRemarks.trim()}
+                style={{ height: 34, padding: "0 14px", fontSize: 12, fontWeight: 600, background: "#DC2626", color: "white", border: "none", borderRadius: 8, cursor: bulkLoading || !bulkRemarks.trim() ? "not-allowed" : "pointer", opacity: bulkLoading || !bulkRemarks.trim() ? 0.5 : 1, fontFamily: "inherit" }}>
                 {bulkLoading ? "Rejecting…" : "Confirm Reject"}
               </button>
-              <button
-                onClick={() => { setBulkRejectOpen(false); setBulkRemarks(""); }}
-                className="w-8 h-8 flex items-center justify-center rounded-lg text-[#62657A] hover:text-white transition-colors flex-shrink-0"
-              >
-                <X size={13} />
+              <button onClick={() => { setBulkRejectOpen(false); setBulkRemarks(""); }}
+                style={{ width: 34, height: 34, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 8, background: "transparent", border: "none", cursor: "pointer", color: T3 }}>
+                <X size={14} />
               </button>
             </div>
           ) : (
             <>
-              <button
-                onClick={() => setConfirmBulkApprove(true)}
-                disabled={bulkLoading}
-                className="h-8 px-4 flex items-center gap-1.5 text-[12px] font-[600] bg-[#7679FF] hover:bg-[#9091FF] text-white rounded-lg disabled:opacity-50 transition-colors"
-              >
-                <CheckCheck size={13} />
-                {bulkLoading ? "Approving…" : `Approve ${selectedIds.size}`}
+              <button onClick={() => setConfirmBulkApprove(true)} disabled={bulkLoading}
+                style={{ height: 34, padding: "0 14px", display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, background: P, color: "white", border: "none", borderRadius: 8, cursor: "pointer", opacity: bulkLoading ? 0.5 : 1, fontFamily: "inherit" }}>
+                <CheckCheck size={13} />{bulkLoading ? "Approving…" : `Approve ${selectedIds.size}`}
               </button>
-              <button
-                onClick={() => setBulkRejectOpen(true)}
-                disabled={bulkLoading}
-                className="h-8 px-4 flex items-center gap-1.5 text-[12px] font-[600] bg-red-500 hover:bg-red-400 text-white rounded-lg disabled:opacity-50 transition-colors"
-              >
-                <Ban size={13} />
-                Reject {selectedIds.size}
+              <button onClick={() => setBulkRejectOpen(true)} disabled={bulkLoading}
+                style={{ height: 34, padding: "0 14px", display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, background: "#DC2626", color: "white", border: "none", borderRadius: 8, cursor: "pointer", opacity: bulkLoading ? 0.5 : 1, fontFamily: "inherit" }}>
+                <Ban size={13} />Reject {selectedIds.size}
               </button>
             </>
           )}
         </div>
       )}
 
-      {/* Table */}
-      <div className="bg-white border border-[#E4E4EF] rounded-xl overflow-hidden">
+      {/* Table card */}
+      <div style={{ background: "white", borderRadius: 16, border: BDR, boxShadow: "0 1px 4px rgba(17,24,39,0.04)", overflow: "hidden" }}>
         {loadError ? (
-          <div className="py-14 text-center">
-            <p className="text-[13px] font-[500] text-red-600">Failed to load salary requests</p>
-            <p className="text-[12px] text-[#62657A] mt-1">{loadError}</p>
-            <button onClick={load} className="mt-4 h-8 px-4 text-[12px] font-[500] bg-white border border-[#E4E4EF] rounded-lg hover:bg-[#F7F7FB] transition-colors text-[#62657A]">
-              Retry
-            </button>
+          <div style={{ padding: "48px 0", textAlign: "center" }}>
+            <p style={{ fontSize: 13, fontWeight: 500, color: "#DC2626" }}>Failed to load salary requests</p>
+            <p style={{ fontSize: 12, color: T2, marginTop: 4 }}>{loadError}</p>
+            <button onClick={load} style={{ marginTop: 16, height: 34, padding: "0 16px", fontSize: 12, fontWeight: 500, background: "white", border: BDR, borderRadius: 8, cursor: "pointer", color: T2, fontFamily: "inherit" }}>Retry</button>
           </div>
         ) : loading ? (
           <div>
             {[...Array(8)].map((_, i) => (
-              <div key={i} className="flex items-center gap-4 px-5 py-3.5 border-b border-[#F0F0F8] last:border-0">
-                <div className="w-3.5 h-3.5 rounded bg-[#F0F0F8] animate-pulse flex-shrink-0" />
-                <div className="w-7 h-7 rounded-lg bg-[#F0F0F8] animate-pulse flex-shrink-0" />
-                <div className="flex-1 space-y-1.5">
-                  <div className="h-2.5 w-28 bg-[#F0F0F8] rounded animate-pulse" />
-                  <div className="h-2 w-16 bg-[#F0F0F8] rounded animate-pulse" />
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 20px", borderBottom: i < 7 ? "1px solid #F9FAFB" : "none" }}>
+                <div className="animate-pulse" style={{ width: 14, height: 14, borderRadius: 3, background: "#F3F4F6" }} />
+                <div className="animate-pulse" style={{ width: 28, height: 28, borderRadius: 8, background: "#F3F4F6" }} />
+                <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 5 }}>
+                  <div className="animate-pulse" style={{ height: 10, width: 112, background: "#F3F4F6", borderRadius: 6 }} />
+                  <div className="animate-pulse" style={{ height: 8, width: 64, background: "#F3F4F6", borderRadius: 6 }} />
                 </div>
-                <div className="h-2.5 w-16 bg-[#F0F0F8] rounded animate-pulse" />
-                <div className="h-2.5 w-16 bg-[#F0F0F8] rounded animate-pulse" />
-                <div className="h-4 w-20 bg-[#F0F0F8] rounded-full animate-pulse" />
+                <div className="animate-pulse" style={{ height: 10, width: 64, background: "#F3F4F6", borderRadius: 6 }} />
+                <div className="animate-pulse" style={{ height: 18, width: 80, background: "#F3F4F6", borderRadius: 999 }} />
               </div>
             ))}
           </div>
         ) : !filtered.length ? (
-          <div className="py-14 text-center">
-            <div className="w-10 h-10 rounded-xl bg-[#F0F0F8] flex items-center justify-center mb-3 mx-auto">
-              <span className="text-[#62657A] text-[18px]">📋</span>
+          <div style={{ padding: "56px 0", textAlign: "center" }}>
+            <div style={{ width: 40, height: 40, borderRadius: 12, background: PS, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}>
+              <span style={{ fontSize: 18 }}>📋</span>
             </div>
-            <p className="text-[13px] font-[500] text-[#62657A]">No requests found</p>
-            <p className="text-[12px] text-[#62657A] mt-1">Try changing your filter or search</p>
+            <p style={{ fontSize: 13, fontWeight: 500, color: T2 }}>No requests found</p>
+            <p style={{ fontSize: 12, color: T3, marginTop: 4 }}>Try changing your filter or search</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full table-fixed text-[12px]">
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", tableLayout: "fixed", borderCollapse: "collapse", fontSize: 13 }}>
               <colgroup>
-                <col style={{ width: "3%" }} />
-                <col style={{ width: "13%" }} />
-                <col style={{ width: "20%" }} />
-                <col style={{ width: "13%" }} />
-                <col style={{ width: "13%" }} />
-                <col style={{ width: "14%" }} />
-                <col style={{ width: "12%" }} />
-                <col style={{ width: "12%" }} />
+                <col style={{ width: "3%" }} /><col style={{ width: "13%" }} /><col style={{ width: "20%" }} />
+                <col style={{ width: "13%" }} /><col style={{ width: "13%" }} /><col style={{ width: "14%" }} />
+                <col style={{ width: "12%" }} /><col style={{ width: "12%" }} />
               </colgroup>
               <thead>
-                <tr className="border-b border-[#E4E4EF]">
-                  <th className="px-4 py-3">
-                    <input
-                      type="checkbox"
-                      checked={allPageSelected}
-                      onChange={toggleAll}
-                      disabled={reviewableOnPage.length === 0}
-                      className="w-3.5 h-3.5 rounded border-[#E4E4EF] accent-[#7679FF] cursor-pointer disabled:opacity-30"
-                    />
+                <tr style={{ background: "#FAFAFA", borderBottom: "1px solid #F3F4F6" }}>
+                  <th style={{ padding: "14px 16px", width: 44 }}>
+                    <input type="checkbox" checked={allPageSelected} onChange={toggleAll} disabled={reviewableOnPage.length === 0}
+                      style={{ width: 14, height: 14, accentColor: P, cursor: reviewableOnPage.length === 0 ? "not-allowed" : "pointer", opacity: reviewableOnPage.length === 0 ? 0.3 : 1 }} />
                   </th>
                   {["Request ID", "Employee", "Requested", "Approved", "Status", "Date", ""].map(h => (
-                    <th key={h} className="px-4 py-3 text-left text-[11px] font-[500] text-[#62657A]">{h}</th>
+                    <th key={h} style={{ padding: "14px 20px 14px 0", textAlign: "left", fontSize: 11.5, fontWeight: 600, color: T3, textTransform: "uppercase", letterSpacing: "0.07em", whiteSpace: "nowrap" }}>{h}</th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#F0F0F8]">
+              <tbody>
                 {paginated.map(r => {
                   const isReviewable = REVIEWABLE.has(r.status);
                   const isChecked    = selectedIds.has(r.id);
+                  const isSelected   = selected?.id === r.id;
                   return (
-                    <tr
-                      key={r.id}
-                      className={`cursor-pointer hover:bg-[#F7F7FB]/60 transition-colors ${selected?.id === r.id ? "bg-[#ECEBFF]/30" : ""} ${isChecked ? "bg-[#ECEBFF]/40" : ""}`}
-                    >
-                      <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
+                    <tr key={r.id} style={{ borderBottom: "1px solid #F9FAFB", background: isSelected ? `${PS}80` : isChecked ? `${PS}60` : "transparent", cursor: "pointer", transition: "background 0.1s" }}
+                      onMouseEnter={e => { if (!isSelected && !isChecked) (e.currentTarget as HTMLElement).style.background = "#FAFAFC"; }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = isSelected ? `${PS}80` : isChecked ? `${PS}60` : "transparent"; }}>
+                      <td style={{ padding: "16px 16px", verticalAlign: "middle" }} onClick={e => e.stopPropagation()}>
                         {isReviewable ? (
-                          <input
-                            type="checkbox"
-                            checked={isChecked}
-                            onChange={() => toggleRow(r.id)}
-                            className="w-3.5 h-3.5 rounded border-[#E4E4EF] accent-[#7679FF] cursor-pointer"
-                          />
-                        ) : (
-                          <div className="w-3.5 h-3.5" />
-                        )}
+                          <input type="checkbox" checked={isChecked} onChange={() => toggleRow(r.id)} style={{ width: 14, height: 14, accentColor: P, cursor: "pointer" }} />
+                        ) : <div style={{ width: 14, height: 14 }} />}
                       </td>
-                      <td className="px-4 py-3 font-[600] text-[#62657A]" onClick={() => { setRemarks(""); setSelected(r); }}>{r.requestId}</td>
-                      <td className="px-4 py-3" onClick={() => { setRemarks(""); setSelected(r); }}>
-                        <p className="font-[500] text-[#191A2E] truncate">{r.employeeName}</p>
-                        <p className="text-[11px] text-[#62657A]">{r.employeeCode}</p>
+                      <td style={{ padding: "16px 20px 16px 0", fontWeight: 600, color: T2, fontSize: 13.5, verticalAlign: "middle" }} onClick={() => { setRemarks(""); setSelected(r); }}>{r.requestId}</td>
+                      <td style={{ padding: "16px 20px 16px 0", verticalAlign: "middle" }} onClick={() => { setRemarks(""); setSelected(r); }}>
+                        <p style={{ fontSize: 13.5, fontWeight: 500, color: T1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", margin: 0 }}>{r.employeeName}</p>
+                        <p style={{ fontSize: 11.5, color: T3, margin: "2px 0 0", fontFamily: "ui-monospace, monospace" }}>{r.employeeCode}</p>
                       </td>
-                      <td className="px-4 py-3 font-[600] text-[#62657A] tabular-nums" onClick={() => { setRemarks(""); setSelected(r); }}>{formatCurrency(r.requestedAmount)}</td>
-                      <td className="px-4 py-3 tabular-nums text-[#62657A]" onClick={() => { setRemarks(""); setSelected(r); }}>
-                        {r.approvedAmount ? formatCurrency(r.approvedAmount) : <span className="text-[#62657A]">—</span>}
+                      <td style={{ padding: "16px 20px 16px 0", fontWeight: 600, color: T1, fontVariantNumeric: "tabular-nums", fontSize: 13.5, verticalAlign: "middle" }} onClick={() => { setRemarks(""); setSelected(r); }}>{formatCurrency(r.requestedAmount)}</td>
+                      <td style={{ padding: "16px 20px 16px 0", color: T2, fontVariantNumeric: "tabular-nums", fontSize: 13.5, verticalAlign: "middle" }} onClick={() => { setRemarks(""); setSelected(r); }}>
+                        {r.approvedAmount ? formatCurrency(r.approvedAmount) : "—"}
                       </td>
-                      <td className="px-4 py-3" onClick={() => { setRemarks(""); setSelected(r); }}><StatusPill status={r.status} /></td>
-                      <td className="px-4 py-3 text-[#62657A] tabular-nums" onClick={() => { setRemarks(""); setSelected(r); }}>{formatDate(r.createdDate)}</td>
-                      <td className="px-4 py-3" onClick={() => { setRemarks(""); setSelected(r); }}>
-                        <span className="flex items-center gap-1 text-[12px] font-[500] text-[#7679FF] hover:text-[#5659D9]">
-                          Review <ChevronRight size={12} />
-                        </span>
+                      <td style={{ padding: "16px 20px 16px 0", verticalAlign: "middle" }} onClick={() => { setRemarks(""); setSelected(r); }}><StatusPill status={r.status} /></td>
+                      <td style={{ padding: "16px 20px 16px 0", color: T3, fontVariantNumeric: "tabular-nums", fontSize: 13, verticalAlign: "middle" }} onClick={() => { setRemarks(""); setSelected(r); }}>{formatDate(r.createdDate)}</td>
+                      <td style={{ padding: "16px 20px 16px 0", verticalAlign: "middle" }} onClick={() => { setRemarks(""); setSelected(r); }}>
+                        <button style={{ height: 30, padding: "0 14px", background: isSelected ? P : PS, color: isSelected ? "white" : P, border: "none", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 4 }}>
+                          Review <ChevronRight size={11} />
+                        </button>
                       </td>
                     </tr>
                   );
@@ -478,123 +421,84 @@ export function SalaryRequestsPage() {
             </table>
           </div>
         )}
+        {/* Footer strip */}
+        {!loading && filtered.length > 0 && (
+          <div style={{ padding: "12px 20px", borderTop: "1px solid #F3F4F6", background: "#FAFAFA", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <p style={{ fontSize: 12, color: T3, margin: 0 }}>{filtered.length} {filtered.length === 1 ? "request" : "requests"}</p>
+            <Pagination page={safePage} totalPages={totalPages} total={filtered.length} limit={PAGE_SIZE} onPage={setPage} />
+          </div>
+        )}
       </div>
-
-      <Pagination
-        page={safePage}
-        totalPages={totalPages}
-        total={filtered.length}
-        limit={PAGE_SIZE}
-        onPage={setPage}
-      />
 
       {/* Drawer */}
       <DrawerPanel open={Boolean(selected)} onClose={() => setSelected(null)}>
         {selected && (
           <>
-            {/* Drawer header */}
-            <div className="px-5 pt-5 pb-4 border-b border-[#E4E4EF]">
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[11px] font-[600] text-[#62657A] uppercase tracking-[0.07em]">{selected.requestId}</span>
-                    <StatusPill status={selected.status} />
+            <div style={{ padding: "18px 20px 16px", borderBottom: BDR, display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: T3, textTransform: "uppercase", letterSpacing: "0.07em" }}>{selected.requestId}</span>
+                  <StatusPill status={selected.status} />
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div style={{ width: 32, height: 32, borderRadius: "50%", background: PS, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: P, flexShrink: 0 }}>
+                    {selected.employeeName.slice(0, 2).toUpperCase()}
                   </div>
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-full bg-[#F0F0F8] flex items-center justify-center text-[11px] font-[700] text-[#62657A] flex-shrink-0">
-                      {selected.employeeName.slice(0, 2).toUpperCase()}
-                    </div>
-                    <div>
-                      <p className="text-[14px] font-[600] text-[#191A2E] leading-none">{selected.employeeName}</p>
-                      <p className="text-[11px] text-[#62657A] mt-0.5">{selected.employeeCode}</p>
-                    </div>
+                  <div>
+                    <p style={{ fontSize: 14, fontWeight: 600, color: T1, lineHeight: 1 }}>{selected.employeeName}</p>
+                    <p style={{ fontSize: 11, color: T3, marginTop: 3 }}>{selected.employeeCode}</p>
                   </div>
                 </div>
-                <button
-                  onClick={() => setSelected(null)}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg border border-[#E4E4EF] text-[#62657A] hover:text-[#62657A] transition-colors"
-                >
-                  <X size={14} />
-                </button>
               </div>
+              <button onClick={() => setSelected(null)} style={{ width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 8, border: BDR, background: "transparent", cursor: "pointer", color: T2 }}>
+                <X size={14} />
+              </button>
             </div>
 
-            {/* Drawer body */}
-            <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
-              {/* Amounts */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-[#F7F7FB] border border-[#E4E4EF] rounded-xl p-4">
-                  <p className="text-[11px] text-[#62657A] mb-1">Requested</p>
-                  <p className="text-[18px] font-[700] text-[#191A2E] tabular-nums">{formatCurrency(selected.requestedAmount)}</p>
-                </div>
-                <div className="bg-[#F7F7FB] border border-[#E4E4EF] rounded-xl p-4">
-                  <p className="text-[11px] text-[#62657A] mb-1">Approved</p>
-                  <p className="text-[18px] font-[700] text-[#191A2E] tabular-nums">
-                    {selected.approvedAmount ? formatCurrency(selected.approvedAmount) : <span className="text-[#62657A] font-[400]">—</span>}
-                  </p>
-                </div>
+            <div style={{ flex: 1, overflowY: "auto", padding: "16px 20px", display: "flex", flexDirection: "column", gap: 16 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                {[{ label: "Requested", val: formatCurrency(selected.requestedAmount) }, { label: "Approved", val: selected.approvedAmount ? formatCurrency(selected.approvedAmount) : "—" }].map(({ label, val }) => (
+                  <div key={label} style={{ background: "#F9FAFB", border: BDR, borderRadius: 12, padding: 14 }}>
+                    <p style={{ fontSize: 11, color: T3, marginBottom: 4 }}>{label}</p>
+                    <p style={{ fontSize: 18, fontWeight: 700, color: T1, fontVariantNumeric: "tabular-nums" }}>{val}</p>
+                  </div>
+                ))}
               </div>
 
-              {/* Details */}
-              <div className="bg-white border border-[#E4E4EF] rounded-xl px-4 py-1">
-                <InfoRow label="Purpose"    value={selected.purpose || "—"} />
-                <InfoRow label="Created"    value={formatDate(selected.createdDate)} />
-                {selected.reviewerNote && (
-                  <InfoRow label="Reviewer note" value={selected.reviewerNote} />
-                )}
+              <div style={{ background: "white", border: BDR, borderRadius: 12, padding: "2px 16px" }}>
+                <InfoRow label="Purpose" value={selected.purpose || "—"} />
+                <InfoRow label="Created" value={formatDate(selected.createdDate)} />
+                {selected.reviewerNote && <InfoRow label="Reviewer note" value={selected.reviewerNote} />}
               </div>
 
-              {/* Review actions */}
               {canReview && (
-                <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 space-y-3">
-                  <p className="text-[12px] font-[600] text-amber-800">Review this request</p>
-
-                  {/* Approved amount input */}
+                <div style={{ background: "#FFFBEB", border: "1px solid #FDE68A", borderRadius: 12, padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: "#D97706", margin: 0 }}>Review this request</p>
                   <div>
-                    <label className="block text-[11px] font-[500] text-[#62657A] mb-1">
-                      Approved amount <span className="text-[#62657A] font-[400]">(leave blank to approve full requested amount)</span>
+                    <label style={{ display: "block", fontSize: 11, fontWeight: 500, color: T2, marginBottom: 6 }}>
+                      Approved amount <span style={{ fontWeight: 400, color: T3 }}>(leave blank for full amount)</span>
                     </label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[12px] text-[#62657A]">₹</span>
-                      <input
-                        type="number"
-                        min={1}
-                        max={parseFloat(selected.requestedAmount as unknown as string) || undefined}
-                        value={approvedAmount}
-                        onChange={e => setApprovedAmount(e.target.value)}
-                        placeholder={String(selected.requestedAmount ?? "")}
-                        className="w-full pl-6 pr-3 py-2 text-[12px] bg-white border border-[#E4E4EF] rounded-lg text-[#191A2E] placeholder-[#B7B9C7] focus:outline-none focus:border-[#7679FF] focus:ring-2 focus:ring-[#ECEBFF] transition"
-                      />
+                    <div style={{ position: "relative" }}>
+                      <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 12, color: T3 }}>₹</span>
+                      <input type="number" min={1} value={approvedAmount} onChange={e => setApprovedAmount(e.target.value)} placeholder={String(selected.requestedAmount ?? "")}
+                        style={{ width: "100%", paddingLeft: 24, paddingRight: 12, height: 36, fontSize: 12, background: "white", border: BDR, borderRadius: 8, color: T1, outline: "none", fontFamily: "inherit" }}
+                        onFocus={e => (e.target.style.borderColor = P)} onBlur={e => (e.target.style.borderColor = "#E5E7EB")} />
                     </div>
                   </div>
-
                   <div>
-                    <label className="block text-[11px] font-[500] text-[#62657A] mb-1">Rejection remarks (required to reject)</label>
-                    <textarea
-                      value={remarks}
-                      onChange={e => setRemarks(e.target.value)}
-                      placeholder="Employee not eligible…"
-                      rows={3}
-                      className="w-full px-3 py-2 text-[12px] bg-white border border-[#E4E4EF] rounded-lg text-[#191A2E] placeholder-[#B7B9C7] focus:outline-none focus:border-[#7679FF] focus:ring-2 focus:ring-[#7679FF]/10 resize-none transition"
-                    />
+                    <label style={{ display: "block", fontSize: 11, fontWeight: 500, color: T2, marginBottom: 6 }}>Rejection remarks (required to reject)</label>
+                    <textarea value={remarks} onChange={e => setRemarks(e.target.value)} placeholder="Employee not eligible…" rows={3}
+                      style={{ width: "100%", padding: "8px 12px", fontSize: 12, background: "white", border: BDR, borderRadius: 8, color: T1, outline: "none", resize: "none", fontFamily: "inherit" }}
+                      onFocus={e => (e.target.style.borderColor = P)} onBlur={e => (e.target.style.borderColor = "#E5E7EB")} />
                   </div>
-
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      onClick={handleApprove}
-                      disabled={Boolean(action)}
-                      className="h-9 flex items-center justify-center gap-2 rounded-lg bg-[#7679FF] hover:bg-[#5659D9] text-white text-[12px] font-[600] disabled:opacity-50 transition-colors"
-                    >
-                      <Check size={13} />
-                      {action === "APPROVE" ? "Approving…" : "Approve"}
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                    <button onClick={handleApprove} disabled={Boolean(action)}
+                      style={{ height: 36, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, borderRadius: 8, background: P, color: "white", border: "none", fontSize: 12, fontWeight: 600, cursor: "pointer", opacity: Boolean(action) ? 0.5 : 1, fontFamily: "inherit" }}>
+                      <Check size={13} />{action === "APPROVE" ? "Approving…" : "Approve"}
                     </button>
-                    <button
-                      onClick={handleReject}
-                      disabled={Boolean(action) || !remarks.trim()}
-                      className="h-9 flex items-center justify-center gap-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-[12px] font-[600] disabled:opacity-40 transition-colors"
-                    >
-                      <X size={13} />
-                      {action === "REJECT" ? "Rejecting…" : "Reject"}
+                    <button onClick={handleReject} disabled={Boolean(action) || !remarks.trim()}
+                      style={{ height: 36, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, borderRadius: 8, background: "#DC2626", color: "white", border: "none", fontSize: 12, fontWeight: 600, cursor: "pointer", opacity: Boolean(action) || !remarks.trim() ? 0.4 : 1, fontFamily: "inherit" }}>
+                      <X size={13} />{action === "REJECT" ? "Rejecting…" : "Reject"}
                     </button>
                   </div>
                 </div>
@@ -609,7 +513,7 @@ export function SalaryRequestsPage() {
         title={`Approve ${selectedIds.size} request${selectedIds.size !== 1 ? "s" : ""}?`}
         description={`This will approve ${selectedIds.size} salary advance request${selectedIds.size !== 1 ? "s" : ""} on behalf of your company. Approved requests proceed to admin review and disbursal.`}
         confirmLabel={`Approve ${selectedIds.size}`}
-        confirmClass="bg-[#7679FF] hover:bg-[#5659D9] text-white"
+        confirmClass="bg-[#6C4CFF] hover:bg-[#5B34FF] text-white"
         loading={bulkLoading}
         onConfirm={() => { setConfirmBulkApprove(false); void handleBulkApprove(); }}
         onCancel={() => setConfirmBulkApprove(false)}

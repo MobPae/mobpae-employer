@@ -81,15 +81,7 @@ export function LoginPage() {
         {/* Logo */}
         <div style={{ padding: "28px 40px", position: "relative", zIndex: 1 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-            <svg width="28" height="28" viewBox="0 0 100 100" fill="none" aria-hidden="true">
-              <defs><clipPath id="emp-lp-clip"><rect width="100" height="100" rx="20" ry="20"/></clipPath></defs>
-              <rect width="100" height="100" rx="20" ry="20" fill="rgba(118,121,255,0.25)"/>
-              <g clipPath="url(#emp-lp-clip)">
-                <polygon points="6,100 18,100 68,0 56,0" fill="white" opacity="0.95"/>
-                <polygon points="30,100 42,100 92,0 80,0" fill="white" opacity="0.95"/>
-                <polygon points="54,100 66,100 100,32 100,8" fill="white" opacity="0.95"/>
-              </g>
-            </svg>
+            {(() => { const s=40,sc=s/530,ip=Math.round(1500*sc),vw=Math.round(888*sc); return <div style={{width:vw,height:s,overflow:"hidden",flexShrink:0,position:"relative"}}><img src="/logo-icon.svg" alt="MobPae" style={{position:"absolute",width:ip,height:ip,maxWidth:"none",top:-Math.round(485*sc),left:-Math.round(319*sc)}}/></div>; })()}
             <span style={{ fontSize: 14, fontWeight: 700, color: "white", letterSpacing: "-0.02em" }}>MobPae</span>
           </div>
         </div>

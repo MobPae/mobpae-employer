@@ -4,6 +4,7 @@ import {
   getMyNotifications,
   getNotificationCount,
   markNotificationRead,
+  markAllNotificationsRead,
   type Notification,
 } from "../../services/notification.service";
 
@@ -76,8 +77,12 @@ export function NotificationBell() {
     } catch { /* ignore */ }
   };
 
-  const handleMarkAllRead = () => {
-    notifications.filter(n => !n.isRead).forEach(n => void handleMarkRead(n.id));
+  const handleMarkAllRead = async () => {
+    try {
+      await markAllNotificationsRead();
+      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+      setUnread(0);
+    } catch { /* ignore */ }
   };
 
   return (

@@ -50,6 +50,8 @@ export interface Employee {
   department: string;
   joinedAt: string;
   employerId?: string;
+  kycStatus?: "NOT_SUBMITTED" | "PENDING" | "VERIFIED" | "REJECTED";
+  bankAccountStatus?: "NOT_ADDED" | "PENDING" | "VERIFIED";
 }
 
 export type EmployeePayload = Omit<Employee, "id" | "joinedAt"> & {
@@ -173,7 +175,7 @@ export interface NotificationItem {
 
 // ── Settlements ───────────────────────────────────────────────────────────────
 
-export type SettlementStatus = "PENDING" | "PARTIALLY_PAID" | "PAID" | "OVERDUE";
+export type SettlementStatus = "NO_DUES" | "PENDING" | "PARTIALLY_PAID" | "PAID" | "OVERDUE";
 
 export interface EmployerSettlement {
   id: string;

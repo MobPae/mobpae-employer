@@ -7,18 +7,18 @@ import { useMemo, useState } from "react";
 
 // ── status pill ───────────────────────────────────────────────────────────────
 
-const STATUS_CFG: Record<string, { label: string; bg: string; text: string; dot: string }> = {
-  SCHEDULED: { label: "Scheduled", dot: "bg-[#D45F18]", text: "text-[#9A4910]", bg: "bg-[#FEF1E7]" },
-  PENDING:   { label: "Scheduled", dot: "bg-[#D45F18]", text: "text-[#9A4910]", bg: "bg-[#FEF1E7]" },
-  PAID:      { label: "Recovered", dot: "bg-[#4E8A18]", text: "text-[#3B6D11]", bg: "bg-[#EBF6E3]" },
-  OVERDUE:   { label: "Overdue", dot: "bg-red-400", text: "text-red-600", bg: "bg-red-50" },
+const STATUS_CFG: Record<string, { label: string; bg: string; text: string }> = {
+  SCHEDULED: { label: "Scheduled", bg: "#FEF3C7", text: "#D97706" },
+  PENDING:   { label: "Scheduled", bg: "#FEF3C7", text: "#D97706" },
+  PAID:      { label: "Recovered", bg: "#DCFCE7", text: "#16A34A" },
+  OVERDUE:   { label: "Overdue",   bg: "#FEE2E2", text: "#DC2626" },
 };
 
 function StatusPill({ status }: { status: string }) {
-  const c = STATUS_CFG[status] ?? { label: status, bg: "bg-[#F0F0F8]", text: "text-[#62657A]", dot: "bg-[#B7B9C7]" };
+  const c = STATUS_CFG[status] ?? { label: status, bg: "#F3F4F6", text: "#6B7280" };
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-[500] ${c.bg} ${c.text}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${c.dot}`} />
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "2px 9px", borderRadius: 999, fontSize: 11, fontWeight: 500, background: c.bg, color: c.text }}>
+      <span style={{ width: 6, height: 6, borderRadius: "50%", background: c.text, flexShrink: 0 }} />
       {c.label}
     </span>
   );
@@ -42,14 +42,14 @@ function StatCard({ label, value, icon, iconBg, iconColor, sub }: {
   iconBg: string; iconColor: string; sub?: string;
 }) {
   return (
-    <div className="bg-white border border-[#E4E4EF] rounded-xl p-4 flex flex-col gap-3">
-      <div className="flex items-center justify-between">
-        <span className="text-[12px] font-[500] text-[#62657A]">{label}</span>
-        <div className={`w-7 h-7 rounded-lg ${iconBg} flex items-center justify-center ${iconColor}`}>{icon}</div>
+    <div style={{ background: "white", border: "1px solid #E5E7EB", borderRadius: 16, padding: 16, display: "flex", flexDirection: "column", gap: 12, boxShadow: "0 1px 4px rgba(17,24,39,0.04)" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <span style={{ fontSize: 12, fontWeight: 500, color: "#6B7280" }}>{label}</span>
+        <div style={{ width: 32, height: 32, borderRadius: 10, background: iconBg, display: "flex", alignItems: "center", justifyContent: "center", color: iconColor, flexShrink: 0 }}>{icon}</div>
       </div>
       <div>
-        <p className="text-[20px] font-[700] text-[#191A2E] tracking-[-0.02em] leading-none">{value}</p>
-        {sub && <p className="text-[11px] text-[#62657A] mt-1">{sub}</p>}
+        <p style={{ fontSize: 20, fontWeight: 700, color: "#111827", letterSpacing: "-0.02em", lineHeight: 1 }}>{value}</p>
+        {sub && <p style={{ fontSize: 11, color: "#6B7280", marginTop: 4 }}>{sub}</p>}
       </div>
     </div>
   );
@@ -95,8 +95,8 @@ export function RecoveriesPage() {
     return (
       <div className="bg-white border border-red-100 rounded-xl px-6 py-14 text-center">
         <p className="text-[13px] font-[500] text-red-600">Failed to load recoveries</p>
-        <p className="text-[12px] text-[#62657A] mt-1">{error}</p>
-        <button onClick={refresh} className="mt-4 h-8 px-4 text-[12px] font-[500] bg-white border border-[#E4E4EF] rounded-lg hover:bg-[#F7F7FB] transition-colors text-[#62657A]">
+        <p className="text-[12px] text-[#6B7280] mt-1">{error}</p>
+        <button onClick={refresh} className="mt-4 h-8 px-4 text-[12px] font-[500] bg-white border border-[#E5E7EB] rounded-lg hover:bg-[#F7F7FB] transition-colors text-[#6B7280]">
           Retry
         </button>
       </div>
@@ -105,10 +105,16 @@ export function RecoveriesPage() {
 
   return (
     <div className="space-y-4">
+      {/* Page header */}
+      <div>
+        <h1 style={{ fontSize: 24, fontWeight: 700, color: "#111827", letterSpacing: "-0.025em", margin: 0 }}>Recoveries</h1>
+        <p style={{ fontSize: 13, color: "#6B7280", marginTop: 4 }}>Track employee repayment deductions each payroll cycle</p>
+      </div>
+
       {/* Info banner */}
-      <div className="bg-[#ECEBFF]/60 border border-[#E4E4EF] rounded-xl px-4 py-3 flex items-start gap-3">
-        <ArrowDownCircle size={15} className="text-[#7679FF] mt-0.5 flex-shrink-0" />
-        <p className="text-[12px] text-[#5659D9] leading-relaxed">
+      <div className="bg-[#F3F0FF]/60 border border-[#E5E7EB] rounded-xl px-4 py-3 flex items-start gap-3">
+        <ArrowDownCircle size={15} className="text-[#6C4CFF] mt-0.5 flex-shrink-0" />
+        <p className="text-[12px] text-[#5B34FF] leading-relaxed">
           Recoveries are deducted automatically from employee payroll. MobPae settles these amounts with your company each payroll cycle.
         </p>
       </div>
@@ -119,7 +125,7 @@ export function RecoveriesPage() {
           label="Employees due"
           value={summary?.employeesDue ?? "—"}
           icon={<UsersRound size={14} />}
-          iconBg="bg-[#F0F0F8]" iconColor="text-[#62657A]"
+          iconBg="bg-[#F3F4F6]" iconColor="text-[#6B7280]"
         />
         <StatCard
           label="Pending recovery"
@@ -132,7 +138,7 @@ export function RecoveriesPage() {
           label="Recovered"
           value={formatCurrency(totalRecovered)}
           icon={<CircleDollarSign size={14} />}
-          iconBg="bg-[#ECEBFF]" iconColor="text-[#7679FF]"
+          iconBg="bg-[#F3F0FF]" iconColor="text-[#6C4CFF]"
           sub="this cycle"
         />
         <StatCard
@@ -147,12 +153,12 @@ export function RecoveriesPage() {
       {/* Search */}
       <div className="flex items-center gap-3">
         <div className="relative flex-1 max-w-[280px]">
-          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#62657A]" />
+          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6B7280]" />
           <input
             value={query}
             onChange={e => setQuery(e.target.value)}
             placeholder="Search employee or request…"
-            className="w-full h-9 pl-8 pr-3 text-[13px] bg-white border border-[#E4E4EF] rounded-lg focus:outline-none focus:border-[#7679FF] focus:ring-2 focus:ring-[#7679FF]/10 transition placeholder-[#B7B9C7] text-[#191A2E]"
+            className="w-full h-9 pl-8 pr-3 text-[13px] bg-white border border-[#E5E7EB] rounded-lg focus:outline-none focus:border-[#6C4CFF] focus:ring-2 focus:ring-[#6C4CFF]/10 transition placeholder-[#B7B9C7] text-[#111827]"
           />
         </div>
       </div>
@@ -165,13 +171,13 @@ export function RecoveriesPage() {
             onClick={() => setFilter(f.value)}
             className={`h-7 px-3 rounded-full text-[12px] font-[500] transition-colors flex items-center gap-1.5 ${
               filter === f.value
-                ? "bg-[#191A2E] text-white"
-                : "bg-white border border-[#E4E4EF] text-[#62657A] hover:border-[#E4E4EF]"
+                ? "bg-[#111827] text-white"
+                : "bg-white border border-[#E5E7EB] text-[#6B7280] hover:border-[#E5E7EB]"
             }`}
           >
             {f.label}
             {counts[f.value] !== undefined && (
-              <span className={`text-[11px] font-[700] ${filter === f.value ? "text-white/60" : "text-[#62657A]"}`}>
+              <span className={`text-[11px] font-[700] ${filter === f.value ? "text-white/60" : "text-[#6B7280]"}`}>
                 {counts[f.value]}
               </span>
             )}
@@ -180,72 +186,74 @@ export function RecoveriesPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-white border border-[#E4E4EF] rounded-xl overflow-hidden">
+      <div style={{ background: "white", border: "1px solid #E5E7EB", borderRadius: 16, overflow: "hidden", boxShadow: "0 1px 4px rgba(17,24,39,0.04)" }}>
         {loading ? (
           <div>
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="flex items-center gap-4 px-5 py-3.5 border-b border-[#F0F0F8] last:border-0">
-                <div className="w-7 h-7 rounded-lg bg-[#F0F0F8] animate-pulse flex-shrink-0" />
+              <div key={i} className="flex items-center gap-4 px-5 py-3.5 border-b border-[#F9FAFB] last:border-0">
+                <div className="w-7 h-7 rounded-lg bg-[#F3F4F6] animate-pulse flex-shrink-0" />
                 <div className="flex-1 space-y-1.5">
-                  <div className="h-2.5 w-28 bg-[#F0F0F8] rounded animate-pulse" />
-                  <div className="h-2 w-16 bg-[#F0F0F8] rounded animate-pulse" />
+                  <div className="h-2.5 w-28 bg-[#F3F4F6] rounded animate-pulse" />
+                  <div className="h-2 w-16 bg-[#F3F4F6] rounded animate-pulse" />
                 </div>
-                <div className="h-2.5 w-16 bg-[#F0F0F8] rounded animate-pulse" />
-                <div className="h-2.5 w-16 bg-[#F0F0F8] rounded animate-pulse" />
-                <div className="h-4 w-14 bg-[#F0F0F8] rounded-full animate-pulse" />
+                <div className="h-2.5 w-16 bg-[#F3F4F6] rounded animate-pulse" />
+                <div className="h-2.5 w-16 bg-[#F3F4F6] rounded animate-pulse" />
+                <div className="h-4 w-14 bg-[#F3F4F6] rounded-full animate-pulse" />
               </div>
             ))}
           </div>
         ) : !filtered.length ? (
           <div className="py-14 text-center">
-            <div className="w-10 h-10 rounded-xl bg-[#F0F0F8] flex items-center justify-center mb-3 mx-auto">
-              <span className="text-[#62657A] text-[18px]">↩</span>
+            <div className="w-10 h-10 rounded-xl bg-[#F3F4F6] flex items-center justify-center mb-3 mx-auto">
+              <span className="text-[#6B7280] text-[18px]">↩</span>
             </div>
-            <p className="text-[13px] font-[500] text-[#62657A]">No recoveries found</p>
-            <p className="text-[12px] text-[#62657A] mt-1">Payroll deductions will appear here</p>
+            <p className="text-[13px] font-[500] text-[#6B7280]">No recoveries found</p>
+            <p className="text-[12px] text-[#6B7280] mt-1">Payroll deductions will appear here</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full table-fixed text-[12px]">
-              <colgroup>
-                <col style={{ width: "20%" }} />
-                <col style={{ width: "17%" }} />
-                <col style={{ width: "14%" }} />
-                <col style={{ width: "12%" }} />
-                <col style={{ width: "14%" }} />
-                <col style={{ width: "13%" }} />
-                <col style={{ width: "10%" }} />
-              </colgroup>
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
-                <tr className="border-b border-[#E4E4EF]">
+                <tr style={{ background: "#FAFAFA", borderBottom: "1px solid #F3F4F6" }}>
                   {["Employee", "Salary Request", "Principal", "Interest", "Total Deduction", "Due Date", "Status"].map(h => (
-                    <th key={h} className="px-5 py-3 text-left text-[11px] font-[500] text-[#62657A]">{h}</th>
+                    <th key={h} style={{ padding: "14px 20px", textAlign: "left", fontSize: 11.5, fontWeight: 600, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: "0.07em", whiteSpace: "nowrap" }}>{h}</th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#F0F0F8]">
-                {filtered.map(r => (
-                  <tr key={r.id} className="hover:bg-[#F7F7FB]/60 transition-colors">
-                    <td className="px-5 py-3">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <div className="w-6 h-6 rounded-full bg-[#F0F0F8] flex items-center justify-center text-[9px] font-[700] text-[#62657A] flex-shrink-0">
-                          {r.employeeName.slice(0, 2).toUpperCase()}
+              <tbody>
+                {filtered.map((r, i) => {
+                  const ac = ["#6C4CFF","#10B981","#F59E0B","#EF4444","#3B82F6","#EC4899"][i % 6];
+                  return (
+                    <tr key={r.id} style={{ borderBottom: "1px solid #F9FAFB", transition: "background 0.1s" }}
+                      onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "#FAFAFC"}
+                      onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "transparent"}>
+                      <td style={{ padding: "16px 20px", verticalAlign: "middle" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                          <div style={{ width: 36, height: 36, borderRadius: 10, background: ac, color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 700, flexShrink: 0 }}>
+                            {r.employeeName.charAt(0).toUpperCase()}
+                          </div>
+                          <span style={{ fontSize: 13.5, fontWeight: 600, color: "#111827" }}>{r.employeeName}</span>
                         </div>
-                        <span className="font-[500] text-[#191A2E] truncate">{r.employeeName}</span>
-                      </div>
-                    </td>
-                    <td className="px-5 py-3 text-[#62657A] truncate">{r.salaryRequestId}</td>
-                    <td className="px-5 py-3 tabular-nums text-[#62657A]">{formatCurrency(r.principalAmount)}</td>
-                    <td className="px-5 py-3 tabular-nums text-[#62657A]">{formatCurrency(r.interestAmount)}</td>
-                    <td className="px-5 py-3 tabular-nums font-[600] text-[#191A2E]">{formatCurrency(r.totalAmount)}</td>
-                    <td className={`px-5 py-3 tabular-nums ${r.status === "OVERDUE" ? "text-red-600 font-[500]" : "text-[#62657A]"}`}>
-                      {formatDate(r.dueDate)}
-                    </td>
-                    <td className="px-5 py-3"><StatusPill status={r.status} /></td>
-                  </tr>
-                ))}
+                      </td>
+                      <td style={{ padding: "16px 20px", fontSize: 13, color: "#6B7280", fontFamily: "ui-monospace, monospace", verticalAlign: "middle" }}>{r.salaryRequestId}</td>
+                      <td style={{ padding: "16px 20px", fontSize: 13.5, color: "#6B7280", fontVariantNumeric: "tabular-nums", verticalAlign: "middle" }}>{formatCurrency(r.principalAmount)}</td>
+                      <td style={{ padding: "16px 20px", fontSize: 13.5, color: "#6B7280", fontVariantNumeric: "tabular-nums", verticalAlign: "middle" }}>{formatCurrency(r.interestAmount)}</td>
+                      <td style={{ padding: "16px 20px", fontSize: 13.5, fontWeight: 600, color: "#111827", fontVariantNumeric: "tabular-nums", verticalAlign: "middle" }}>{formatCurrency(r.totalAmount)}</td>
+                      <td style={{ padding: "16px 20px", fontSize: 13, fontVariantNumeric: "tabular-nums", color: r.status === "OVERDUE" ? "#DC2626" : "#6B7280", fontWeight: r.status === "OVERDUE" ? 600 : 400, verticalAlign: "middle" }}>
+                        {formatDate(r.dueDate)}
+                      </td>
+                      <td style={{ padding: "16px 20px", verticalAlign: "middle" }}><StatusPill status={r.status} /></td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
+          </div>
+        )}
+        {/* Footer strip */}
+        {!loading && filtered.length > 0 && (
+          <div style={{ padding: "12px 20px", borderTop: "1px solid #F3F4F6", background: "#FAFAFA" }}>
+            <p style={{ fontSize: 12, color: "#9CA3AF", margin: 0 }}>{filtered.length} {filtered.length === 1 ? "recovery" : "recoveries"}</p>
           </div>
         )}
       </div>

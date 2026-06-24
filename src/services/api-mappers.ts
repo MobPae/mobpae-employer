@@ -112,6 +112,8 @@ export const mapEmployee = (value: unknown): Employee => {
     department: text(record.department, "General"),
     joinedAt: text(record.joinedAt ?? record.createdAt, new Date().toISOString()),
     employerId: text(record.employerId ?? record.employer_id ?? employer.id ?? record.companyId) || undefined,
+    kycStatus: (record.kycStatus as Employee["kycStatus"]) ?? undefined,
+    bankAccountStatus: (record.bankAccountStatus as Employee["bankAccountStatus"]) ?? undefined,
   };
 };
 
@@ -260,7 +262,7 @@ export const mapDashboardStats = (value: unknown): Partial<DashboardStats> => {
 
 const normalizeSettlementStatus = (value: unknown): SettlementStatus => {
   const s = String(value ?? "PENDING").toUpperCase();
-  const allowed: SettlementStatus[] = ["PENDING", "PARTIALLY_PAID", "PAID", "OVERDUE"];
+  const allowed: SettlementStatus[] = ["NO_DUES", "PENDING", "PARTIALLY_PAID", "PAID", "OVERDUE"];
   return allowed.includes(s as SettlementStatus) ? (s as SettlementStatus) : "PENDING";
 };
 

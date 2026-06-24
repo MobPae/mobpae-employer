@@ -1,9 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="14" fill="#0F8F72"/>
-  <!-- Device frame outline (white) -->
-  <rect x="9" y="7" width="44" height="48" rx="10" fill="none" stroke="white" stroke-width="7.5"/>
-  <!-- Bar chart bars (white, ascending left to right) -->
-  <rect x="16.5" y="38" width="7" height="9.5" rx="1.5" fill="white"/>
-  <rect x="27.5" y="31" width="7" height="16.5" rx="1.5" fill="white"/>
-  <rect x="38.5" y="23" width="7" height="24.5" rx="1.5" fill="white"/>
+  <rect width="64" height="64" rx="14" fill="#6c4cff"/>
+  <!-- MobPae m mark: two diagonal backslash stripes (matching Canva logo) -->
+  <clipPath id="L"><rect x="6" y="8" width="26" height="48"/></clipPath>
+  <clipPath id="R"><rect x="32" y="8" width="26" height="48"/></clipPath>
+  <path clip-path="url(#L)" d="M18,6 L34,6 L22,58 L6,58 Z" fill="rgba(203,212,255,0.95)"/>
+  <path clip-path="url(#R)" d="M44,6 L60,6 L48,58 L32,58 Z" fill="white"/>
 </svg>

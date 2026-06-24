@@ -5,70 +5,63 @@ input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus {
   -webkit-box-shadow: 0 0 0px 1000px white inset !important;
-  -webkit-text-fill-color: #191A2E !important;
+  -webkit-text-fill-color: #111827 !important;
   transition: background-color 9999s ease-in-out 0s;
 }
 
 @theme inline {
-  --font-sans:    "Manrope", ui-sans-serif, -apple-system, system-ui, sans-serif;
-  --font-display: "Manrope", ui-sans-serif, -apple-system, system-ui, sans-serif;
-  --font-serif:   "Manrope", ui-sans-serif, -apple-system, system-ui, sans-serif;
+  --font-sans:    "Inter", ui-sans-serif, -apple-system, system-ui, sans-serif;
+  --font-display: "Inter", ui-sans-serif, -apple-system, system-ui, sans-serif;
+  --font-serif:   "Inter", ui-sans-serif, -apple-system, system-ui, sans-serif;
 
-  /* Remap Tailwind blue-* → MobPae brand palette */
-  --color-blue-50:  #ECEBFF;
-  --color-blue-100: #D8D7FF;
-  --color-blue-200: #B5B4FF;
-  --color-blue-300: #9291FF;
-  --color-blue-400: #7679FF;
-  --color-blue-500: #5659D9;
-  --color-blue-600: #4244B3;
-  --color-blue-700: #31328C;
-  --color-blue-800: #222366;
-  --color-blue-900: #191A3F;
-  --color-blue-950: #0E0E28;
+  /* Remap Tailwind blue-* → MobPae brand palette (matches admin) */
+  --color-blue-50:  #F3F0FF;
+  --color-blue-100: #E9E5FF;
+  --color-blue-200: #D4CCFF;
+  --color-blue-300: #A89CFF;
+  --color-blue-400: #6C4CFF;
+  --color-blue-500: #5B34FF;
+  --color-blue-600: #4A24EE;
+  --color-blue-700: #3B18D4;
+  --color-blue-800: #2D12A8;
+  --color-blue-900: #1E0B7A;
+  --color-blue-950: #11064F;
 }
 
-/* ── MobPae Design System v2 ─────────────────────────────────── */
+/* ── MobPae Design System — Employer Portal ─────────────────────── */
 :root {
-  /* Brand */
-  --brand-primary:       #7679FF;
-  --brand-primary-dark:  #5659D9;
-  --brand-primary-soft:  #ECEBFF;
+  /* Brand (aligned with admin) */
+  --brand-primary:       #6C4CFF;
+  --brand-primary-dark:  #5B34FF;
+  --brand-primary-soft:  #F3F0FF;
 
-  /* Legacy aliases (kept for compatibility) */
-  --primary:        #7679FF;
-  --primary-dark:   #5659D9;
-  --primary-light:  #ECEBFF;
+  /* Legacy aliases */
+  --primary:        #6C4CFF;
+  --primary-dark:   #5B34FF;
+  --primary-light:  #F3F0FF;
 
   /* Surface */
-  --background:     #F7F7FB;
+  --background:     #F9FAFB;
   --surface:        #FFFFFF;
-  --border:         #E4E4EF;
+  --border:         #E5E7EB;
 
   /* Text */
-  --text-primary:   #191A2E;
-  --text-secondary: #62657A;
-  --text-muted:     #8D90A3;
-  --text-disabled:  #B7B9C7;
+  --text-primary:   #111827;
+  --text-secondary: #6B7280;
+  --text-muted:     #9CA3AF;
+  --text-disabled:  #D1D5DB;
   --text-on-brand:  #FFFFFF;
-  --text-link:      #5659D9;
-  --text-success:   #287A68;
-  --text-warning:   #9A681B;
-  --text-error:     #C64E57;
+  --text-link:      #6C4CFF;
+  --text-success:   #16A34A;
+  --text-warning:   #D97706;
+  --text-error:     #DC2626;
 
   /* Semantic */
-  --success:        #287A68;
-  --warning:        #9A681B;
-  --error:          #C64E57;
+  --success:        #16A34A;
+  --warning:        #D97706;
+  --error:          #DC2626;
 
-  /* Card accents */
-  --card-mint:      #E9F6F6;
-  --card-lavender:  #ECEBFF;
-  --card-warm:      #FDF6EB;
-  --accent-coral:   #FEA1A2;
-  --accent-aqua:    #9FD7DD;
-
-  font-family: "Manrope", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -97,23 +90,8 @@ input, select, textarea { outline: none; }
 
 ::selection { color: #fff; background: var(--primary); }
 
-/* Dense operations UI */
-.employer-portal .text-\[9px\],
-.employer-portal .text-\[10px\] { font-size: 11px; }
-.employer-portal .text-\[11px\] { font-size: 12px; }
-.employer-portal .h-7 { height: 2rem; }
-.employer-portal .w-7 { width: 2rem; }
-.employer-portal button:focus-visible,
-.employer-portal a:focus-visible,
-.employer-portal input:focus-visible,
-.employer-portal select:focus-visible,
-.employer-portal textarea:focus-visible {
-  outline: 2px solid rgba(118, 121, 255, 0.4);
-  outline-offset: 2px;
-}
-
 /* Scrollbar */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { border-radius: 999px; background: #C8C9D8; }
-::-webkit-scrollbar-thumb:hover { background: #8D90A3; }
+::-webkit-scrollbar-thumb { border-radius: 999px; background: #D1D5DB; }
+::-webkit-scrollbar-thumb:hover { background: #9CA3AF; }

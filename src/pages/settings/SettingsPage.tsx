@@ -5,6 +5,14 @@ import { getApiErrorMessage } from "../../services/api-errors";
 import { employerService } from "../../services/employer.service";
 import type { EmployerProfile } from "../../types";
 
+const P  = "#6C4CFF";
+const PS = "#F3F0FF";
+const T1 = "#111827";
+const T2 = "#6B7280";
+const T3 = "#9CA3AF";
+const BDR = "1px solid #E5E7EB";
+const SHD = "0 1px 4px rgba(17,24,39,0.04)";
+
 const FALLBACK: EmployerProfile = {
   companyName: "", companyCode: "", contactPerson: "",
   companyEmail: "", loginEmail: "", payrollDate: null,
@@ -14,8 +22,8 @@ const FALLBACK: EmployerProfile = {
 function Field({ label, icon, children }: { label: string; icon?: React.ReactNode; children: React.ReactNode }) {
   return (
     <div>
-      <label className="flex items-center gap-1.5 text-[11px] font-[500] text-[#62657A] mb-1.5">
-        {icon && <span className="text-[#62657A]">{icon}</span>}
+      <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 500, color: T2, marginBottom: 6 }}>
+        {icon && <span style={{ color: T3 }}>{icon}</span>}
         {label}
       </label>
       {children}
@@ -23,7 +31,41 @@ function Field({ label, icon, children }: { label: string; icon?: React.ReactNod
   );
 }
 
-const inputCls = "w-full h-9 px-3 text-[13px] bg-white border border-[#E4E4EF] rounded-lg text-[#191A2E] placeholder-[#B7B9C7] focus:outline-none focus:border-[#7679FF] focus:ring-2 focus:ring-[#7679FF]/10 transition disabled:bg-[#F7F7FB] disabled:text-[#62657A] disabled:cursor-not-allowed";
+const inputBase: React.CSSProperties = {
+  width: "100%", height: 36, padding: "0 12px", fontSize: 13,
+  background: "white", border: BDR, borderRadius: 8,
+  color: T1, outline: "none", transition: "border-color 0.15s",
+  boxSizing: "border-box",
+};
+
+function Input({ value, onChange, disabled, type, placeholder }: {
+  value: string; onChange?: (v: string) => void; disabled?: boolean; type?: string; placeholder?: string;
+}) {
+  const [focused, setFocused] = useState(false);
+  return (
+    <input
+      type={type}
+      value={value}
+      onChange={onChange ? e => onChange(e.target.value) : undefined}
+      disabled={disabled}
+      placeholder={placeholder}
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
+      style={{
+        ...inputBase,
+        borderColor: focused ? P : "#E5E7EB",
+        boxShadow: focused ? `0 0 0 3px ${PS}` : "none",
+        background: disabled ? "#F9FAFB" : "white",
+        color: disabled ? T2 : T1,
+        cursor: disabled ? "not-allowed" : "text",
+      }}
+    />
+  );
+}
+
+function card(style?: React.CSSProperties): React.CSSProperties {
+  return { background: "white", border: BDR, borderRadius: 16, overflow: "hidden", boxShadow: SHD, ...style };
+}
 
 export function SettingsPage() {
   const toast = useToast();
@@ -60,87 +102,83 @@ export function SettingsPage() {
   };
 
   return (
-    <div className="max-w-2xl space-y-4">
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      {/* Page header */}
+      <div>
+        <h1 style={{ fontSize: 24, fontWeight: 700, color: T1, letterSpacing: "-0.025em", margin: 0 }}>Settings</h1>
+        <p style={{ fontSize: 13, color: T2, marginTop: 4 }}>Manage your company profile and contact details</p>
+      </div>
+
       {/* Company identity (read-only) */}
-      <div className="bg-white border border-[#E4E4EF] rounded-xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-[#E4E4EF]">
-          <p className="text-[13px] font-[600] text-[#191A2E]">Company identity</p>
-          <p className="text-[12px] text-[#62657A] mt-0.5">Read-only — set by your MobPae administrator</p>
+      <div style={card()}>
+        <div style={{ padding: "16px 20px", borderBottom: BDR }}>
+          <p style={{ fontSize: 13, fontWeight: 600, color: T1 }}>Company identity</p>
+          <p style={{ fontSize: 12, color: T2, marginTop: 2 }}>Read-only — set by your MobPae administrator</p>
         </div>
-        <div className="px-5 py-4 grid grid-cols-2 gap-4">
+        <div style={{ padding: "20px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
           <Field label="Company name" icon={<Building2 size={11} />}>
-            <input className={inputCls} value={profile.companyName} disabled />
+            <Input value={profile.companyName} disabled />
           </Field>
           <Field label="Company code" icon={<Lock size={11} />}>
-            <input className={inputCls} value={profile.companyCode} disabled />
+            <Input value={profile.companyCode} disabled />
           </Field>
           <Field label="Login email" icon={<Mail size={11} />}>
-            <input className={inputCls} value={profile.loginEmail} disabled />
+            <Input value={profile.loginEmail} disabled />
           </Field>
           <Field label="Account status" icon={<CheckCircle2 size={11} />}>
-            <div className="h-9 px-3 flex items-center">
+            <div style={{ height: 36, padding: "0 12px", display: "flex", alignItems: "center" }}>
               {profile.status ? (
-                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-[500] bg-[#EBF6E3] text-[#3B6D11]">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#4E8A18]" />
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "2px 9px", borderRadius: 999, fontSize: 11, fontWeight: 500, background: "#DCFCE7", color: "#16A34A" }}>
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#16A34A" }} />
                   {profile.status}
                 </span>
-              ) : <span className="text-[12px] text-[#62657A]">—</span>}
+              ) : <span style={{ fontSize: 12, color: T2 }}>—</span>}
             </div>
           </Field>
         </div>
-        <div className="px-5 py-3 bg-[#ECEBFF]/40 border-t border-[#E4E4EF]">
-          <p className="text-[11px] text-[#7679FF]">
+        <div style={{ padding: "10px 20px", background: PS + "40", borderTop: BDR }}>
+          <p style={{ fontSize: 11, color: P }}>
             Login email is used for authentication and cannot be changed here. Contact support to update it.
           </p>
         </div>
       </div>
 
       {/* Editable contact info */}
-      <div className="bg-white border border-[#E4E4EF] rounded-xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-[#E4E4EF]">
-          <p className="text-[13px] font-[600] text-[#191A2E]">Contact information</p>
-          <p className="text-[12px] text-[#62657A] mt-0.5">Update company contact and billing details</p>
+      <div style={card()}>
+        <div style={{ padding: "16px 20px", borderBottom: BDR }}>
+          <p style={{ fontSize: 13, fontWeight: 600, color: T1 }}>Contact information</p>
+          <p style={{ fontSize: 12, color: T2, marginTop: 2 }}>Update company contact and billing details</p>
         </div>
-        <form onSubmit={handleSubmit} className="px-5 py-4 space-y-4">
+        <form onSubmit={handleSubmit} style={{ padding: 20, display: "flex", flexDirection: "column", gap: 16 }}>
           <Field label="Contact person" icon={<User size={11} />}>
-            <input
-              className={inputCls}
-              value={profile.contactPerson}
-              onChange={e => set("contactPerson", e.target.value)}
-              placeholder="Arjun Sharma"
-            />
+            <Input value={profile.contactPerson} onChange={v => set("contactPerson", v)} placeholder="Arjun Sharma" />
           </Field>
-          <div className="grid grid-cols-2 gap-4">
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
             <Field label="Company email" icon={<Mail size={11} />}>
-              <input
-                className={inputCls}
-                type="email"
-                value={profile.companyEmail}
-                onChange={e => set("companyEmail", e.target.value)}
-                placeholder="hr@company.com"
-              />
+              <Input type="email" value={profile.companyEmail} onChange={v => set("companyEmail", v)} placeholder="hr@company.com" />
             </Field>
             <Field label="Phone" icon={<Phone size={11} />}>
-              <input
-                className={inputCls}
-                value={profile.phone}
-                onChange={e => set("phone", e.target.value)}
-                placeholder="+91 98765 00000"
-              />
+              <Input value={profile.phone} onChange={v => set("phone", v)} placeholder="+91 98765 00000" />
             </Field>
           </div>
 
-          <div className="flex items-center gap-3 pt-1">
+          <div style={{ display: "flex", alignItems: "center", gap: 12, paddingTop: 4 }}>
             <button
               type="submit"
               disabled={saving}
-              className="h-9 px-4 flex items-center gap-2 rounded-lg bg-[#7679FF] hover:bg-[#5659D9] text-white text-[12px] font-[600] disabled:opacity-50 transition-colors"
+              style={{
+                height: 36, padding: "0 16px", display: "flex", alignItems: "center", gap: 6,
+                borderRadius: 8, background: P, border: "none", color: "white",
+                fontSize: 12, fontWeight: 600, cursor: saving ? "not-allowed" : "pointer",
+                opacity: saving ? 0.6 : 1, boxShadow: "0 4px 14px rgba(108,76,255,0.25)",
+                transition: "opacity 0.15s",
+              }}
             >
               <Save size={13} />
               {saving ? "Saving…" : "Save changes"}
             </button>
             {saved && (
-              <div className="flex items-center gap-1.5 text-[12px] font-[500] text-[#5659D9]">
+              <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 500, color: "#16A34A" }}>
                 <CheckCircle2 size={13} />Changes saved
               </div>
             )}

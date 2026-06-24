@@ -1,8 +1,8 @@
 import {
   ArrowDownCircle,
   CalendarDays,
-  ChevronRight,
   ClipboardList,
+  CreditCard,
   Landmark,
   LayoutDashboard,
   KeyRound,
@@ -23,6 +23,7 @@ const NAV = [
   { label: "Employees",       to: "/employees",       icon: UsersRound       },
   { label: "Salary Requests", to: "/salary-requests", icon: ClipboardList    },
   { label: "Recoveries",      to: "/recoveries",      icon: ArrowDownCircle  },
+  { label: "Repayments",      to: "/repayments",       icon: CreditCard       },
   { label: "Payroll",         to: "/payroll",          icon: CalendarDays     },
   { label: "Settlements",     to: "/settlements",      icon: Landmark         },
   { label: "Settings",        to: "/settings",         icon: Settings         },
@@ -33,6 +34,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/employees":       "Employees",
   "/salary-requests": "Salary Requests",
   "/recoveries":      "Recoveries",
+  "/repayments":      "Repayments",
   "/payroll":         "Payroll",
   "/settlements":     "Settlements",
   "/settings":        "Settings",
@@ -47,6 +49,9 @@ function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const navigate = useNavigate();
   const [confirmLogout, setConfirmLogout] = useState(false);
 
+  const companyInitials = (user?.companyName ?? user?.companyCode ?? "MP")
+    .split(" ").filter(Boolean).slice(0, 2).map((w: string) => w[0]).join("").toUpperCase() || "MP";
+
   const handleLogout = async () => {
     await logout();
     navigate("/login", { replace: true });
@@ -58,73 +63,82 @@ function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
         <button aria-label="Close sidebar" className="fixed inset-0 z-30 bg-black/40 backdrop-blur-[2px] lg:hidden" onClick={onClose} />
       )}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-[220px] flex-col transition-transform duration-200 ${open ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}
-        style={{ background: "#F0F0F8", borderRight: "1px solid #E4E4EF" }}
+        className={`fixed inset-y-0 left-0 z-40 flex w-60 flex-col transition-transform duration-200 ${open ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0 bg-white`}
+        style={{ borderRight: "1px solid #E5E7EB" }}
       >
-        <div className="flex flex-col h-full">
-          {/* Logo */}
-          <div className="flex items-center justify-between px-4 h-[52px]" style={{ borderBottom: "1px solid #E4E4EF" }}>
-            <div className="flex items-center gap-2.5">
-              <svg width="26" height="26" viewBox="0 0 100 100" fill="none" aria-hidden="true" style={{flexShrink:0}}>
-                <defs><clipPath id="emp-sb-clip"><rect width="100" height="100" rx="20" ry="20"/></clipPath></defs>
-                <rect width="100" height="100" rx="20" ry="20" fill="#7679FF"/>
-                <g clipPath="url(#emp-sb-clip)">
-                  <polygon points="6,100 18,100 68,0 56,0" fill="white" opacity="0.95"/>
-                  <polygon points="30,100 42,100 92,0 80,0" fill="white" opacity="0.95"/>
-                  <polygon points="54,100 66,100 100,32 100,8" fill="white" opacity="0.95"/>
-                </g>
-              </svg>
-              <div>
-                <p className="text-[13px] font-[700] leading-none tracking-[-0.02em]" style={{ color: "#191A2E" }}>MobPae</p>
-                <p className="text-[9px] leading-none mt-0.5 uppercase font-[600]" style={{ color: "#8D90A3", letterSpacing: "0.08em" }}>Employer</p>
-              </div>
+        {/* Logo */}
+        <div className="h-[60px] flex items-center justify-between px-5 flex-shrink-0" style={{ borderBottom: "1px solid #E5E7EB" }}>
+          <div className="flex items-center gap-3">
+            {(() => { const s=20,sc=s/530,ip=Math.round(1500*sc),vw=Math.round(888*sc); return <div style={{width:vw,height:s,overflow:"hidden",flexShrink:0,position:"relative"}}><img src="/logo-icon.svg" alt="MobPae" style={{position:"absolute",width:ip,height:ip,maxWidth:"none",top:-Math.round(485*sc),left:-Math.round(319*sc)}}/></div>; })()}
+            <div>
+              <p style={{ fontSize: 15, fontWeight: 700, color: "#111827", letterSpacing: "-0.02em", lineHeight: 1 }}>MobPae</p>
+              <p style={{ fontSize: 10, color: "#9CA3AF", marginTop: 2, letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 600 }}>Employer</p>
             </div>
-            <button aria-label="Close navigation" onClick={onClose} className="lg:hidden w-7 h-7 flex items-center justify-center rounded" style={{ color: "#8D90A3" }}><X size={15} /></button>
           </div>
+          <button aria-label="Close navigation" onClick={onClose} className="lg:hidden w-7 h-7 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors" style={{ color: "#9CA3AF" }}>
+            <X size={15} />
+          </button>
+        </div>
 
-          {/* Nav */}
-          <nav className="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto">
+        {/* Navigation */}
+        <nav className="flex-1 overflow-y-auto px-3 py-3">
+          <div className="space-y-0.5">
             {NAV.map(({ label, to, icon: Icon }) => (
               <NavLink
                 key={to} to={to} onClick={onClose}
-                className={({ isActive }) => `flex items-center gap-2.5 px-2.5 py-[7px] rounded-lg text-[12.5px] transition-colors ${isActive ? "font-[600]" : "font-[500] hover:bg-black/[0.05]"}`}
-                style={({ isActive }) => isActive
-                  ? { background: "rgba(118,121,255,0.12)", color: "#5659D9" }
-                  : { color: "#62657A" }
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-3 rounded-xl transition-all ${isActive ? "" : "hover:bg-gray-50"}`
                 }
+                style={({ isActive }) => ({
+                  height: 40,
+                  background: isActive ? "#F3F0FF" : "transparent",
+                  color: isActive ? "#6C4CFF" : "#6B7280",
+                  fontWeight: isActive ? 600 : 500,
+                  fontSize: 13.5,
+                })}
               >
                 {({ isActive }) => (
                   <>
-                    <Icon size={15} style={{ color: isActive ? "#7679FF" : "#8D90A3" }} />
-                    {label}
-                    {isActive && <ChevronRight size={12} className="ml-auto" style={{ color: "#7679FF" }} />}
+                    <Icon size={16} style={{ color: isActive ? "#6C4CFF" : "#9CA3AF", flexShrink: 0 }} strokeWidth={isActive ? 2 : 1.75} />
+                    <span>{label}</span>
                   </>
                 )}
               </NavLink>
             ))}
-          </nav>
+          </div>
+        </nav>
 
-          {/* Footer */}
-          <div className="px-3 py-3" style={{ borderTop: "1px solid #E4E4EF" }}>
-            <div className="flex items-center gap-2.5 px-1 py-2">
-              <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "#7679FF" }}>
-                <span className="text-[11px] font-[700] text-white">{user?.companyCode?.slice(0, 2).toUpperCase() ?? "MP"}</span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[12px] font-[600] truncate leading-none" style={{ color: "#191A2E" }}>{user?.companyName ?? "Company"}</p>
-                <p className="text-[11px] mt-0.5 truncate" style={{ color: "#8D90A3" }}>{user?.companyCode}</p>
-              </div>
-            </div>
-            <button
-              onClick={() => navigate("/change-password")}
-              className="mt-1 w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-[12px] font-[500] transition-colors hover:bg-black/[0.05]"
-              style={{ color: "#62657A" }}
+        {/* Footer — company info */}
+        <div className="px-3 py-4 flex-shrink-0" style={{ borderTop: "1px solid #E5E7EB" }}>
+          <div className="flex items-center gap-3 px-2">
+            <div
+              className="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-[700] flex-shrink-0"
+              style={{ background: "linear-gradient(135deg, #8B7CFF 0%, #6C4CFF 100%)", color: "white" }}
             >
-              <KeyRound size={13} />Change Password
-            </button>
-            <button onClick={() => setConfirmLogout(true)} className="mt-0.5 w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-[12px] font-[500] transition-colors hover:bg-red-50 hover:text-red-500" style={{ color: "#62657A" }}>
-              <LogOut size={13} />Sign out
-            </button>
+              {companyInitials}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p style={{ fontSize: 13, fontWeight: 600, color: "#111827", lineHeight: 1 }} className="truncate">{user?.companyName ?? "Company"}</p>
+              <p style={{ fontSize: 11, color: "#9CA3AF", marginTop: 2 }} className="truncate">{user?.companyCode}</p>
+            </div>
+            <div className="flex items-center gap-0.5">
+              <button
+                onClick={() => navigate("/change-password")}
+                className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors hover:bg-[#F3F0FF]"
+                title="Change password"
+                style={{ color: "#9CA3AF" }}
+              >
+                <KeyRound size={13} />
+              </button>
+              <button
+                onClick={() => setConfirmLogout(true)}
+                className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors hover:bg-red-50 hover:text-red-500"
+                title="Sign out"
+                style={{ color: "#9CA3AF" }}
+              >
+                <LogOut size={13} />
+              </button>
+            </div>
           </div>
         </div>
       </aside>
@@ -148,34 +162,31 @@ function Header({ onMenuClick }: { onMenuClick: () => void }) {
   const pageTitle = PAGE_TITLES[location.pathname] ?? "MobPae";
   const displayName = user?.name && !user.name.includes("@")
     ? user.name
-    : user?.companyName || "Employer admin";
+    : user?.companyName || "Employer";
+  const userInitials = displayName.split(" ").filter(Boolean).slice(0, 2).map((w: string) => w[0]).join("").toUpperCase() || "E";
 
   return (
-    <header className="sticky top-0 z-20 h-[52px] flex items-center justify-between px-5 bg-white" style={{ borderBottom: "1px solid #E4E4EF" }}>
+    <header className="sticky top-0 z-20 h-[60px] flex items-center justify-between px-6 bg-white" style={{ borderBottom: "1px solid #E5E7EB" }}>
       <div className="flex items-center gap-3">
-        <button aria-label="Open navigation" onClick={onMenuClick} className="lg:hidden w-8 h-8 flex items-center justify-center rounded-lg transition-colors" style={{ border: "1px solid #E4E4EF", color: "#8D90A3" }}>
+        <button aria-label="Open navigation" onClick={onMenuClick} className="lg:hidden w-8 h-8 flex items-center justify-center rounded-lg transition-colors hover:bg-gray-100" style={{ color: "#6B7280" }}>
           <Menu size={16} />
         </button>
-        <h1 className="text-[14px] font-[600]" style={{ color: "#191A2E" }}>{pageTitle}</h1>
+        <h1 style={{ fontSize: 15, fontWeight: 600, color: "#111827" }}>{pageTitle}</h1>
       </div>
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-2">
         <NotificationBell />
-        <button
-          onClick={() => navigate("/change-password")}
-          title="Change Password"
-          className="w-8 h-8 flex items-center justify-center rounded-lg transition-colors"
-          style={{ border: "1px solid #E4E4EF", color: "#8D90A3" }}
-        >
-          <KeyRound size={14} />
-        </button>
-        <div className="w-px h-4 mx-1" style={{ background: "#E4E4EF" }} />
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: "#7679FF" }}>
-            <span className="text-[11px] font-[700] text-white">{user ? initials(displayName) : "?"}</span>
+        <div className="w-px h-5 mx-1" style={{ background: "#E5E7EB" }} />
+        <div className="flex items-center gap-2.5">
+          <div
+            className="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-[700] flex-shrink-0"
+            style={{ background: "linear-gradient(135deg, #8B7CFF 0%, #6C4CFF 100%)", color: "white" }}
+            title={navigate ? displayName : undefined}
+          >
+            {userInitials}
           </div>
           <div className="hidden sm:block">
-            <p className="text-[12px] font-[600] leading-none" style={{ color: "#191A2E" }}>{displayName}</p>
-            <p className="text-[11px] mt-0.5" style={{ color: "#8D90A3" }}>{user?.email}</p>
+            <p style={{ fontSize: 13, fontWeight: 600, color: "#111827", lineHeight: 1 }}>{displayName}</p>
+            <p style={{ fontSize: 11, color: "#9CA3AF", marginTop: 2 }}>{user?.email}</p>
           </div>
         </div>
       </div>
@@ -186,9 +197,9 @@ function Header({ onMenuClick }: { onMenuClick: () => void }) {
 export function EmployerLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   return (
-    <div className="employer-portal min-h-screen" style={{ background: "#F7F7FB" }}>
+    <div className="min-h-screen" style={{ background: "#F9FAFB", fontFamily: "Inter, ui-sans-serif, sans-serif" }}>
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      <div className="lg:pl-[220px] flex flex-col min-h-screen">
+      <div className="lg:pl-60 flex flex-col min-h-screen">
         <Header onMenuClick={() => setSidebarOpen(true)} />
         <main className="flex-1 p-6"><Outlet /></main>
       </div>
