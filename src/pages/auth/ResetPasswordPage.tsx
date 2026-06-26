@@ -42,7 +42,7 @@ export function ResetPasswordPage() {
 
         {/* Logo */}
         <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 40 }}>
-          {(() => { const s=20,sc=s/530,ip=Math.round(1500*sc),vw=Math.round(888*sc); return <div style={{width:vw,height:s,overflow:"hidden",flexShrink:0,position:"relative"}}><img src="/logo-icon.svg" alt="MobPae" style={{position:"absolute",width:ip,height:ip,maxWidth:"none",top:-Math.round(485*sc),left:-Math.round(319*sc)}}/></div>; })()}
+          <img src="/logo-icon.svg" alt="MobPae" width="32" height="21" style={{ objectFit: "contain", flexShrink: 0 }} />
           <span style={{ fontSize: 15, fontWeight: 700, color: "#191A2E", letterSpacing: "-0.01em" }}>MobPae</span>
         </div>
 

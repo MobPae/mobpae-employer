@@ -69,11 +69,8 @@ function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
         {/* Logo */}
         <div className="h-[60px] flex items-center justify-between px-5 flex-shrink-0" style={{ borderBottom: "1px solid #E5E7EB" }}>
           <div className="flex items-center gap-3">
-            {(() => { const s=20,sc=s/530,ip=Math.round(1500*sc),vw=Math.round(888*sc); return <div style={{width:vw,height:s,overflow:"hidden",flexShrink:0,position:"relative"}}><img src="/logo-icon.svg" alt="MobPae" style={{position:"absolute",width:ip,height:ip,maxWidth:"none",top:-Math.round(485*sc),left:-Math.round(319*sc)}}/></div>; })()}
-            <div>
-              <p style={{ fontSize: 15, fontWeight: 700, color: "#111827", letterSpacing: "-0.02em", lineHeight: 1 }}>MobPae</p>
-              <p style={{ fontSize: 10, color: "#9CA3AF", marginTop: 2, letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 600 }}>Employer</p>
-            </div>
+            <img src="/logo-icon.svg" alt="MobPae" width="32" height="21" style={{ objectFit: "contain", flexShrink: 0 }} />
+            <span style={{ fontSize: 15, fontWeight: 700, color: "#111827", letterSpacing: "-0.02em", lineHeight: 1 }}>MobPae</span>
           </div>
           <button aria-label="Close navigation" onClick={onClose} className="lg:hidden w-7 h-7 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors" style={{ color: "#9CA3AF" }}>
             <X size={15} />
