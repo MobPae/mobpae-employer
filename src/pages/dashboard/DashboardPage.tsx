@@ -302,7 +302,7 @@ export function DashboardPage() {
 
       {/* ── KPI strip ──────────────────────────────────────────────── */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
-        <KpiCard label="Total Employees"   value={stats?.totalEmployees ?? 0}          sub="on payroll"        icon={<UsersRound size={18} color={P} strokeWidth={1.75}/>}        iconBg={PS}       loading={statsLoading} />
+        <KpiCard label="Total Employees"   value={stats?.totalEmployees ?? 0}          sub="active team"        icon={<UsersRound size={18} color={P} strokeWidth={1.75}/>}        iconBg={PS}       loading={statsLoading} />
         <KpiCard label="App Activated"     value={stats?.appActivatedEmployees ?? 0}   sub={`${activationRate}% of total`} icon={<BadgeCheck size={18} color="#16A34A" strokeWidth={1.75}/>} iconBg="#DCFCE7"  loading={statsLoading} />
         <KpiCard label="Pending Requests"  value={stats?.pendingSalaryRequests ?? 0}   sub="awaiting approval" icon={<Clock3 size={18} color="#D97706" strokeWidth={1.75}/>}        iconBg="#FEF3C7"  loading={statsLoading} />
         <KpiCard label="Outstanding"       value={formatCurrency(stats?.outstandingAmount ?? 0)} sub="total balance due" icon={<CircleDollarSign size={18} color="#DC2626" strokeWidth={1.75}/>} iconBg="#FEE2E2"  loading={statsLoading} />
@@ -327,7 +327,7 @@ export function DashboardPage() {
                 ))}
               </div>
             </div>
-            {trendsLoading ? <Sk h={120} /> : <TrendChart trends={trends} />}
+            {trendsLoading ? <Sk h={120} /> : <TrendChart trends={trends ?? []} />}
           </div>
         )}
 

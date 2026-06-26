@@ -91,6 +91,7 @@ export interface Repayment {
   employeeId: string;
   employeeName: string;
   salaryRequestId: string;
+  settlementId?: string | null;
   amount: number;
   principalAmount: number;
   interestAmount: number;

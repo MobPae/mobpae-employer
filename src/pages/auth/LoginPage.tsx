@@ -297,7 +297,7 @@ export function LoginPage() {
             Smart. Secure. Simple.
           </h2>
           <p style={{ fontSize: 16, color: "rgba(255,255,255,0.70)", lineHeight: 1.6, marginBottom: 40, maxWidth: 360, margin: "0 auto 40px" }}>
-            Manage your team's salary advances, approvals, and payroll — all in one place.
+            Manage your team's salary advances, approvals, and settlements — all in one place.
           </p>
 
           {/* Employer dashboard preview card */}

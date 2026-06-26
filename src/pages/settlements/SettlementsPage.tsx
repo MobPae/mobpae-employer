@@ -41,9 +41,9 @@ function StatusPill({ status }: { status: string }) {
   );
 }
 
-// ── payroll month formatting ───────────────────────────────────────────────────
+// ── salary cycle formatting ───────────────────────────────────────────────────
 
-function formatPayrollMonth(raw: string): string {
+function formatSalaryCycle(raw: string): string {
   if (!raw) return "—";
   // "2024-01" → "January 2024"
   const match = raw.match(/^(\d{4})-(\d{2})$/);
@@ -203,7 +203,7 @@ export function SettlementsPage() {
       {/* Page header */}
       <div>
         <h1 style={{ fontSize: 24, fontWeight: 700, color: "#111827", letterSpacing: "-0.025em", margin: 0 }}>Settlements</h1>
-        <p style={{ fontSize: 13, color: "#6B7280", marginTop: 4 }}>Track and manage amounts owed to MobPae each payroll cycle</p>
+        <p style={{ fontSize: 13, color: "#6B7280", marginTop: 4 }}>Track amounts owed to MobPae by salary cycle</p>
       </div>
 
       {/* Summary cards */}
@@ -283,7 +283,7 @@ export function SettlementsPage() {
       <div className="bg-[#F3F0FF]/60 border border-[#E5E7EB] rounded-xl px-4 py-3 flex items-start gap-3">
         <Landmark size={15} className="text-[#6C4CFF] mt-0.5 flex-shrink-0" />
         <p className="text-[12px] text-[#5B34FF] leading-relaxed">
-          Settlements represent amounts your company owes to MobPae. Remit payment to MobPae directly — your MobPae account manager will confirm receipt and mark it as paid.
+          Settlements represent the recoveries your company owes to MobPae. Once MobPae confirms payment, linked recoveries are marked recovered automatically.
         </p>
       </div>
 
@@ -339,7 +339,7 @@ export function SettlementsPage() {
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr style={{ background: "#FAFAFA", borderBottom: "1px solid #F3F4F6" }}>
-                  {["Payroll Month", "Total Amount", "Outstanding", "Late Fee", "Due Date", "Grace Period", "Status", ""].map(h => (
+                  {["Salary Cycle", "Total Amount", "Outstanding", "Late Fee", "Due Date", "Grace Period", "Status", ""].map(h => (
                     <th key={h} style={{ padding: "14px 20px", textAlign: "left", fontSize: 11.5, fontWeight: 600, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: "0.07em", whiteSpace: "nowrap" }}>{h}</th>
                   ))}
                 </tr>
@@ -356,7 +356,7 @@ export function SettlementsPage() {
                       onMouseEnter={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.background = "#FAFAFC"; }}
                       onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = isSelected ? "#F3F0FF4D" : overdue ? "#FFF1F14D" : "transparent"; }}
                     >
-                      <td style={{ padding: "16px 20px", fontSize: 13.5, fontWeight: 600, color: "#111827", verticalAlign: "middle" }}>{formatPayrollMonth(s.payrollMonth)}</td>
+                      <td style={{ padding: "16px 20px", fontSize: 13.5, fontWeight: 600, color: "#111827", verticalAlign: "middle" }}>{formatSalaryCycle(s.payrollMonth)}</td>
                       <td style={{ padding: "16px 20px", fontSize: 13.5, fontWeight: 700, color: "#111827", fontVariantNumeric: "tabular-nums", verticalAlign: "middle" }}>{formatCurrency(s.totalAmount)}</td>
                       <td style={{ padding: "16px 20px", fontSize: 13.5, fontWeight: 600, color: s.outstandingAmount > 0 ? "#DC2626" : "#6C4CFF", fontVariantNumeric: "tabular-nums", verticalAlign: "middle" }}>
                         {s.outstandingAmount > 0 ? formatCurrency(s.outstandingAmount) : "No dues"}
@@ -408,7 +408,7 @@ export function SettlementsPage() {
                     )}
                   </div>
                   <p className="text-[16px] font-[700] text-[#111827] leading-tight">
-                    {formatPayrollMonth(selected.payrollMonth)}
+                    {formatSalaryCycle(selected.payrollMonth)}
                   </p>
                   <p className="text-[12px] text-[#6B7280] mt-0.5">Settlement period</p>
                 </div>
@@ -519,7 +519,7 @@ export function SettlementsPage() {
                         )}
                       </strong>{" "}
                       to MobPae via bank transfer or your agreed payment method.
-                      Once received, your MobPae account manager will mark this settlement as paid.
+                      Once received, your MobPae account manager will mark this settlement as paid and linked recoveries as recovered.
                     </p>
                     {gracePeriodOver && summary && (
                       <p className="text-[11px] text-red-600 mt-1.5 font-[500]">

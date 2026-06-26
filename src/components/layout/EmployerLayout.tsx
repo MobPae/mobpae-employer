@@ -1,6 +1,5 @@
 import {
   ArrowDownCircle,
-  CalendarDays,
   ClipboardList,
   CreditCard,
   Landmark,
@@ -24,7 +23,6 @@ const NAV = [
   { label: "Salary Requests", to: "/salary-requests", icon: ClipboardList    },
   { label: "Recoveries",      to: "/recoveries",      icon: ArrowDownCircle  },
   { label: "Repayments",      to: "/repayments",       icon: CreditCard       },
-  { label: "Payroll",         to: "/payroll",          icon: CalendarDays     },
   { label: "Settlements",     to: "/settlements",      icon: Landmark         },
   { label: "Settings",        to: "/settings",         icon: Settings         },
 ];
@@ -35,14 +33,9 @@ const PAGE_TITLES: Record<string, string> = {
   "/salary-requests": "Salary Requests",
   "/recoveries":      "Recoveries",
   "/repayments":      "Repayments",
-  "/payroll":         "Payroll",
   "/settlements":     "Settlements",
   "/settings":        "Settings",
 };
-
-function initials(name: string) {
-  return name.split(" ").filter(Boolean).slice(0, 2).map(w => w[0]).join("").toUpperCase();
-}
 
 function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { user, logout } = useAuth();
@@ -154,7 +147,6 @@ function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
 
 function Header({ onMenuClick }: { onMenuClick: () => void }) {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const location = useLocation();
   const pageTitle = PAGE_TITLES[location.pathname] ?? "MobPae";
   const displayName = user?.name && !user.name.includes("@")
@@ -177,7 +169,7 @@ function Header({ onMenuClick }: { onMenuClick: () => void }) {
           <div
             className="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-[700] flex-shrink-0"
             style={{ background: "linear-gradient(135deg, #8B7CFF 0%, #6C4CFF 100%)", color: "white" }}
-            title={navigate ? displayName : undefined}
+            title={displayName}
           >
             {userInitials}
           </div>

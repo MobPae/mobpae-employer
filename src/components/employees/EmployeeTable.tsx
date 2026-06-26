@@ -67,8 +67,6 @@ export interface EmployeeTableProps {
   actionEmployeeId?: string | null;
 }
 
-const HEADERS = ["", "Employee", "Phone", "Salary", "Status", "App Access", ""];
-
 export function EmployeeTable({
   employees, selectedIds, onSelect, onSelectAll, onEdit, onToggleAccess, actionEmployeeId,
 }: EmployeeTableProps) {

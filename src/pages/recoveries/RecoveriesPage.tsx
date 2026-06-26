@@ -108,14 +108,14 @@ export function RecoveriesPage() {
       {/* Page header */}
       <div>
         <h1 style={{ fontSize: 24, fontWeight: 700, color: "#111827", letterSpacing: "-0.025em", margin: 0 }}>Recoveries</h1>
-        <p style={{ fontSize: 13, color: "#6B7280", marginTop: 4 }}>Track employee repayment deductions each payroll cycle</p>
+        <p style={{ fontSize: 13, color: "#6B7280", marginTop: 4 }}>Track employee repayment deductions by salary cycle</p>
       </div>
 
       {/* Info banner */}
       <div className="bg-[#F3F0FF]/60 border border-[#E5E7EB] rounded-xl px-4 py-3 flex items-start gap-3">
         <ArrowDownCircle size={15} className="text-[#6C4CFF] mt-0.5 flex-shrink-0" />
         <p className="text-[12px] text-[#5B34FF] leading-relaxed">
-          Recoveries are deducted automatically from employee payroll. MobPae settles these amounts with your company each payroll cycle.
+          Recoveries are grouped into a settlement after your cutoff and salary date. They move to Recovered only after MobPae confirms your settlement payment.
         </p>
       </div>
 
@@ -132,7 +132,7 @@ export function RecoveriesPage() {
           value={formatCurrency(totalPending)}
           icon={<Clock3 size={14} />}
           iconBg="bg-amber-50" iconColor="text-amber-600"
-          sub="to be deducted"
+          sub="awaiting settlement"
         />
         <StatCard
           label="Recovered"
@@ -208,14 +208,14 @@ export function RecoveriesPage() {
               <span className="text-[#6B7280] text-[18px]">↩</span>
             </div>
             <p className="text-[13px] font-[500] text-[#6B7280]">No recoveries found</p>
-            <p className="text-[12px] text-[#6B7280] mt-1">Payroll deductions will appear here</p>
+            <p className="text-[12px] text-[#6B7280] mt-1">Salary deductions will appear here</p>
           </div>
         ) : (
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
                 <tr style={{ background: "#FAFAFA", borderBottom: "1px solid #F3F4F6" }}>
-                  {["Employee", "Salary Request", "Principal", "Interest", "Total Deduction", "Due Date", "Status"].map(h => (
+                  {["Employee", "Salary Request", "Principal", "Interest", "Total Deduction", "Due Date", "Settlement", "Status"].map(h => (
                     <th key={h} style={{ padding: "14px 20px", textAlign: "left", fontSize: 11.5, fontWeight: 600, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: "0.07em", whiteSpace: "nowrap" }}>{h}</th>
                   ))}
                 </tr>
@@ -241,6 +241,15 @@ export function RecoveriesPage() {
                       <td style={{ padding: "16px 20px", fontSize: 13.5, fontWeight: 600, color: "#111827", fontVariantNumeric: "tabular-nums", verticalAlign: "middle" }}>{formatCurrency(r.totalAmount)}</td>
                       <td style={{ padding: "16px 20px", fontSize: 13, fontVariantNumeric: "tabular-nums", color: r.status === "OVERDUE" ? "#DC2626" : "#6B7280", fontWeight: r.status === "OVERDUE" ? 600 : 400, verticalAlign: "middle" }}>
                         {formatDate(r.dueDate)}
+                      </td>
+                      <td style={{ padding: "16px 20px", verticalAlign: "middle" }}>
+                        {r.settlementId ? (
+                          <span style={{ display: "inline-flex", alignItems: "center", height: 24, padding: "0 9px", borderRadius: 999, background: "#F3F0FF", color: "#5B34FF", fontSize: 11, fontWeight: 600 }}>
+                            In settlement
+                          </span>
+                        ) : (
+                          <span style={{ fontSize: 12, color: "#9CA3AF" }}>Not generated</span>
+                        )}
                       </td>
                       <td style={{ padding: "16px 20px", verticalAlign: "middle" }}><StatusPill status={r.status} /></td>
                     </tr>

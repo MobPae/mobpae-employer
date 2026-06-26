@@ -189,6 +189,7 @@ export const mapRepayment = (value: unknown): Repayment => {
     employeeId: text(record.employeeId ?? employee.id, ""),
     employeeName: text(record.employeeName ?? employee.name ?? employee.fullName, "Employee"),
     salaryRequestId: text(record.salaryRequestId ?? record.salaryRequestCode ?? request.requestId ?? request.id, ""),
+    settlementId: typeof record.settlementId === "string" ? record.settlementId : null,
     amount: totalAmount,
     principalAmount,
     interestAmount,
