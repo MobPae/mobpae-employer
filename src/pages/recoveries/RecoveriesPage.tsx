@@ -108,14 +108,14 @@ export function RecoveriesPage() {
       {/* Page header */}
       <div>
         <h1 style={{ fontSize: 24, fontWeight: 700, color: "#111827", letterSpacing: "-0.025em", margin: 0 }}>Recoveries</h1>
-        <p style={{ fontSize: 13, color: "#6B7280", marginTop: 4 }}>Track employee repayment deductions by salary cycle</p>
+        <p style={{ fontSize: 13, color: "#6B7280", marginTop: 4 }}>Track deductions that will be included in MobPae settlement cycles</p>
       </div>
 
       {/* Info banner */}
       <div className="bg-[#F3F0FF]/60 border border-[#E5E7EB] rounded-xl px-4 py-3 flex items-start gap-3">
         <ArrowDownCircle size={15} className="text-[#6C4CFF] mt-0.5 flex-shrink-0" />
         <p className="text-[12px] text-[#5B34FF] leading-relaxed">
-          Recoveries are grouped into a settlement after your cutoff and salary date. They move to Recovered only after MobPae confirms your settlement payment.
+          Recoveries are grouped into a settlement after your cutoff and salary date. They move to Recovered only after MobPae confirms the settlement payment.
         </p>
       </div>
 
@@ -142,7 +142,7 @@ export function RecoveriesPage() {
           sub="this cycle"
         />
         <StatCard
-          label="Total exposure"
+          label="Active exposure"
           value={formatCurrency(summary?.totalRecoveryAmount ?? 0)}
           icon={<CircleDollarSign size={14} />}
           iconBg="bg-violet-50" iconColor="text-violet-600"

@@ -13,11 +13,6 @@ export const settlementService = {
     return mapSettlementSummary(unwrapItem(data, ["summary", "settlementSummary"]));
   },
 
-  async getSettlementById(id: string): Promise<EmployerSettlement> {
-    const { data } = await httpClient.get(`/employer-settlements/${id}`);
-    return mapSettlement(unwrapItem(data, ["settlement", "employerSettlement"]));
-  },
-
   async sendReport(id: string): Promise<void> {
     await httpClient.post(`/employer-settlements/${id}/send-report`);
   },

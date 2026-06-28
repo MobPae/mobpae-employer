@@ -223,7 +223,7 @@ function ProgressBar({ value, max }: { value: number; max: number }) {
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-        <span style={{ fontSize: 11, color: T2 }}>Recovery progress</span>
+        <span style={{ fontSize: 11, color: T2 }}>Scheduled recovery coverage</span>
         <span style={{ fontSize: 11, fontWeight: 600, color: P }}>{pct}%</span>
       </div>
       <div style={{ height: 6, borderRadius: 999, background: "#F3F4F6", overflow: "hidden" }}>
@@ -273,7 +273,7 @@ export function DashboardPage() {
           <h1 style={{ fontSize: 24, fontWeight: 700, color: T1, letterSpacing: "-0.025em", margin: 0 }}>
             Welcome back, {user?.companyName ?? "Employer"}
           </h1>
-          <p style={{ fontSize: 14, color: T2, marginTop: 6 }}>Here's what's happening with your team today.</p>
+          <p style={{ fontSize: 14, color: T2, marginTop: 6 }}>Approvals, recoveries, and settlement status for your team.</p>
         </div>
         <p style={{ fontSize: 12, color: T3 }}>
           {new Date().toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" })}
@@ -305,7 +305,7 @@ export function DashboardPage() {
         <KpiCard label="Total Employees"   value={stats?.totalEmployees ?? 0}          sub="active team"        icon={<UsersRound size={18} color={P} strokeWidth={1.75}/>}        iconBg={PS}       loading={statsLoading} />
         <KpiCard label="App Activated"     value={stats?.appActivatedEmployees ?? 0}   sub={`${activationRate}% of total`} icon={<BadgeCheck size={18} color="#16A34A" strokeWidth={1.75}/>} iconBg="#DCFCE7"  loading={statsLoading} />
         <KpiCard label="Pending Requests"  value={stats?.pendingSalaryRequests ?? 0}   sub="awaiting approval" icon={<Clock3 size={18} color="#D97706" strokeWidth={1.75}/>}        iconBg="#FEF3C7"  loading={statsLoading} />
-        <KpiCard label="Outstanding"       value={formatCurrency(stats?.outstandingAmount ?? 0)} sub="total balance due" icon={<CircleDollarSign size={18} color="#DC2626" strokeWidth={1.75}/>} iconBg="#FEE2E2"  loading={statsLoading} />
+        <KpiCard label="Settlement Due"    value={formatCurrency(stats?.outstandingAmount ?? 0)} sub="payable to MobPae" icon={<CircleDollarSign size={18} color="#DC2626" strokeWidth={1.75}/>} iconBg="#FEE2E2"  loading={statsLoading} />
       </div>
 
       {/* ── Row 2: Trend chart + Recoveries ────────────────────────── */}
@@ -333,12 +333,12 @@ export function DashboardPage() {
 
         {card(
           <div style={{ padding: 20 }}>
-            <p style={{ fontSize: 15, fontWeight: 600, color: T1, margin: "0 0 16px" }}>Recoveries & Settlements</p>
+            <p style={{ fontSize: 15, fontWeight: 600, color: T1, margin: "0 0 16px" }}>Recovery Cycle</p>
             {[
               { icon: <RefreshCcw size={13} color={P}/>,  label: "Scheduled recoveries", value: stats?.scheduledRecoveries ?? 0,               badge: "on track",      badgeBg: "#DCFCE7", badgeColor: "#16A34A" },
               { icon: <AlertTriangle size={13} color="#DC2626"/>, label: "Overdue recoveries",  value: stats?.overdueRecoveries ?? 0,               badge: "action needed", badgeBg: "#FEE2E2", badgeColor: "#DC2626" },
               { icon: <Landmark size={13} color="#D97706"/>,label: "Pending settlements", value: stats?.pendingSettlements ?? 0,               badge: "due soon",      badgeBg: "#FEF3C7", badgeColor: "#D97706" },
-              { icon: <CircleDollarSign size={13} color={T2}/>, label: "Amount due",   value: formatCurrency(stats?.recoveryAmountDue ?? 0), badge: null,             badgeBg: "",        badgeColor: "" },
+              { icon: <CircleDollarSign size={13} color={T2}/>, label: "Settlement amount due",   value: formatCurrency(stats?.recoveryAmountDue ?? 0), badge: null,             badgeBg: "",        badgeColor: "" },
             ].map((row, i, arr) => (
               <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "9px 0", borderBottom: i < arr.length - 1 ? BDR : "none" }}>
                 <span style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 12, color: T2 }}>

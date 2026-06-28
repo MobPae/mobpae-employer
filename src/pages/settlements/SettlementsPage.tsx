@@ -332,7 +332,7 @@ export function SettlementsPage() {
               <CreditCard size={18} className="text-[#6B7280]" />
             </div>
             <p className="text-[13px] font-[500] text-[#6B7280]">No settlements found</p>
-            <p className="text-[12px] text-[#6B7280] mt-1">Settlements appear here once employees' recovered amounts are due to MobPae</p>
+            <p className="text-[12px] text-[#6B7280] mt-1">Settlements appear here once salary-cycle recoveries are due to MobPae</p>
           </div>
         ) : (
           <div style={{ overflowX: "auto" }}>
@@ -503,12 +503,12 @@ export function SettlementsPage() {
                 {sendingReport ? "Sending…" : "Send Report via Email"}
               </button>
 
-              {/* Pay Now info panel — only when outstanding */}
+              {/* Payment guidance panel — only when outstanding */}
               {selected.status !== "PAID" && (
                 <div className="bg-[#F3F0FF] border border-[#E5E7EB] rounded-xl px-4 py-3.5 flex items-start gap-3">
                   <Info size={15} className="text-[#6C4CFF] mt-0.5 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-[12px] font-[600] text-[#5B34FF] mb-1">Pay Now</p>
+                    <p className="text-[12px] font-[600] text-[#5B34FF] mb-1">Payment guidance</p>
                     <p className="text-[12px] text-[#5B34FF] leading-relaxed">
                       Remit{" "}
                       <strong>

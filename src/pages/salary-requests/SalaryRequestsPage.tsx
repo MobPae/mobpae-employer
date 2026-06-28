@@ -1,4 +1,4 @@
-import { Calendar, Check, ChevronRight, Download, Search, X, CheckCheck, Ban } from "lucide-react";
+import { Calendar, Check, ChevronRight, Download, Search, X, CheckCheck, Ban, ShieldCheck } from "lucide-react";
 import { exportToCsv } from "../../utils/exportCsv";
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { Pagination } from "../../components/ui/Pagination";
@@ -135,6 +135,18 @@ export function SalaryRequestsPage() {
   }, [requests]);
 
   const canReview = selected && REVIEWABLE.has(selected.status);
+  const openRequest = (request: SalaryRequest) => {
+    setRemarks("");
+    setApprovedAmount("");
+    setSelected(request);
+  };
+  const approvedAmountNumber = approvedAmount.trim() ? Number(approvedAmount) : undefined;
+  const approvedAmountError =
+    selected && approvedAmount.trim() && (!Number.isFinite(approvedAmountNumber) || (approvedAmountNumber ?? 0) <= 0)
+      ? "Enter a valid amount."
+      : selected && approvedAmountNumber !== undefined && approvedAmountNumber > selected.requestedAmount
+        ? "Approved amount cannot be more than the requested amount."
+        : "";
 
   // reviewable rows on current page (for select-all)
   const reviewableOnPage = paginated.filter(r => REVIEWABLE.has(r.status));
@@ -167,13 +179,17 @@ export function SalaryRequestsPage() {
   // ── single-request actions ──────────────────────────────────────────────────
   const handleApprove = async () => {
     if (!selected) return;
+    if (approvedAmountError) {
+      toast.error("Check approved amount", approvedAmountError);
+      return;
+    }
     setAction("APPROVE");
     try {
       const parsedAmount = parseFloat(approvedAmount);
       const amount = !isNaN(parsedAmount) && parsedAmount > 0 ? parsedAmount : undefined;
       await salaryRequestService.approveRequest(selected.id, amount);
       load();
-      toast.success("Request approved", selected.requestId);
+      toast.success("Sent for admin review", selected.requestId);
       setSelected(null);
       setApprovedAmount("");
     } catch (err) {
@@ -211,7 +227,7 @@ export function SalaryRequestsPage() {
       const result = await salaryRequestService.bulkAction("APPROVE", ids);
       const s = result.succeeded.length;
       const f = result.failed.length;
-      if (s > 0) toast.success(`${s} request${s > 1 ? "s" : ""} approved`, f > 0 ? `${f} failed` : undefined);
+      if (s > 0) toast.success(`${s} request${s > 1 ? "s" : ""} sent for admin review`, f > 0 ? `${f} failed` : undefined);
       else        toast.error("Bulk approval failed", "No requests were approved");
       load();
     } catch (err) {
@@ -253,7 +269,7 @@ export function SalaryRequestsPage() {
       <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
         <div>
           <h1 style={{ fontSize: 24, fontWeight: 700, color: T1, letterSpacing: "-0.025em", margin: 0 }}>Salary Requests</h1>
-          <p style={{ fontSize: 14, color: T2, marginTop: 6 }}>Review and manage employee salary advance requests.</p>
+          <p style={{ fontSize: 14, color: T2, marginTop: 6 }}>Approve eligible requests and send them to MobPae admin for final review.</p>
         </div>
         <button
           onClick={() => exportToCsv(filtered.map(r => ({ RequestID: r.requestId, Employee: r.employeeName, EmployeeCode: r.employeeCode, RequestedAmount: r.requestedAmount, ApprovedAmount: r.approvedAmount ?? "", Status: r.status, Date: r.createdDate ? new Date(r.createdDate).toLocaleDateString() : "" })), `salary-requests-${Date.now()}`)}
@@ -398,18 +414,18 @@ export function SalaryRequestsPage() {
                           <input type="checkbox" checked={isChecked} onChange={() => toggleRow(r.id)} style={{ width: 14, height: 14, accentColor: P, cursor: "pointer" }} />
                         ) : <div style={{ width: 14, height: 14 }} />}
                       </td>
-                      <td style={{ padding: "16px 20px 16px 0", fontWeight: 600, color: T2, fontSize: 13.5, verticalAlign: "middle" }} onClick={() => { setRemarks(""); setSelected(r); }}>{r.requestId}</td>
-                      <td style={{ padding: "16px 20px 16px 0", verticalAlign: "middle" }} onClick={() => { setRemarks(""); setSelected(r); }}>
+                      <td style={{ padding: "16px 20px 16px 0", fontWeight: 600, color: T2, fontSize: 13.5, verticalAlign: "middle" }} onClick={() => openRequest(r)}>{r.requestId}</td>
+                      <td style={{ padding: "16px 20px 16px 0", verticalAlign: "middle" }} onClick={() => openRequest(r)}>
                         <p style={{ fontSize: 13.5, fontWeight: 500, color: T1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", margin: 0 }}>{r.employeeName}</p>
                         <p style={{ fontSize: 11.5, color: T3, margin: "2px 0 0", fontFamily: "ui-monospace, monospace" }}>{r.employeeCode}</p>
                       </td>
-                      <td style={{ padding: "16px 20px 16px 0", fontWeight: 600, color: T1, fontVariantNumeric: "tabular-nums", fontSize: 13.5, verticalAlign: "middle" }} onClick={() => { setRemarks(""); setSelected(r); }}>{formatCurrency(r.requestedAmount)}</td>
-                      <td style={{ padding: "16px 20px 16px 0", color: T2, fontVariantNumeric: "tabular-nums", fontSize: 13.5, verticalAlign: "middle" }} onClick={() => { setRemarks(""); setSelected(r); }}>
+                      <td style={{ padding: "16px 20px 16px 0", fontWeight: 600, color: T1, fontVariantNumeric: "tabular-nums", fontSize: 13.5, verticalAlign: "middle" }} onClick={() => openRequest(r)}>{formatCurrency(r.requestedAmount)}</td>
+                      <td style={{ padding: "16px 20px 16px 0", color: T2, fontVariantNumeric: "tabular-nums", fontSize: 13.5, verticalAlign: "middle" }} onClick={() => openRequest(r)}>
                         {r.approvedAmount ? formatCurrency(r.approvedAmount) : "—"}
                       </td>
-                      <td style={{ padding: "16px 20px 16px 0", verticalAlign: "middle" }} onClick={() => { setRemarks(""); setSelected(r); }}><StatusPill status={r.status} /></td>
-                      <td style={{ padding: "16px 20px 16px 0", color: T3, fontVariantNumeric: "tabular-nums", fontSize: 13, verticalAlign: "middle" }} onClick={() => { setRemarks(""); setSelected(r); }}>{formatDate(r.createdDate)}</td>
-                      <td style={{ padding: "16px 20px 16px 0", verticalAlign: "middle" }} onClick={() => { setRemarks(""); setSelected(r); }}>
+                      <td style={{ padding: "16px 20px 16px 0", verticalAlign: "middle" }} onClick={() => openRequest(r)}><StatusPill status={r.status} /></td>
+                      <td style={{ padding: "16px 20px 16px 0", color: T3, fontVariantNumeric: "tabular-nums", fontSize: 13, verticalAlign: "middle" }} onClick={() => openRequest(r)}>{formatDate(r.createdDate)}</td>
+                      <td style={{ padding: "16px 20px 16px 0", verticalAlign: "middle" }} onClick={() => openRequest(r)}>
                         <button style={{ height: 30, padding: "0 14px", background: isSelected ? P : PS, color: isSelected ? "white" : P, border: "none", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 4 }}>
                           Review <ChevronRight size={11} />
                         </button>
@@ -465,6 +481,16 @@ export function SalaryRequestsPage() {
                 ))}
               </div>
 
+              <div style={{ background: "#F3F0FF", border: "1px solid #E5E7EB", borderRadius: 12, padding: 14, display: "flex", gap: 10 }}>
+                <ShieldCheck size={16} color={P} style={{ flexShrink: 0, marginTop: 1 }} />
+                <div>
+                  <p style={{ fontSize: 12, fontWeight: 700, color: T1, margin: 0 }}>Employer review context</p>
+                  <p style={{ fontSize: 12, color: T2, lineHeight: 1.55, marginTop: 4 }}>
+                    Your approval confirms salary and policy eligibility. MobPae admin still completes the final review and disbursal.
+                  </p>
+                </div>
+              </div>
+
               <div style={{ background: "white", border: BDR, borderRadius: 12, padding: "2px 16px" }}>
                 <InfoRow label="Purpose" value={selected.purpose || "—"} />
                 <InfoRow label="Created" value={formatDate(selected.createdDate)} />
@@ -481,9 +507,14 @@ export function SalaryRequestsPage() {
                     <div style={{ position: "relative" }}>
                       <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 12, color: T3 }}>₹</span>
                       <input type="number" min={1} value={approvedAmount} onChange={e => setApprovedAmount(e.target.value)} placeholder={String(selected.requestedAmount ?? "")}
-                        style={{ width: "100%", paddingLeft: 24, paddingRight: 12, height: 36, fontSize: 12, background: "white", border: BDR, borderRadius: 8, color: T1, outline: "none", fontFamily: "inherit" }}
+                        style={{ width: "100%", paddingLeft: 24, paddingRight: 12, height: 36, fontSize: 12, background: "white", border: approvedAmountError ? "1px solid #FCA5A5" : BDR, borderRadius: 8, color: T1, outline: "none", fontFamily: "inherit" }}
                         onFocus={e => (e.target.style.borderColor = P)} onBlur={e => (e.target.style.borderColor = "#E5E7EB")} />
                     </div>
+                    {approvedAmountError ? (
+                      <p style={{ fontSize: 11, color: "#DC2626", marginTop: 5 }}>{approvedAmountError}</p>
+                    ) : (
+                      <p style={{ fontSize: 11, color: T3, marginTop: 5 }}>Maximum allowed here is {formatCurrency(selected.requestedAmount)}.</p>
+                    )}
                   </div>
                   <div>
                     <label style={{ display: "block", fontSize: 11, fontWeight: 500, color: T2, marginBottom: 6 }}>Rejection remarks (required to reject)</label>
@@ -492,9 +523,9 @@ export function SalaryRequestsPage() {
                       onFocus={e => (e.target.style.borderColor = P)} onBlur={e => (e.target.style.borderColor = "#E5E7EB")} />
                   </div>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                    <button onClick={handleApprove} disabled={Boolean(action)}
-                      style={{ height: 36, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, borderRadius: 8, background: P, color: "white", border: "none", fontSize: 12, fontWeight: 600, cursor: "pointer", opacity: Boolean(action) ? 0.5 : 1, fontFamily: "inherit" }}>
-                      <Check size={13} />{action === "APPROVE" ? "Approving…" : "Approve"}
+                    <button onClick={handleApprove} disabled={Boolean(action) || Boolean(approvedAmountError)}
+                      style={{ height: 36, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, borderRadius: 8, background: P, color: "white", border: "none", fontSize: 12, fontWeight: 600, cursor: Boolean(action) || Boolean(approvedAmountError) ? "not-allowed" : "pointer", opacity: Boolean(action) || Boolean(approvedAmountError) ? 0.5 : 1, fontFamily: "inherit" }}>
+                      <Check size={13} />{action === "APPROVE" ? "Approving…" : "Approve for review"}
                     </button>
                     <button onClick={handleReject} disabled={Boolean(action) || !remarks.trim()}
                       style={{ height: 36, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, borderRadius: 8, background: "#DC2626", color: "white", border: "none", fontSize: 12, fontWeight: 600, cursor: "pointer", opacity: Boolean(action) || !remarks.trim() ? 0.4 : 1, fontFamily: "inherit" }}>
@@ -511,7 +542,7 @@ export function SalaryRequestsPage() {
       <ConfirmModal
         open={confirmBulkApprove}
         title={`Approve ${selectedIds.size} request${selectedIds.size !== 1 ? "s" : ""}?`}
-        description={`This will approve ${selectedIds.size} salary advance request${selectedIds.size !== 1 ? "s" : ""} on behalf of your company. Approved requests proceed to admin review and disbursal.`}
+        description={`This will approve ${selectedIds.size} submitted salary advance request${selectedIds.size !== 1 ? "s" : ""} on behalf of your company. MobPae admin will still complete final review and disbursal.`}
         confirmLabel={`Approve ${selectedIds.size}`}
         confirmClass="bg-[#6C4CFF] hover:bg-[#5B34FF] text-white"
         loading={bulkLoading}
