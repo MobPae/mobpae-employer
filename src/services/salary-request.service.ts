@@ -1,14 +1,14 @@
-import type { SalaryRequest } from "../types";
+import type { LoanApplication } from "../types";
 import { isForbidden } from "./api-errors";
-import { mapSalaryRequest, unwrapItem, unwrapList } from "./api-mappers";
+import { mapLoanApplication, unwrapItem, unwrapList } from "./api-mappers";
 import { httpClient } from "./http-client";
 
 export const salaryRequestService = {
-  async getSalaryRequests(): Promise<SalaryRequest[]> {
+  async getSalaryRequests(): Promise<LoanApplication[]> {
     try {
-      const { data } = await httpClient.get("/salary-requests/employer");
-      return unwrapList(data, ["salaryRequests", "requests"]).map(
-        mapSalaryRequest
+      const { data } = await httpClient.get("/loan-applications/employer");
+      return unwrapList(data, ["loanApplications", "applications", "salaryRequests", "requests"]).map(
+        mapLoanApplication
       );
     } catch (error) {
       if (isForbidden(error)) return [];
@@ -16,26 +16,21 @@ export const salaryRequestService = {
     }
   },
 
-  async getSalaryRequestById(id: string): Promise<SalaryRequest | undefined> {
+  async getSalaryRequestById(id: string): Promise<LoanApplication | undefined> {
     const requests = await this.getSalaryRequests();
     return requests.find(
-      (request) => request.id === id || request.requestId === id
+      (request) => request.id === id || request.applicationNumber === id
     );
   },
 
-  async approveRequest(
-    id: string,
-    approvedAmount?: number
-  ): Promise<SalaryRequest> {
-    const { data } = await httpClient.post(`/salary-requests/${id}/approve`, {
-      approvedAmount,
-    });
-    return mapSalaryRequest(unwrapItem(data, ["salaryRequest", "request"]));
+  async approveRequest(id: string): Promise<LoanApplication> {
+    const { data } = await httpClient.post(`/loan-applications/${id}/employer-approve`);
+    return mapLoanApplication(unwrapItem(data, ["loanApplication", "salaryRequest", "request"]));
   },
 
-  async rejectRequest(id: string, remarks: string): Promise<SalaryRequest> {
-    const { data } = await httpClient.post(`/salary-requests/${id}/reject`, { remarks });
-    return mapSalaryRequest(unwrapItem(data, ["salaryRequest", "request"]));
+  async rejectRequest(id: string, remarks: string): Promise<LoanApplication> {
+    const { data } = await httpClient.post(`/loan-applications/${id}/employer-reject`, { remarks });
+    return mapLoanApplication(unwrapItem(data, ["loanApplication", "salaryRequest", "request"]));
   },
 
   async bulkAction(
@@ -43,7 +38,7 @@ export const salaryRequestService = {
     ids: string[],
     remarks?: string
   ): Promise<{ succeeded: string[]; failed: string[] }> {
-    const { data } = await httpClient.post("/salary-requests/bulk-action", {
+    const { data } = await httpClient.post("/loan-applications/bulk-action", {
       action,
       ids,
       ...(remarks ? { remarks } : {}),

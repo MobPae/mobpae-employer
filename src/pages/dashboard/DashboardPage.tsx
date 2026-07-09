@@ -16,12 +16,12 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { useFetch } from "../../hooks/useFetch";
 import { dashboardService } from "../../services/dashboard.service";
-import type { DashboardStats, DashboardTrend, SalaryRequest } from "../../types";
+import type { DashboardStats, DashboardTrend, LoanApplication } from "../../types";
 import { formatCurrency, formatDate } from "../../utils/formatters";
 
 // ─── Design tokens (aligned with admin) ──────────────────────────────────────
-const P   = "#6C4CFF";
-const PS  = "#F3F0FF";
+const P   = "#315eff";
+const PS  = "#EEF2FF";
 const T1  = "#111827";
 const T2  = "#6B7280";
 const T3  = "#9CA3AF";
@@ -111,7 +111,7 @@ function TrendChart({ trends }: { trends: DashboardTrend[] }) {
         labels,
         datasets: [
           { label: "Requested", data: trends.map(t => t.requestCount),  borderColor: P,         backgroundColor: `${P}11`, fill: true,  tension: 0.45, pointBackgroundColor: P,         pointRadius: 3, pointHoverRadius: 5, borderWidth: 2 },
-          { label: "Approved",  data: trends.map(t => t.approvedCount), borderColor: "#5B34FF", backgroundColor: "transparent", fill: false, tension: 0.45, pointBackgroundColor: "#5B34FF", pointRadius: 3, pointHoverRadius: 5, borderWidth: 1.5, borderDash: [4,3] },
+          { label: "Approved",  data: trends.map(t => t.approvedCount), borderColor: "#2048EE", backgroundColor: "transparent", fill: false, tension: 0.45, pointBackgroundColor: "#2048EE", pointRadius: 3, pointHoverRadius: 5, borderWidth: 1.5, borderDash: [4,3] },
           { label: "Disbursed", data: trends.map(t => t.disbursedCount),borderColor: "#16A34A", backgroundColor: "transparent", fill: false, tension: 0.45, pointBackgroundColor: "#16A34A", pointRadius: 3, pointHoverRadius: 5, borderWidth: 1.5, borderDash: [4,3] },
         ],
       },
@@ -149,7 +149,7 @@ function DonutChart({ approved, disbursed, pending }: { approved: number; disbur
       type: "doughnut",
       data: {
         labels: ["Approved", "Disbursed", "Pending"],
-        datasets: [{ data: [approved, disbursed, pending], backgroundColor: [P, "#5B34FF", PS], borderWidth: 0, hoverOffset: 4 }],
+        datasets: [{ data: [approved, disbursed, pending], backgroundColor: [P, "#2048EE", PS], borderWidth: 0, hoverOffset: 4 }],
       },
       options: { responsive: true, maintainAspectRatio: false, cutout: "70%", plugins: { legend: { display: false }, tooltip: { titleFont: { size: 11 }, bodyFont: { size: 11 } } } },
     });
@@ -163,14 +163,14 @@ function DonutChart({ approved, disbursed, pending }: { approved: number; disbur
 }
 
 // ─── Recent activity table ────────────────────────────────────────────────────
-function RecentActivity({ rows }: { rows: SalaryRequest[] }) {
+function RecentActivity({ rows }: { rows: LoanApplication[] }) {
   if (!rows.length) return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "28px 0", textAlign: "center" }}>
-      <div style={{ width: 36, height: 36, borderRadius: 10, background: PS, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 8 }}>
+      <div style={{ width: 36, height: 36, borderRadius: 8, background: PS, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 8 }}>
         <WalletCards size={15} color={P} />
       </div>
       <p style={{ fontSize: 13, fontWeight: 500, color: T2 }}>No recent activity</p>
-      <p style={{ fontSize: 12, color: T3, marginTop: 3 }}>Salary requests will appear here</p>
+      <p style={{ fontSize: 12, color: T3, marginTop: 3 }}>Loan applications will appear here</p>
     </div>
   );
 
@@ -196,7 +196,7 @@ function RecentActivity({ rows }: { rows: SalaryRequest[] }) {
                   </div>
                   <div>
                     <p style={{ fontWeight: 500, color: T1, lineHeight: 1 }}>{r.employeeName}</p>
-                    <p style={{ fontSize: 11, color: T3, marginTop: 2 }}>{r.requestId}</p>
+                    <p style={{ fontSize: 11, color: T3, marginTop: 2 }}>{r.applicationNumber}</p>
                   </div>
                 </div>
               </td>
@@ -207,7 +207,7 @@ function RecentActivity({ rows }: { rows: SalaryRequest[] }) {
                 <StatusPill status={r.status} />
               </td>
               <td style={{ padding: "10px 0", textAlign: "right", color: T3, fontVariantNumeric: "tabular-nums" }}>
-                {formatDate(r.createdDate)}
+                {formatDate(r.submittedAt)}
               </td>
             </tr>
           ))}
@@ -249,14 +249,14 @@ export function DashboardPage() {
 
   const recentActivity   = stats?.recentActivity ?? [];
   const activationRate   = stats && stats.totalEmployees > 0 ? Math.round((stats.appActivatedEmployees / stats.totalEmployees) * 100) : 0;
-  const totalRequests    = (stats?.approvedRequests ?? 0) + (stats?.disbursedRequests ?? 0) + (stats?.pendingSalaryRequests ?? 0);
+  const totalRequests    = (stats?.approvedRequests ?? 0) + (stats?.disbursedRequests ?? 0) + (stats?.pendingLoanApplications ?? 0);
   const recoveryTotal    = (stats?.scheduledRecoveries ?? 0) + (stats?.overdueRecoveries ?? 0);
   const recoveryDone     = stats?.scheduledRecoveries ?? 0;
 
   if (statsError) return (
     <div style={{ background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 16, padding: "14px 18px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
       <p style={{ fontSize: 13, color: "#DC2626" }}>Failed to load dashboard</p>
-      <button onClick={() => void refreshStats()} style={{ height: 34, padding: "0 14px", background: "white", border: "1px solid #FECACA", borderRadius: 10, fontSize: 12, fontWeight: 600, color: "#DC2626", cursor: "pointer", fontFamily: "inherit" }}>Try again</button>
+      <button onClick={() => void refreshStats()} style={{ height: 34, padding: "0 14px", background: "white", border: "1px solid #FECACA", borderRadius: 8, fontSize: 12, fontWeight: 600, color: "#DC2626", cursor: "pointer", fontFamily: "inherit" }}>Try again</button>
     </div>
   );
 
@@ -304,7 +304,7 @@ export function DashboardPage() {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
         <KpiCard label="Total Employees"   value={stats?.totalEmployees ?? 0}          sub="active team"        icon={<UsersRound size={18} color={P} strokeWidth={1.75}/>}        iconBg={PS}       loading={statsLoading} />
         <KpiCard label="App Activated"     value={stats?.appActivatedEmployees ?? 0}   sub={`${activationRate}% of total`} icon={<BadgeCheck size={18} color="#16A34A" strokeWidth={1.75}/>} iconBg="#DCFCE7"  loading={statsLoading} />
-        <KpiCard label="Pending Requests"  value={stats?.pendingSalaryRequests ?? 0}   sub="awaiting approval" icon={<Clock3 size={18} color="#D97706" strokeWidth={1.75}/>}        iconBg="#FEF3C7"  loading={statsLoading} />
+        <KpiCard label="Pending Requests"  value={stats?.pendingLoanApplications ?? 0}   sub="awaiting approval" icon={<Clock3 size={18} color="#D97706" strokeWidth={1.75}/>}        iconBg="#FEF3C7"  loading={statsLoading} />
         <KpiCard label="Settlement Due"    value={formatCurrency(stats?.outstandingAmount ?? 0)} sub="payable to MobPae" icon={<CircleDollarSign size={18} color="#DC2626" strokeWidth={1.75}/>} iconBg="#FEE2E2"  loading={statsLoading} />
       </div>
 
@@ -319,7 +319,7 @@ export function DashboardPage() {
                 <p style={{ fontSize: 12, color: T2, marginTop: 4 }}>Salary advances over last 6 months</p>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 14, flexShrink: 0 }}>
-                {[{ color: P, label: "Requested", solid: true }, { color: "#5B34FF", label: "Approved", solid: false }, { color: "#16A34A", label: "Disbursed", solid: false }].map(({ color, label, solid }) => (
+                {[{ color: P, label: "Requested", solid: true }, { color: "#2048EE", label: "Approved", solid: false }, { color: "#16A34A", label: "Disbursed", solid: false }].map(({ color, label, solid }) => (
                   <span key={label} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: T3 }}>
                     <span style={{ display: "inline-block", width: 16, height: 2, background: solid ? color : "transparent", borderTop: solid ? "none" : `2px dashed ${color}` }} />
                     {label}
@@ -366,9 +366,9 @@ export function DashboardPage() {
           <div style={{ padding: 20 }}>
             <p style={{ fontSize: 15, fontWeight: 600, color: T1, margin: 0 }}>Request split</p>
             <p style={{ fontSize: 12, color: T2, marginTop: 4, marginBottom: 16 }}>This month</p>
-            {statsLoading ? <Sk h={110} /> : <DonutChart approved={stats?.approvedRequests ?? 0} disbursed={stats?.disbursedRequests ?? 0} pending={stats?.pendingSalaryRequests ?? 0} />}
+            {statsLoading ? <Sk h={110} /> : <DonutChart approved={stats?.approvedRequests ?? 0} disbursed={stats?.disbursedRequests ?? 0} pending={stats?.pendingLoanApplications ?? 0} />}
             <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 6 }}>
-              {[{ color: P, label: "Approved", count: stats?.approvedRequests ?? 0 }, { color: "#5B34FF", label: "Disbursed", count: stats?.disbursedRequests ?? 0 }, { color: PS, label: "Pending", count: stats?.pendingSalaryRequests ?? 0 }].map(({ color, label, count }) => (
+              {[{ color: P, label: "Approved", count: stats?.approvedRequests ?? 0 }, { color: "#2048EE", label: "Disbursed", count: stats?.disbursedRequests ?? 0 }, { color: PS, label: "Pending", count: stats?.pendingLoanApplications ?? 0 }].map(({ color, label, count }) => (
                 <div key={label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 12 }}>
                   <span style={{ display: "flex", alignItems: "center", gap: 7, color: T2 }}>
                     <span style={{ width: 8, height: 8, borderRadius: 2, background: color, border: color === PS ? `1px solid #E5E7EB` : "none", flexShrink: 0 }} />
@@ -388,9 +388,9 @@ export function DashboardPage() {
             <div style={{ padding: "16px 20px", borderBottom: BDR, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <div>
                 <p style={{ fontSize: 15, fontWeight: 600, color: T1, margin: 0 }}>Recent activity</p>
-                <p style={{ fontSize: 12, color: T2, marginTop: 4 }}>Latest salary advance requests</p>
+                <p style={{ fontSize: 12, color: T2, marginTop: 4 }}>Latest loan applications</p>
               </div>
-              <Link to="/salary-requests" style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 500, color: P, textDecoration: "none" }}>
+              <Link to="/loan-applications" style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 500, color: P, textDecoration: "none" }}>
                 View all <ArrowRight size={13} />
               </Link>
             </div>
@@ -455,10 +455,10 @@ export function DashboardPage() {
 
         {card(
           <div style={{ padding: 20 }}>
-            <p style={{ fontSize: 11, fontWeight: 600, color: T3, textTransform: "uppercase", letterSpacing: "0.06em", margin: "0 0 16px" }}>Salary Requests</p>
+            <p style={{ fontSize: 11, fontWeight: 600, color: T3, textTransform: "uppercase", letterSpacing: "0.06em", margin: "0 0 16px" }}>Loan Applications</p>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
               {[
-                { label: "Pending",   val: stats?.pendingSalaryRequests ?? 0, color: "#D97706" },
+                { label: "Pending",   val: stats?.pendingLoanApplications ?? 0, color: "#D97706" },
                 { label: "Approved",  val: stats?.approvedRequests ?? 0,      color: P         },
                 { label: "Disbursed", val: stats?.disbursedRequests ?? 0,     color: "#16A34A" },
               ].map(({ label, val, color }) => (

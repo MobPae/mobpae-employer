@@ -57,7 +57,7 @@ export function ResetPasswordPage() {
             </p>
             <button onClick={() => navigate("/login")} style={{
               width: "100%", height: 48, background: `linear-gradient(135deg, ${BD} 0%, ${B} 100%)`,
-              color: "white", borderRadius: 10, border: "none", fontSize: 14, fontWeight: 700,
+              color: "white", borderRadius: 8, border: "none", fontSize: 14, fontWeight: 700,
               cursor: "pointer", boxShadow: "0 4px 16px rgba(118,121,255,0.30)",
             }}>
               Sign in
@@ -77,7 +77,7 @@ export function ResetPasswordPage() {
               ].map(({ label, val, set, show, toggleShow }) => (
                 <div key={label}>
                   <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#333", marginBottom: 8 }}>{label}</label>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, background: "white", border: "1.5px solid #e8e0d8", borderRadius: 10, padding: "11px 14px", transition: "border-color 0.15s" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, background: "white", border: "1.5px solid #e8e0d8", borderRadius: 8, padding: "11px 14px", transition: "border-color 0.15s" }}>
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8D90A3" strokeWidth="2" strokeLinecap="round"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                     <input
                       type={show ? "text" : "password"} value={val} onChange={e => set(e.target.value)}
@@ -102,7 +102,7 @@ export function ResetPasswordPage() {
               <button type="submit" disabled={loading} style={{
                 width: "100%", height: 48, marginTop: 4,
                 background: loading ? "#c4825e" : `linear-gradient(135deg, ${BD} 0%, ${B} 100%)`,
-                color: "white", borderRadius: 10, border: "none", fontSize: 14, fontWeight: 700,
+                color: "white", borderRadius: 8, border: "none", fontSize: 14, fontWeight: 700,
                 display: "flex", alignItems: "center", justifyContent: "center",
                 cursor: loading ? "not-allowed" : "pointer",
                 boxShadow: loading ? "none" : "0 4px 16px rgba(118,121,255,0.30)", transition: "all 0.15s",

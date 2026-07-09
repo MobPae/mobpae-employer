@@ -1,6 +1,6 @@
 export type EmploymentStatus = "ACTIVE" | "INACTIVE";
 
-export type SalaryRequestStatus =
+export type LoanApplicationStatus =
   | "PENDING"
   | "SUBMITTED"
   | "UNDER_REVIEW"
@@ -12,7 +12,12 @@ export type SalaryRequestStatus =
   | "READY_FOR_DISBURSAL"
   | "DISBURSED"
   | "REPAYMENT_SCHEDULED"
-  | "REPAID";
+  | "REPAID"
+  | "CANCELLED"
+  | "EXPIRED";
+
+/** @deprecated Use LoanApplicationStatus */
+export type SalaryRequestStatus = LoanApplicationStatus;
 
 export type RepaymentStatus = "SCHEDULED" | "PENDING" | "PAID" | "OVERDUE";
 
@@ -73,25 +78,28 @@ export interface BulkEmployeeUploadResult {
   errors: BulkEmployeeUploadError[];
 }
 
-export interface SalaryRequest {
+export interface LoanApplication {
   id: string;
-  requestId: string;
+  applicationNumber: string;
   employeeId: string;
   employeeName: string;
   employeeCode: string;
   requestedAmount: number;
-  approvedAmount: number;
-  status: SalaryRequestStatus;
-  createdDate: string;
+  employerApprovedAmount: number;
+  status: LoanApplicationStatus;
+  submittedAt: string;
   purpose: string;
   reviewerNote?: string;
 }
+
+/** @deprecated Use LoanApplication */
+export type SalaryRequest = LoanApplication;
 
 export interface Repayment {
   id: string;
   employeeId: string;
   employeeName: string;
-  salaryRequestId: string;
+  loanApplicationId: string;
   settlementId?: string | null;
   amount: number;
   principalAmount: number;
@@ -142,8 +150,8 @@ export interface DashboardStats {
   totalEmployees: number;
   activeEmployees: number;
   appActivatedEmployees: number;
-  // salaryRequests
-  pendingSalaryRequests: number;
+  // loanApplications
+  pendingLoanApplications: number;
   approvedRequests: number;
   disbursedRequests: number;
   // recoveries
@@ -155,7 +163,7 @@ export interface DashboardStats {
   overdueSettlements: number;
   outstandingAmount: number;
   // recent activity feed
-  recentActivity: SalaryRequest[];
+  recentActivity: LoanApplication[];
 }
 
 export interface DashboardTrend {

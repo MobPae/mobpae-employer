@@ -14,9 +14,8 @@ interface EmployerRepaymentItem {
     employeeCode: string;
     name: string;
   };
-  salaryRequest: {
-    id: string;
-  };
+  loanApplication?: { id: string };
+  salaryRequest?: { id: string }; // backward compat
 }
 
 function mapRepayment(r: EmployerRepaymentItem): Repayment {
@@ -24,7 +23,7 @@ function mapRepayment(r: EmployerRepaymentItem): Repayment {
     id: r.id,
     employeeId: r.employee?.id ?? "",
     employeeName: r.employee?.name ?? "—",
-    salaryRequestId: r.salaryRequest?.id ?? "",
+    loanApplicationId: (r.loanApplication?.id ?? r.salaryRequest?.id) ?? "",
     amount: Number(r.totalAmount) || 0,
     principalAmount: Number(r.principalAmount) || 0,
     interestAmount: Number(r.interestAmount) || 0,

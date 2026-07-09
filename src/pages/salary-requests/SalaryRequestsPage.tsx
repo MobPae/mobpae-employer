@@ -8,7 +8,7 @@ const PAGE_SIZE = 15;
 import { useToast } from "../../hooks/useToast";
 import { getApiErrorMessage, isForbidden } from "../../services/api-errors";
 import { salaryRequestService } from "../../services/salary-request.service";
-import type { SalaryRequest, SalaryRequestStatus } from "../../types";
+import type { LoanApplication, LoanApplicationStatus } from "../../types";
 import { formatCurrency, formatDate } from "../../utils/formatters";
 
 // ── status config ─────────────────────────────────────────────────────────────
@@ -26,6 +26,8 @@ const STATUS_CFG: Record<string, { label: string; bg: string; text: string }> = 
   DISBURSED:           { label: "Disbursed",         bg: "#DCFCE7", text: "#16A34A" },
   REPAYMENT_SCHEDULED: { label: "Repaying",          bg: "#FEF3C7", text: "#D97706" },
   REPAID:              { label: "Repaid",             bg: "#F0FDF4", text: "#166534" },
+  CANCELLED:           { label: "Cancelled",          bg: "#F3F4F6", text: "#6B7280" },
+  EXPIRED:             { label: "Expired",            bg: "#F3F4F6", text: "#6B7280" },
 };
 
 // Employer can only review SUBMITTED requests
@@ -43,7 +45,7 @@ function StatusPill({ status }: { status: string }) {
 
 // ── filter chips ──────────────────────────────────────────────────────────────
 
-const FILTERS: { label: string; value: "ALL" | SalaryRequestStatus }[] = [
+const FILTERS: { label: string; value: "ALL" | LoanApplicationStatus }[] = [
   { label: "All",             value: "ALL"                },
   { label: "Submitted",       value: "SUBMITTED"          },
   { label: "Approved by you",   value: "EMPLOYER_APPROVED"           },
@@ -81,16 +83,15 @@ function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
 
 export function SalaryRequestsPage() {
   const toast = useToast();
-  const [requests,       setRequests]       = useState<SalaryRequest[]>([]);
-  const [loading,        setLoading]        = useState(true);
-  const [loadError,      setLoadError]      = useState<string | null>(null);
-  const [selected,       setSelected]       = useState<SalaryRequest | null>(null);
-  const [query,          setQuery]          = useState("");
-  const [filter,         setFilter]         = useState<"ALL" | SalaryRequestStatus>("ALL");
-  const [page,           setPage]           = useState(1);
-  const [action,         setAction]         = useState<"APPROVE" | "REJECT" | null>(null);
-  const [remarks,        setRemarks]        = useState("");
-  const [approvedAmount, setApprovedAmount] = useState<string>("");
+  const [requests,  setRequests]  = useState<LoanApplication[]>([]);
+  const [loading,   setLoading]   = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [selected,  setSelected]  = useState<LoanApplication | null>(null);
+  const [query,     setQuery]     = useState("");
+  const [filter,    setFilter]    = useState<"ALL" | LoanApplicationStatus>("ALL");
+  const [page,      setPage]      = useState(1);
+  const [action,    setAction]    = useState<"APPROVE" | "REJECT" | null>(null);
+  const [remarks,   setRemarks]   = useState("");
 
   // bulk selection
   const [selectedIds,         setSelectedIds]         = useState<Set<string>>(new Set());
@@ -114,10 +115,10 @@ export function SalaryRequestsPage() {
 
   const filtered = useMemo(() =>
     requests.filter(r => {
-      const q = `${r.requestId} ${r.employeeName} ${r.employeeCode}`.toLowerCase();
+      const q = `${r.applicationNumber} ${r.employeeName} ${r.employeeCode}`.toLowerCase();
       const matchSearch = q.includes(query.toLowerCase());
       const matchStatus = filter === "ALL" || r.status === filter;
-      const created = r.createdDate ? new Date(r.createdDate) : null;
+      const created = r.submittedAt ? new Date(r.submittedAt) : null;
       const matchFrom = !dateFrom || (created !== null && created >= new Date(dateFrom));
       const matchTo   = !dateTo   || (created !== null && created <= new Date(dateTo + "T23:59:59"));
       return matchSearch && matchStatus && matchFrom && matchTo;
@@ -137,18 +138,10 @@ export function SalaryRequestsPage() {
   }, [requests]);
 
   const canReview = selected && REVIEWABLE.has(selected.status);
-  const openRequest = (request: SalaryRequest) => {
+  const openRequest = (request: LoanApplication) => {
     setRemarks("");
-    setApprovedAmount("");
     setSelected(request);
   };
-  const approvedAmountNumber = approvedAmount.trim() ? Number(approvedAmount) : undefined;
-  const approvedAmountError =
-    selected && approvedAmount.trim() && (!Number.isFinite(approvedAmountNumber) || (approvedAmountNumber ?? 0) <= 0)
-      ? "Enter a valid amount."
-      : selected && approvedAmountNumber !== undefined && approvedAmountNumber > selected.requestedAmount
-        ? "Approved amount cannot be more than the requested amount."
-        : "";
 
   // reviewable rows on current page (for select-all)
   const reviewableOnPage = paginated.filter(r => REVIEWABLE.has(r.status));
@@ -181,19 +174,12 @@ export function SalaryRequestsPage() {
   // ── single-request actions ──────────────────────────────────────────────────
   const handleApprove = async () => {
     if (!selected) return;
-    if (approvedAmountError) {
-      toast.error("Check approved amount", approvedAmountError);
-      return;
-    }
     setAction("APPROVE");
     try {
-      const parsedAmount = parseFloat(approvedAmount);
-      const amount = !isNaN(parsedAmount) && parsedAmount > 0 ? parsedAmount : undefined;
-      await salaryRequestService.approveRequest(selected.id, amount);
+      await salaryRequestService.approveRequest(selected.id);
       load();
-      toast.success("Sent for admin review", selected.requestId);
+      toast.success("Sent for admin review", selected.applicationNumber);
       setSelected(null);
-      setApprovedAmount("");
     } catch (err) {
       const msg = isForbidden(err)
         ? "You don't have permission to approve this request."
@@ -208,10 +194,9 @@ export function SalaryRequestsPage() {
     try {
       await salaryRequestService.rejectRequest(selected.id, remarks.trim());
       load();
-      toast.success("Request rejected", selected.requestId);
+      toast.success("Request rejected", selected.applicationNumber);
       setSelected(null);
       setRemarks("");
-      setApprovedAmount("");
     } catch (err) {
       const msg = isForbidden(err)
         ? "You don't have permission to reject this request."
@@ -257,8 +242,8 @@ export function SalaryRequestsPage() {
 
   const hasBulkSelection = selectedIds.size > 0;
 
-  const P  = "#6C4CFF";
-  const PS = "#F3F0FF";
+  const P  = "#315eff";
+  const PS = "#EEF2FF";
   const T1 = "#111827";
   const T2 = "#6B7280";
   const T3 = "#9CA3AF";
@@ -270,12 +255,12 @@ export function SalaryRequestsPage() {
       {/* Page header */}
       <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
         <div>
-          <h1 style={{ fontSize: 24, fontWeight: 700, color: T1, letterSpacing: "-0.025em", margin: 0 }}>Salary Requests</h1>
-          <p style={{ fontSize: 14, color: T2, marginTop: 6 }}>Approve eligible requests and send them to MobPae admin for final review.</p>
+          <h1 style={{ fontSize: 24, fontWeight: 700, color: T1, letterSpacing: "-0.025em", margin: 0 }}>Loan Applications</h1>
+          <p style={{ fontSize: 14, color: T2, marginTop: 6 }}>Approve eligible applications and send them to MobPae admin for final review.</p>
         </div>
         <button
-          onClick={() => exportToCsv(filtered.map(r => ({ RequestID: r.requestId, Employee: r.employeeName, EmployeeCode: r.employeeCode, RequestedAmount: r.requestedAmount, ApprovedAmount: r.approvedAmount ?? "", Status: r.status, Date: r.createdDate ? new Date(r.createdDate).toLocaleDateString() : "" })), `salary-requests-${Date.now()}`)}
-          style={{ height: 36, padding: "0 14px", display: "flex", alignItems: "center", gap: 7, fontSize: 13, fontWeight: 500, color: T2, background: "white", border: BDR, borderRadius: 10, cursor: "pointer", fontFamily: "inherit" }}>
+          onClick={() => exportToCsv(filtered.map(r => ({ ApplicationNumber: r.applicationNumber, Employee: r.employeeName, EmployeeCode: r.employeeCode, RequestedAmount: r.requestedAmount, EmployerApprovedAmount: r.employerApprovedAmount ?? "", Status: r.status, Date: r.submittedAt ? new Date(r.submittedAt).toLocaleDateString() : "" })), `loan-applications-${Date.now()}`)}
+          style={{ height: 36, padding: "0 14px", display: "flex", alignItems: "center", gap: 7, fontSize: 13, fontWeight: 500, color: T2, background: "white", border: BDR, borderRadius: 8, cursor: "pointer", fontFamily: "inherit" }}>
           <Download size={14} />Export CSV
         </button>
       </div>
@@ -285,7 +270,7 @@ export function SalaryRequestsPage() {
         <div style={{ position: "relative", flex: 1, maxWidth: 280 }}>
           <Search size={14} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: T3 }} />
           <input value={query} onChange={e => { setQuery(e.target.value); setPage(1); }} placeholder="Search by name, code, ID…"
-            style={{ width: "100%", height: 38, paddingLeft: 36, paddingRight: 12, fontSize: 13, background: "white", border: BDR, borderRadius: 10, color: T1, outline: "none", fontFamily: "inherit" }}
+            style={{ width: "100%", height: 38, paddingLeft: 36, paddingRight: 12, fontSize: 13, background: "white", border: BDR, borderRadius: 8, color: T1, outline: "none", fontFamily: "inherit" }}
             onFocus={e => (e.target.style.borderColor = P)} onBlur={e => (e.target.style.borderColor = "#E5E7EB")} />
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
@@ -356,7 +341,7 @@ export function SalaryRequestsPage() {
       <div style={{ background: "white", borderRadius: 16, border: BDR, boxShadow: "0 1px 4px rgba(17,24,39,0.04)", overflow: "hidden" }}>
         {loadError ? (
           <div style={{ padding: "48px 0", textAlign: "center" }}>
-            <p style={{ fontSize: 13, fontWeight: 500, color: "#DC2626" }}>Failed to load salary requests</p>
+            <p style={{ fontSize: 13, fontWeight: 500, color: "#DC2626" }}>Failed to load loan applications</p>
             <p style={{ fontSize: 12, color: T2, marginTop: 4 }}>{loadError}</p>
             <button onClick={load} style={{ marginTop: 16, height: 34, padding: "0 16px", fontSize: 12, fontWeight: 500, background: "white", border: BDR, borderRadius: 8, cursor: "pointer", color: T2, fontFamily: "inherit" }}>Retry</button>
           </div>
@@ -397,7 +382,7 @@ export function SalaryRequestsPage() {
                     <input type="checkbox" checked={allPageSelected} onChange={toggleAll} disabled={reviewableOnPage.length === 0}
                       style={{ width: 14, height: 14, accentColor: P, cursor: reviewableOnPage.length === 0 ? "not-allowed" : "pointer", opacity: reviewableOnPage.length === 0 ? 0.3 : 1 }} />
                   </th>
-                  {["Request ID", "Employee", "Requested", "Approved", "Status", "Date", ""].map(h => (
+                  {["Application No.", "Employee", "Requested", "Approved", "Status", "Date", ""].map(h => (
                     <th key={h} style={{ padding: "14px 20px 14px 0", textAlign: "left", fontSize: 11.5, fontWeight: 600, color: T3, textTransform: "uppercase", letterSpacing: "0.07em", whiteSpace: "nowrap" }}>{h}</th>
                   ))}
                 </tr>
@@ -416,17 +401,17 @@ export function SalaryRequestsPage() {
                           <input type="checkbox" checked={isChecked} onChange={() => toggleRow(r.id)} style={{ width: 14, height: 14, accentColor: P, cursor: "pointer" }} />
                         ) : <div style={{ width: 14, height: 14 }} />}
                       </td>
-                      <td style={{ padding: "16px 20px 16px 0", fontWeight: 600, color: T2, fontSize: 13.5, verticalAlign: "middle" }} onClick={() => openRequest(r)}>{r.requestId}</td>
+                      <td style={{ padding: "16px 20px 16px 0", fontWeight: 600, color: T2, fontSize: 13.5, verticalAlign: "middle" }} onClick={() => openRequest(r)}>{r.applicationNumber}</td>
                       <td style={{ padding: "16px 20px 16px 0", verticalAlign: "middle" }} onClick={() => openRequest(r)}>
                         <p style={{ fontSize: 13.5, fontWeight: 500, color: T1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", margin: 0 }}>{r.employeeName}</p>
                         <p style={{ fontSize: 11.5, color: T3, margin: "2px 0 0", fontFamily: "ui-monospace, monospace" }}>{r.employeeCode}</p>
                       </td>
                       <td style={{ padding: "16px 20px 16px 0", fontWeight: 600, color: T1, fontVariantNumeric: "tabular-nums", fontSize: 13.5, verticalAlign: "middle" }} onClick={() => openRequest(r)}>{formatCurrency(r.requestedAmount)}</td>
                       <td style={{ padding: "16px 20px 16px 0", color: T2, fontVariantNumeric: "tabular-nums", fontSize: 13.5, verticalAlign: "middle" }} onClick={() => openRequest(r)}>
-                        {r.approvedAmount ? formatCurrency(r.approvedAmount) : "—"}
+                        {r.employerApprovedAmount ? formatCurrency(r.employerApprovedAmount) : "—"}
                       </td>
                       <td style={{ padding: "16px 20px 16px 0", verticalAlign: "middle" }} onClick={() => openRequest(r)}><StatusPill status={r.status} /></td>
-                      <td style={{ padding: "16px 20px 16px 0", color: T3, fontVariantNumeric: "tabular-nums", fontSize: 13, verticalAlign: "middle" }} onClick={() => openRequest(r)}>{formatDate(r.createdDate)}</td>
+                      <td style={{ padding: "16px 20px 16px 0", color: T3, fontVariantNumeric: "tabular-nums", fontSize: 13, verticalAlign: "middle" }} onClick={() => openRequest(r)}>{formatDate(r.submittedAt)}</td>
                       <td style={{ padding: "16px 20px 16px 0", verticalAlign: "middle" }} onClick={() => openRequest(r)}>
                         <button style={{ height: 30, padding: "0 14px", background: isSelected ? P : PS, color: isSelected ? "white" : P, border: "none", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 4 }}>
                           Review <ChevronRight size={11} />
@@ -442,7 +427,7 @@ export function SalaryRequestsPage() {
         {/* Footer strip */}
         {!loading && filtered.length > 0 && (
           <div style={{ padding: "12px 20px", borderTop: "1px solid #F3F4F6", background: "#FAFAFA", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <p style={{ fontSize: 12, color: T3, margin: 0 }}>{filtered.length} {filtered.length === 1 ? "request" : "requests"}</p>
+            <p style={{ fontSize: 12, color: T3, margin: 0 }}>{filtered.length} {filtered.length === 1 ? "application" : "applications"}</p>
             <Pagination page={safePage} totalPages={totalPages} total={filtered.length} limit={PAGE_SIZE} onPage={setPage} />
           </div>
         )}
@@ -455,7 +440,7 @@ export function SalaryRequestsPage() {
             <div style={{ padding: "18px 20px 16px", borderBottom: BDR, display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                  <span style={{ fontSize: 11, fontWeight: 600, color: T3, textTransform: "uppercase", letterSpacing: "0.07em" }}>{selected.requestId}</span>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: T3, textTransform: "uppercase", letterSpacing: "0.07em" }}>{selected.applicationNumber}</span>
                   <StatusPill status={selected.status} />
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -475,7 +460,7 @@ export function SalaryRequestsPage() {
 
             <div style={{ flex: 1, overflowY: "auto", padding: "16px 20px", display: "flex", flexDirection: "column", gap: 16 }}>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                {[{ label: "Requested", val: formatCurrency(selected.requestedAmount) }, { label: "Approved", val: selected.approvedAmount ? formatCurrency(selected.approvedAmount) : "—" }].map(({ label, val }) => (
+                {[{ label: "Requested", val: formatCurrency(selected.requestedAmount) }, { label: "Employer Approved", val: selected.employerApprovedAmount ? formatCurrency(selected.employerApprovedAmount) : "—" }].map(({ label, val }) => (
                   <div key={label} style={{ background: "#F9FAFB", border: BDR, borderRadius: 12, padding: 14 }}>
                     <p style={{ fontSize: 11, color: T3, marginBottom: 4 }}>{label}</p>
                     <p style={{ fontSize: 18, fontWeight: 700, color: T1, fontVariantNumeric: "tabular-nums" }}>{val}</p>
@@ -483,7 +468,7 @@ export function SalaryRequestsPage() {
                 ))}
               </div>
 
-              <div style={{ background: "#F3F0FF", border: "1px solid #E5E7EB", borderRadius: 12, padding: 14, display: "flex", gap: 10 }}>
+              <div style={{ background: "#EEF2FF", border: "1px solid #E5E7EB", borderRadius: 12, padding: 14, display: "flex", gap: 10 }}>
                 <ShieldCheck size={16} color={P} style={{ flexShrink: 0, marginTop: 1 }} />
                 <div>
                   <p style={{ fontSize: 12, fontWeight: 700, color: T1, margin: 0 }}>Employer review context</p>
@@ -495,29 +480,13 @@ export function SalaryRequestsPage() {
 
               <div style={{ background: "white", border: BDR, borderRadius: 12, padding: "2px 16px" }}>
                 <InfoRow label="Purpose" value={selected.purpose || "—"} />
-                <InfoRow label="Created" value={formatDate(selected.createdDate)} />
+                <InfoRow label="Submitted" value={formatDate(selected.submittedAt)} />
                 {selected.reviewerNote && <InfoRow label="Reviewer note" value={selected.reviewerNote} />}
               </div>
 
               {canReview && (
                 <div style={{ background: "#FFFBEB", border: "1px solid #FDE68A", borderRadius: 12, padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
-                  <p style={{ fontSize: 12, fontWeight: 600, color: "#D97706", margin: 0 }}>Review this request</p>
-                  <div>
-                    <label style={{ display: "block", fontSize: 11, fontWeight: 500, color: T2, marginBottom: 6 }}>
-                      Approved amount <span style={{ fontWeight: 400, color: T3 }}>(leave blank for full amount)</span>
-                    </label>
-                    <div style={{ position: "relative" }}>
-                      <span style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", fontSize: 12, color: T3 }}>₹</span>
-                      <input type="number" min={1} value={approvedAmount} onChange={e => setApprovedAmount(e.target.value)} placeholder={String(selected.requestedAmount ?? "")}
-                        style={{ width: "100%", paddingLeft: 24, paddingRight: 12, height: 36, fontSize: 12, background: "white", border: approvedAmountError ? "1px solid #FCA5A5" : BDR, borderRadius: 8, color: T1, outline: "none", fontFamily: "inherit" }}
-                        onFocus={e => (e.target.style.borderColor = P)} onBlur={e => (e.target.style.borderColor = "#E5E7EB")} />
-                    </div>
-                    {approvedAmountError ? (
-                      <p style={{ fontSize: 11, color: "#DC2626", marginTop: 5 }}>{approvedAmountError}</p>
-                    ) : (
-                      <p style={{ fontSize: 11, color: T3, marginTop: 5 }}>Maximum allowed here is {formatCurrency(selected.requestedAmount)}.</p>
-                    )}
-                  </div>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: "#D97706", margin: 0 }}>Review this application</p>
                   <div>
                     <label style={{ display: "block", fontSize: 11, fontWeight: 500, color: T2, marginBottom: 6 }}>Rejection remarks (required to reject)</label>
                     <textarea value={remarks} onChange={e => setRemarks(e.target.value)} placeholder="Employee not eligible…" rows={3}
@@ -525,8 +494,8 @@ export function SalaryRequestsPage() {
                       onFocus={e => (e.target.style.borderColor = P)} onBlur={e => (e.target.style.borderColor = "#E5E7EB")} />
                   </div>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                    <button onClick={handleApprove} disabled={Boolean(action) || Boolean(approvedAmountError)}
-                      style={{ height: 36, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, borderRadius: 8, background: P, color: "white", border: "none", fontSize: 12, fontWeight: 600, cursor: Boolean(action) || Boolean(approvedAmountError) ? "not-allowed" : "pointer", opacity: Boolean(action) || Boolean(approvedAmountError) ? 0.5 : 1, fontFamily: "inherit" }}>
+                    <button onClick={handleApprove} disabled={Boolean(action)}
+                      style={{ height: 36, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, borderRadius: 8, background: P, color: "white", border: "none", fontSize: 12, fontWeight: 600, cursor: Boolean(action) ? "not-allowed" : "pointer", opacity: Boolean(action) ? 0.5 : 1, fontFamily: "inherit" }}>
                       <Check size={13} />{action === "APPROVE" ? "Approving…" : "Approve for review"}
                     </button>
                     <button onClick={handleReject} disabled={Boolean(action) || !remarks.trim()}
@@ -544,9 +513,9 @@ export function SalaryRequestsPage() {
       <ConfirmModal
         open={confirmBulkApprove}
         title={`Approve ${selectedIds.size} request${selectedIds.size !== 1 ? "s" : ""}?`}
-        description={`This will approve ${selectedIds.size} submitted salary advance request${selectedIds.size !== 1 ? "s" : ""} on behalf of your company. MobPae admin will still complete final review and disbursal.`}
+        description={`This will approve ${selectedIds.size} submitted loan application${selectedIds.size !== 1 ? "s" : ""} on behalf of your company. MobPae admin will still complete final review and disbursal.`}
         confirmLabel={`Approve ${selectedIds.size}`}
-        confirmClass="bg-[#6C4CFF] hover:bg-[#5B34FF] text-white"
+        confirmClass="bg-[#315eff] hover:bg-[#2048EE] text-white"
         loading={bulkLoading}
         onConfirm={() => { setConfirmBulkApprove(false); void handleBulkApprove(); }}
         onCancel={() => setConfirmBulkApprove(false)}

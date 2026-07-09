@@ -10,7 +10,7 @@ type FilterValue = "ALL" | "SCHEDULED" | "PAID" | "OVERDUE" | "PENDING";
 
 // ── constants ─────────────────────────────────────────────────────────────────
 
-const P    = "#6C4CFF";
+const P    = "#315eff";
 const T1   = "#111827";
 const T2   = "#6B7280";
 const T3   = "#9CA3AF";
@@ -106,7 +106,7 @@ export function RepaymentsPage() {
       rows = rows.filter(r =>
         r.employeeName.toLowerCase().includes(q) ||
         r.employeeCode.toLowerCase().includes(q) ||
-        r.salaryRequestId.toLowerCase().includes(q),
+        r.loanApplicationId.toLowerCase().includes(q),
       );
     }
     return rows;
@@ -158,7 +158,7 @@ export function RepaymentsPage() {
                 style={{
                   height: 32, padding: "0 14px", borderRadius: 8,
                   border: filter === f.value ? `1.5px solid ${P}` : "1.5px solid #E5E7EB",
-                  background: filter === f.value ? "#F3F0FF" : "white",
+                  background: filter === f.value ? "#EEF2FF" : "white",
                   color: filter === f.value ? P : T2,
                   fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
                   transition: "all 0.15s",
@@ -238,7 +238,7 @@ export function RepaymentsPage() {
                     </td>
                     {/* SR ID */}
                     <td style={{ padding: "14px 16px", verticalAlign: "middle", fontSize: 12, color: T2, fontFamily: "ui-monospace, monospace" }}>
-                      {r.salaryRequestId.slice(0, 8)}…
+                      {r.loanApplicationId.slice(0, 8)}…
                     </td>
                     {/* Principal */}
                     <td style={{ padding: "14px 16px", verticalAlign: "middle", fontSize: 13, fontWeight: 500, color: T1, fontVariantNumeric: "tabular-nums" }}>

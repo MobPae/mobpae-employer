@@ -1,12 +1,12 @@
-import { Building2, CheckCircle2, Lock, Mail, Phone, Save, User } from "lucide-react";
+import { Building2, CheckCircle2, Lock, Mail, Phone, Save, User, Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useToast } from "../../hooks/useToast";
 import { getApiErrorMessage } from "../../services/api-errors";
-import { employerService } from "../../services/employer.service";
+import { employerService, type EmployerProductConfig } from "../../services/employer.service";
 import type { EmployerProfile } from "../../types";
 
-const P  = "#6C4CFF";
-const PS = "#F3F0FF";
+const P  = "#315eff";
+const PS = "#EEF2FF";
 const T1 = "#111827";
 const T2 = "#6B7280";
 const T3 = "#9CA3AF";
@@ -69,14 +69,24 @@ function card(style?: React.CSSProperties): React.CSSProperties {
 
 export function SettingsPage() {
   const toast = useToast();
-  const [profile, setProfile] = useState<EmployerProfile>(FALLBACK);
-  const [saving,  setSaving]  = useState(false);
-  const [saved,   setSaved]   = useState(false);
+  const [profile, setProfile]           = useState<EmployerProfile>(FALLBACK);
+  const [saving,  setSaving]            = useState(false);
+  const [saved,   setSaved]             = useState(false);
+  const [productConfig, setProductConfig] = useState<EmployerProductConfig | null>(null);
+  const [overrideInput, setOverrideInput] = useState<string>("");
+  const [savingOverride, setSavingOverride] = useState(false);
 
   useEffect(() => {
     employerService.getEmployerProfile()
       .then(setProfile)
       .catch(err => toast.error("Failed to load profile", getApiErrorMessage(err)));
+    employerService.getMyProductConfigs()
+      .then(configs => {
+        const sa = configs.find(c => c.product.productType === "SA") ?? null;
+        setProductConfig(sa);
+        setOverrideInput(sa?.maximumAdvanceAmountOverride != null ? String(sa.maximumAdvanceAmountOverride) : "");
+      })
+      .catch(() => {}); // non-critical, silently ignore
   }, []);
 
   const set = <K extends keyof EmployerProfile>(k: K, v: EmployerProfile[K]) => {
@@ -99,6 +109,22 @@ export function SettingsPage() {
     } catch (err) {
       toast.error("Save failed", getApiErrorMessage(err));
     } finally { setSaving(false); }
+  };
+
+  const handleSaveOverride = async () => {
+    const amount = overrideInput.trim() === "" ? null : parseInt(overrideInput, 10);
+    if (amount !== null && (isNaN(amount) || amount < 1000)) {
+      toast.error("Invalid amount", "Minimum advance override is ₹1,000");
+      return;
+    }
+    setSavingOverride(true);
+    try {
+      const updated = await employerService.setAdvanceOverride("SA", amount);
+      setProductConfig(updated);
+      toast.success("Advance limit updated");
+    } catch (err) {
+      toast.error("Save failed", getApiErrorMessage(err));
+    } finally { setSavingOverride(false); }
   };
 
   return (
@@ -170,7 +196,7 @@ export function SettingsPage() {
                 height: 36, padding: "0 16px", display: "flex", alignItems: "center", gap: 6,
                 borderRadius: 8, background: P, border: "none", color: "white",
                 fontSize: 12, fontWeight: 600, cursor: saving ? "not-allowed" : "pointer",
-                opacity: saving ? 0.6 : 1, boxShadow: "0 4px 14px rgba(108,76,255,0.25)",
+                opacity: saving ? 0.6 : 1, boxShadow: "0 4px 14px rgba(49,94,255,0.25)",
                 transition: "opacity 0.15s",
               }}
             >
@@ -184,6 +210,75 @@ export function SettingsPage() {
             )}
           </div>
         </form>
+      </div>
+
+      {/* Salary advance limit */}
+      <div style={card()}>
+        <div style={{ padding: "16px 20px", borderBottom: BDR }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <Wallet size={14} color={P} />
+            <p style={{ fontSize: 13, fontWeight: 600, color: T1 }}>Salary advance limit</p>
+          </div>
+          <p style={{ fontSize: 12, color: T2, marginTop: 2 }}>
+            Set a custom advance cap for your employees. Leave blank to use the platform default
+            (min of 10% of salary or ₹5,000). The hard ceiling of 50% of salary still applies.
+          </p>
+        </div>
+        <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 16 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, alignItems: "end" }}>
+            <Field label="Max advance amount (₹)" icon={<Wallet size={11} />}>
+              <div style={{ position: "relative" }}>
+                <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", fontSize: 12, color: T3, pointerEvents: "none" }}>₹</span>
+                <input
+                  type="number"
+                  min={1000}
+                  step={500}
+                  value={overrideInput}
+                  onChange={e => setOverrideInput(e.target.value)}
+                  placeholder="e.g. 7000 (blank = platform default)"
+                  style={{ ...inputBase, paddingLeft: 22 }}
+                />
+              </div>
+            </Field>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, paddingBottom: 0 }}>
+              <button
+                type="button"
+                onClick={handleSaveOverride}
+                disabled={savingOverride}
+                style={{
+                  height: 36, padding: "0 16px", display: "flex", alignItems: "center", gap: 6,
+                  borderRadius: 8, background: P, border: "none", color: "white",
+                  fontSize: 12, fontWeight: 600, cursor: savingOverride ? "not-allowed" : "pointer",
+                  opacity: savingOverride ? 0.6 : 1, boxShadow: "0 4px 14px rgba(49,94,255,0.25)",
+                }}
+              >
+                <Save size={13} />
+                {savingOverride ? "Saving…" : "Save limit"}
+              </button>
+              {overrideInput !== "" && (
+                <button
+                  type="button"
+                  onClick={() => { setOverrideInput(""); }}
+                  style={{ height: 36, padding: "0 12px", borderRadius: 8, background: "white", border: BDR, color: T2, fontSize: 12, cursor: "pointer" }}
+                >
+                  Clear (use default)
+                </button>
+              )}
+            </div>
+          </div>
+          {productConfig && (
+            <div style={{ background: "#F9FAFB", border: BDR, borderRadius: 8, padding: "10px 14px" }}>
+              <p style={{ fontSize: 11.5, color: T2, margin: 0 }}>
+                Current override:&nbsp;
+                <strong style={{ color: T1 }}>
+                  {productConfig.maximumAdvanceAmountOverride != null
+                    ? `₹${productConfig.maximumAdvanceAmountOverride.toLocaleString("en-IN")}`
+                    : "Platform default (min of 10% salary or ₹5,000)"}
+                </strong>
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

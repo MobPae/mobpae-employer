@@ -6,13 +6,13 @@ import type {
   EmployerProfile,
   EmployerSettlement,
   EmploymentStatus,
+  LoanApplication,
+  LoanApplicationStatus,
   PayrollSummary,
   Repayment,
   RepaymentStatus,
   BulkEmployeeUploadError,
   BulkEmployeeUploadResult,
-  SalaryRequest,
-  SalaryRequestStatus,
   SettlementStatus,
   SettlementSummary,
   UserRole
@@ -62,10 +62,10 @@ const boolValue = (value: unknown, fallback = false) => {
 const normalizeEmploymentStatus = (value: unknown): EmploymentStatus =>
   ["INACTIVE", "DISABLED", "TERMINATED", "FALSE"].includes(String(value ?? "ACTIVE").toUpperCase()) ? "INACTIVE" : "ACTIVE";
 
-const normalizeSalaryRequestStatus = (value: unknown): SalaryRequestStatus => {
+const normalizeLoanApplicationStatus = (value: unknown): LoanApplicationStatus => {
   const normalized = String(value ?? "SUBMITTED").toUpperCase();
-  const allowed: SalaryRequestStatus[] = ["PENDING", "SUBMITTED", "UNDER_REVIEW", "EMPLOYER_APPROVED", "EMPLOYER_REJECTED", "AWAITING_MEMBERSHIP_PAYMENT", "APPROVED", "REJECTED", "READY_FOR_DISBURSAL", "DISBURSED", "REPAYMENT_SCHEDULED", "REPAID"];
-  return allowed.includes(normalized as SalaryRequestStatus) ? (normalized as SalaryRequestStatus) : "SUBMITTED";
+  const allowed: LoanApplicationStatus[] = ["PENDING", "SUBMITTED", "UNDER_REVIEW", "EMPLOYER_APPROVED", "EMPLOYER_REJECTED", "AWAITING_MEMBERSHIP_PAYMENT", "APPROVED", "REJECTED", "READY_FOR_DISBURSAL", "DISBURSED", "REPAYMENT_SCHEDULED", "REPAID", "CANCELLED", "EXPIRED"];
+  return allowed.includes(normalized as LoanApplicationStatus) ? (normalized as LoanApplicationStatus) : "SUBMITTED";
 };
 
 const normalizeRepaymentStatus = (value: unknown): RepaymentStatus => {
@@ -151,34 +151,37 @@ export const mapBulkEmployeeUploadResult = (value: unknown): BulkEmployeeUploadR
   };
 };
 
-export const mapSalaryRequest = (value: unknown): SalaryRequest => {
+export const mapLoanApplication = (value: unknown): LoanApplication => {
   const record = asRecord(value);
   const employee = asRecord(record.employee);
   const requestedAmount = numberValue(record.requestedAmount ?? record.amount);
-  const status = normalizeSalaryRequestStatus(record.status);
-  const approvedAmount = numberValue(
-    record.approvedAmount ?? record.approved_amount,
-    ["APPROVED", "DISBURSED", "REPAID"].includes(status) ? requestedAmount : 0
+  const status = normalizeLoanApplicationStatus(record.status);
+  const employerApprovedAmount = numberValue(
+    record.employerApprovedAmount ?? record.approvedAmount ?? record.approved_amount,
+    ["EMPLOYER_APPROVED", "APPROVED", "DISBURSED", "REPAID"].includes(status) ? requestedAmount : 0
   );
 
   return {
     id: text(record.id ?? record._id, ""),
-    requestId: text(record.requestId ?? record.referenceId ?? record.id, ""),
+    applicationNumber: text(record.applicationNumber ?? record.requestId ?? record.referenceId ?? record.id, ""),
     employeeId: text(record.employeeId ?? employee.id, ""),
     employeeName: text(record.employeeName ?? employee.name ?? employee.fullName, "Employee"),
     employeeCode: text(record.employeeCode ?? employee.employeeCode, ""),
     requestedAmount,
-    approvedAmount,
+    employerApprovedAmount,
     status,
-    createdDate: text(record.createdDate ?? record.requestedAt ?? record.createdAt, new Date().toISOString()),
+    submittedAt: text(record.submittedAt ?? record.requestedAt ?? record.createdDate ?? record.createdAt, new Date().toISOString()),
     purpose: text(record.purpose ?? record.reason, "Salary advance"),
     reviewerNote: text(record.reviewerNote ?? record.reviewNote)
   };
 };
 
+/** @deprecated Use mapLoanApplication */
+export const mapSalaryRequest = mapLoanApplication;
+
 export const mapRepayment = (value: unknown): Repayment => {
   const record = asRecord(value);
-  const request = asRecord(record.salaryRequest ?? record.request);
+  const request = asRecord(record.loanApplication ?? record.salaryRequest ?? record.request);
   const employee = asRecord(record.employeeDetails ?? record.employee ?? request.employee);
   const principalAmount = numberValue(record.principalAmount ?? record.amount ?? record.recoveryAmount);
   const interestAmount = numberValue(record.interestAmount);
@@ -188,7 +191,7 @@ export const mapRepayment = (value: unknown): Repayment => {
     id: text(record.id ?? record._id, ""),
     employeeId: text(record.employeeId ?? employee.id, ""),
     employeeName: text(record.employeeName ?? employee.name ?? employee.fullName, "Employee"),
-    salaryRequestId: text(record.salaryRequestId ?? record.salaryRequestCode ?? request.requestId ?? request.id, ""),
+    loanApplicationId: text(record.loanApplicationId ?? record.salaryRequestId ?? record.salaryRequestCode ?? request.applicationNumber ?? request.requestId ?? request.id, ""),
     settlementId: typeof record.settlementId === "string" ? record.settlementId : null,
     amount: totalAmount,
     principalAmount,
@@ -233,19 +236,21 @@ export const mapDashboardStats = (value: unknown): Partial<DashboardStats> => {
   const recoveries = asRecord(record.recoveries);
   const settlements = asRecord(record.settlements);
 
-  // recentActivity takes priority; fall back to recentSalaryRequests for older responses
+  // recentActivity takes priority; fall back to recentLoanApplications / recentSalaryRequests for older responses
   const activityRaw = Array.isArray(record.recentActivity)
     ? record.recentActivity
-    : Array.isArray(record.recentSalaryRequests)
-      ? record.recentSalaryRequests
-      : [];
+    : Array.isArray(record.recentLoanApplications)
+      ? record.recentLoanApplications
+      : Array.isArray(record.recentSalaryRequests)
+        ? record.recentSalaryRequests
+        : [];
 
   return {
     totalEmployees:        numberValue(employees.total        ?? record.totalEmployees    ?? record.employeeCount),
     activeEmployees:       numberValue(employees.active       ?? record.activeEmployees),
     appActivatedEmployees: numberValue(employees.appActivated ?? record.appActivatedEmployees ?? record.activatedEmployees),
 
-    pendingSalaryRequests: numberValue(salaryReqs.pending  ?? record.pendingSalaryRequests ?? record.pendingRequests),
+    pendingLoanApplications: numberValue(salaryReqs.pending  ?? record.pendingLoanApplications ?? record.pendingSalaryRequests ?? record.pendingRequests),
     approvedRequests:      numberValue(salaryReqs.approved ?? record.approvedRequests),
     disbursedRequests:     numberValue(salaryReqs.disbursed ?? record.disbursedRequests ?? 0),
 
@@ -257,7 +262,7 @@ export const mapDashboardStats = (value: unknown): Partial<DashboardStats> => {
     overdueSettlements:    numberValue(settlements.overdue           ?? record.overdueSettlements  ?? 0),
     outstandingAmount:     numberValue(settlements.outstandingAmount ?? record.outstandingAmount   ?? record.totalOutstandingAmount),
 
-    recentActivity: (activityRaw as unknown[]).map(mapSalaryRequest),
+    recentActivity: (activityRaw as unknown[]).map(mapLoanApplication),
   };
 };
 

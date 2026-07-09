@@ -10,35 +10,35 @@ input:-webkit-autofill:focus {
 }
 
 @theme inline {
-  --font-sans:    "Inter", ui-sans-serif, -apple-system, system-ui, sans-serif;
-  --font-display: "Inter", ui-sans-serif, -apple-system, system-ui, sans-serif;
-  --font-serif:   "Inter", ui-sans-serif, -apple-system, system-ui, sans-serif;
+  --font-sans:    "Tasa Orbiter Display", "TASA Orbiter Display Medium", sans-serif;
+  --font-display: "Tasa Orbiter Display", "TASA Orbiter Display Medium", sans-serif;
+  --font-serif:   "Tasa Orbiter Display", "TASA Orbiter Display Medium", sans-serif;
 
   /* Remap Tailwind blue-* → MobPae brand palette (matches admin) */
-  --color-blue-50:  #F3F0FF;
-  --color-blue-100: #E9E5FF;
-  --color-blue-200: #D4CCFF;
-  --color-blue-300: #A89CFF;
-  --color-blue-400: #6C4CFF;
-  --color-blue-500: #5B34FF;
-  --color-blue-600: #4A24EE;
-  --color-blue-700: #3B18D4;
-  --color-blue-800: #2D12A8;
-  --color-blue-900: #1E0B7A;
-  --color-blue-950: #11064F;
+  --color-blue-50:  #EEF2FF;
+  --color-blue-100: #E0E7FF;
+  --color-blue-200: #C7D2FE;
+  --color-blue-300: #A5B4FC;
+  --color-blue-400: #315EFF;
+  --color-blue-500: #2048EE;
+  --color-blue-600: #1A3CD4;
+  --color-blue-700: #152DB0;
+  --color-blue-800: #11238C;
+  --color-blue-900: #0C1A68;
+  --color-blue-950: #080F44;
 }
 
 /* ── MobPae Design System — Employer Portal ─────────────────────── */
 :root {
   /* Brand (aligned with admin) */
-  --brand-primary:       #6C4CFF;
-  --brand-primary-dark:  #5B34FF;
-  --brand-primary-soft:  #F3F0FF;
+  --brand-primary:       #315eff;
+  --brand-primary-dark:  #2048EE;
+  --brand-primary-soft:  #EEF2FF;
 
   /* Legacy aliases */
-  --primary:        #6C4CFF;
-  --primary-dark:   #5B34FF;
-  --primary-light:  #F3F0FF;
+  --primary:        #315eff;
+  --primary-dark:   #2048EE;
+  --primary-light:  #EEF2FF;
 
   /* Surface */
   --background:     #F9FAFB;
@@ -51,7 +51,7 @@ input:-webkit-autofill:focus {
   --text-muted:     #9CA3AF;
   --text-disabled:  #D1D5DB;
   --text-on-brand:  #FFFFFF;
-  --text-link:      #6C4CFF;
+  --text-link:      #315eff;
   --text-success:   #16A34A;
   --text-warning:   #D97706;
   --text-error:     #DC2626;
@@ -61,7 +61,7 @@ input:-webkit-autofill:focus {
   --warning:        #D97706;
   --error:          #DC2626;
 
-  font-family: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: "Tasa Orbiter Display", "TASA Orbiter Display Medium", sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;

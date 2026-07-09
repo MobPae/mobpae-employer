@@ -45,7 +45,7 @@ function StatCard({ label, value, icon, iconBg, iconColor, sub }: {
     <div style={{ background: "white", border: "1px solid #E5E7EB", borderRadius: 16, padding: 16, display: "flex", flexDirection: "column", gap: 12, boxShadow: "0 1px 4px rgba(17,24,39,0.04)" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <span style={{ fontSize: 12, fontWeight: 500, color: "#6B7280" }}>{label}</span>
-        <div style={{ width: 32, height: 32, borderRadius: 10, background: iconBg, display: "flex", alignItems: "center", justifyContent: "center", color: iconColor, flexShrink: 0 }}>{icon}</div>
+        <div style={{ width: 32, height: 32, borderRadius: 8, background: iconBg, display: "flex", alignItems: "center", justifyContent: "center", color: iconColor, flexShrink: 0 }}>{icon}</div>
       </div>
       <div>
         <p style={{ fontSize: 20, fontWeight: 700, color: "#111827", letterSpacing: "-0.02em", lineHeight: 1 }}>{value}</p>
@@ -81,7 +81,7 @@ export function RecoveriesPage() {
 
   const filtered = useMemo(() =>
     recoveries.filter(r => {
-      const q = `${r.employeeName} ${r.salaryRequestId}`.toLowerCase();
+      const q = `${r.employeeName} ${r.loanApplicationId}`.toLowerCase();
       const ns = normaliseStatus(r.status);
       return q.includes(query.toLowerCase()) && (filter === "ALL" || ns === filter);
     }),
@@ -112,9 +112,9 @@ export function RecoveriesPage() {
       </div>
 
       {/* Info banner */}
-      <div className="bg-[#F3F0FF]/60 border border-[#E5E7EB] rounded-xl px-4 py-3 flex items-start gap-3">
-        <ArrowDownCircle size={15} className="text-[#6C4CFF] mt-0.5 flex-shrink-0" />
-        <p className="text-[12px] text-[#5B34FF] leading-relaxed">
+      <div className="bg-[#EEF2FF]/60 border border-[#E5E7EB] rounded-xl px-4 py-3 flex items-start gap-3">
+        <ArrowDownCircle size={15} className="text-[#315eff] mt-0.5 flex-shrink-0" />
+        <p className="text-[12px] text-[#2048EE] leading-relaxed">
           Recoveries are grouped into a settlement after your cutoff and salary date. They move to Recovered only after MobPae confirms the settlement payment.
         </p>
       </div>
@@ -138,7 +138,7 @@ export function RecoveriesPage() {
           label="Recovered"
           value={formatCurrency(totalRecovered)}
           icon={<CircleDollarSign size={14} />}
-          iconBg="bg-[#F3F0FF]" iconColor="text-[#6C4CFF]"
+          iconBg="bg-[#EEF2FF]" iconColor="text-[#315eff]"
           sub="this cycle"
         />
         <StatCard
@@ -158,7 +158,7 @@ export function RecoveriesPage() {
             value={query}
             onChange={e => setQuery(e.target.value)}
             placeholder="Search employee or request…"
-            className="w-full h-9 pl-8 pr-3 text-[13px] bg-white border border-[#E5E7EB] rounded-lg focus:outline-none focus:border-[#6C4CFF] focus:ring-2 focus:ring-[#6C4CFF]/10 transition placeholder-[#B7B9C7] text-[#111827]"
+            className="w-full h-9 pl-8 pr-3 text-[13px] bg-white border border-[#E5E7EB] rounded-lg focus:outline-none focus:border-[#315eff] focus:ring-2 focus:ring-[#315eff]/10 transition placeholder-[#B7B9C7] text-[#111827]"
           />
         </div>
       </div>
@@ -222,20 +222,20 @@ export function RecoveriesPage() {
               </thead>
               <tbody>
                 {filtered.map((r, i) => {
-                  const ac = ["#6C4CFF","#10B981","#F59E0B","#EF4444","#3B82F6","#EC4899"][i % 6];
+                  const ac = ["#315eff","#10B981","#F59E0B","#EF4444","#3B82F6","#EC4899"][i % 6];
                   return (
                     <tr key={r.id} style={{ borderBottom: "1px solid #F9FAFB", transition: "background 0.1s" }}
                       onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = "#FAFAFC"}
                       onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = "transparent"}>
                       <td style={{ padding: "16px 20px", verticalAlign: "middle" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                          <div style={{ width: 36, height: 36, borderRadius: 10, background: ac, color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 700, flexShrink: 0 }}>
+                          <div style={{ width: 36, height: 36, borderRadius: 8, background: ac, color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 700, flexShrink: 0 }}>
                             {r.employeeName.charAt(0).toUpperCase()}
                           </div>
                           <span style={{ fontSize: 13.5, fontWeight: 600, color: "#111827" }}>{r.employeeName}</span>
                         </div>
                       </td>
-                      <td style={{ padding: "16px 20px", fontSize: 13, color: "#6B7280", fontFamily: "ui-monospace, monospace", verticalAlign: "middle" }}>{r.salaryRequestId}</td>
+                      <td style={{ padding: "16px 20px", fontSize: 13, color: "#6B7280", fontFamily: "ui-monospace, monospace", verticalAlign: "middle" }}>{r.loanApplicationId}</td>
                       <td style={{ padding: "16px 20px", fontSize: 13.5, color: "#6B7280", fontVariantNumeric: "tabular-nums", verticalAlign: "middle" }}>{formatCurrency(r.principalAmount)}</td>
                       <td style={{ padding: "16px 20px", fontSize: 13.5, color: "#6B7280", fontVariantNumeric: "tabular-nums", verticalAlign: "middle" }}>{formatCurrency(r.interestAmount)}</td>
                       <td style={{ padding: "16px 20px", fontSize: 13.5, fontWeight: 600, color: "#111827", fontVariantNumeric: "tabular-nums", verticalAlign: "middle" }}>{formatCurrency(r.totalAmount)}</td>
@@ -244,7 +244,7 @@ export function RecoveriesPage() {
                       </td>
                       <td style={{ padding: "16px 20px", verticalAlign: "middle" }}>
                         {r.settlementId ? (
-                          <span style={{ display: "inline-flex", alignItems: "center", height: 24, padding: "0 9px", borderRadius: 999, background: "#F3F0FF", color: "#5B34FF", fontSize: 11, fontWeight: 600 }}>
+                          <span style={{ display: "inline-flex", alignItems: "center", height: 24, padding: "0 9px", borderRadius: 999, background: "#EEF2FF", color: "#2048EE", fontSize: 11, fontWeight: 600 }}>
                             In settlement
                           </span>
                         ) : (

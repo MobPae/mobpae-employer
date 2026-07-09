@@ -74,9 +74,9 @@ function SummaryCard({ label, value, icon, iconBg, iconColor, highlight, sub }: 
   return (
     <div style={{
       borderRadius: 16, padding: 16, display: "flex", flexDirection: "column", gap: 12,
-      background: highlight ? "#6C4CFF" : "white",
-      border: highlight ? "1px solid #5B34FF" : "1px solid #E5E7EB",
-      boxShadow: highlight ? "0 4px 14px rgba(108,76,255,0.25)" : "0 1px 4px rgba(17,24,39,0.04)"
+      background: highlight ? "#315eff" : "white",
+      border: highlight ? "1px solid #2048EE" : "1px solid #E5E7EB",
+      boxShadow: highlight ? "0 4px 14px rgba(49,94,255,0.25)" : "0 1px 4px rgba(17,24,39,0.04)"
     }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <span style={{ fontSize: 12, fontWeight: 500, color: highlight ? "rgba(255,255,255,0.6)" : "#6B7280" }}>{label}</span>
@@ -105,8 +105,8 @@ function Timeline({ settlement }: { settlement: EmployerSettlement }) {
       {steps.map((step, i) => (
         <div key={step.label} className="flex gap-3">
           <div className="flex flex-col items-center">
-            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] flex-shrink-0 border-2 ${step.done ? "border-[#6C4CFF] bg-[#F3F0FF]" : "border-[#E5E7EB] bg-white"}`}>
-              {step.done ? <CheckCircle2 size={12} className="text-[#6C4CFF]" /> : <span className="w-2 h-2 rounded-full bg-[#D4D5E0]" />}
+            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] flex-shrink-0 border-2 ${step.done ? "border-[#315eff] bg-[#EEF2FF]" : "border-[#E5E7EB] bg-white"}`}>
+              {step.done ? <CheckCircle2 size={12} className="text-[#315eff]" /> : <span className="w-2 h-2 rounded-full bg-[#D4D5E0]" />}
             </div>
             {i < steps.length - 1 && <div className={`w-px flex-1 my-1 ${step.done ? "bg-[#C8C9FF]" : "bg-[#F3F4F6]"}`} style={{ minHeight: 20 }} />}
           </div>
@@ -237,7 +237,7 @@ export function SettlementsPage() {
           label="Paid Settlements"
           value={summary?.paidSettlements ?? 0}
           icon={<CheckCircle2 size={14} />}
-          iconBg="bg-[#F3F0FF]" iconColor="text-[#6C4CFF]"
+          iconBg="bg-[#EEF2FF]" iconColor="text-[#315eff]"
           sub="settled with MobPae"
         />
       </div>
@@ -271,7 +271,7 @@ export function SettlementsPage() {
               </p>
             </div>
             {riskGood && (
-              <span className="inline-flex items-center gap-1 text-[11px] font-[600] text-[#5B34FF] bg-[#F3F0FF] border border-[#C8C9FF] px-2 py-0.5 rounded-full flex-shrink-0">
+              <span className="inline-flex items-center gap-1 text-[11px] font-[600] text-[#2048EE] bg-[#EEF2FF] border border-[#C8C9FF] px-2 py-0.5 rounded-full flex-shrink-0">
                 <ShieldCheck size={11} /> Good standing
               </span>
             )}
@@ -280,9 +280,9 @@ export function SettlementsPage() {
       )}
 
       {/* Business flow info */}
-      <div className="bg-[#F3F0FF]/60 border border-[#E5E7EB] rounded-xl px-4 py-3 flex items-start gap-3">
-        <Landmark size={15} className="text-[#6C4CFF] mt-0.5 flex-shrink-0" />
-        <p className="text-[12px] text-[#5B34FF] leading-relaxed">
+      <div className="bg-[#EEF2FF]/60 border border-[#E5E7EB] rounded-xl px-4 py-3 flex items-start gap-3">
+        <Landmark size={15} className="text-[#315eff] mt-0.5 flex-shrink-0" />
+        <p className="text-[12px] text-[#2048EE] leading-relaxed">
           Settlements represent the recoveries your company owes to MobPae. Once MobPae confirms payment, linked recoveries are marked recovered automatically.
         </p>
       </div>
@@ -352,13 +352,13 @@ export function SettlementsPage() {
                     <tr
                       key={s.id}
                       onClick={() => setSelected(s)}
-                      style={{ borderBottom: "1px solid #F9FAFB", background: isSelected ? "#F3F0FF4D" : overdue ? "#FFF1F14D" : "transparent", cursor: "pointer", transition: "background 0.1s" }}
+                      style={{ borderBottom: "1px solid #F9FAFB", background: isSelected ? "#EEF2FF4D" : overdue ? "#FFF1F14D" : "transparent", cursor: "pointer", transition: "background 0.1s" }}
                       onMouseEnter={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.background = "#FAFAFC"; }}
-                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = isSelected ? "#F3F0FF4D" : overdue ? "#FFF1F14D" : "transparent"; }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = isSelected ? "#EEF2FF4D" : overdue ? "#FFF1F14D" : "transparent"; }}
                     >
                       <td style={{ padding: "16px 20px", fontSize: 13.5, fontWeight: 600, color: "#111827", verticalAlign: "middle" }}>{formatSalaryCycle(s.payrollMonth)}</td>
                       <td style={{ padding: "16px 20px", fontSize: 13.5, fontWeight: 700, color: "#111827", fontVariantNumeric: "tabular-nums", verticalAlign: "middle" }}>{formatCurrency(s.totalAmount)}</td>
-                      <td style={{ padding: "16px 20px", fontSize: 13.5, fontWeight: 600, color: s.outstandingAmount > 0 ? "#DC2626" : "#6C4CFF", fontVariantNumeric: "tabular-nums", verticalAlign: "middle" }}>
+                      <td style={{ padding: "16px 20px", fontSize: 13.5, fontWeight: 600, color: s.outstandingAmount > 0 ? "#DC2626" : "#315eff", fontVariantNumeric: "tabular-nums", verticalAlign: "middle" }}>
                         {s.outstandingAmount > 0 ? formatCurrency(s.outstandingAmount) : "No dues"}
                       </td>
                       <td style={{ padding: "16px 20px", fontSize: 13.5, color: "#6B7280", fontVariantNumeric: "tabular-nums", verticalAlign: "middle" }}>
@@ -372,7 +372,7 @@ export function SettlementsPage() {
                       </td>
                       <td style={{ padding: "16px 20px", verticalAlign: "middle" }}><StatusPill status={s.status} /></td>
                       <td style={{ padding: "16px 20px", verticalAlign: "middle" }}>
-                        <button style={{ height: 30, padding: "0 14px", background: isSelected ? "#6C4CFF" : "#F3F0FF", color: isSelected ? "white" : "#6C4CFF", border: "none", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 4 }}>
+                        <button style={{ height: 30, padding: "0 14px", background: isSelected ? "#315eff" : "#EEF2FF", color: isSelected ? "white" : "#315eff", border: "none", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 4 }}>
                           Details <ChevronRight size={11} />
                         </button>
                       </td>
@@ -505,11 +505,11 @@ export function SettlementsPage() {
 
               {/* Payment guidance panel — only when outstanding */}
               {selected.status !== "PAID" && (
-                <div className="bg-[#F3F0FF] border border-[#E5E7EB] rounded-xl px-4 py-3.5 flex items-start gap-3">
-                  <Info size={15} className="text-[#6C4CFF] mt-0.5 flex-shrink-0" />
+                <div className="bg-[#EEF2FF] border border-[#E5E7EB] rounded-xl px-4 py-3.5 flex items-start gap-3">
+                  <Info size={15} className="text-[#315eff] mt-0.5 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-[12px] font-[600] text-[#5B34FF] mb-1">Payment guidance</p>
-                    <p className="text-[12px] text-[#5B34FF] leading-relaxed">
+                    <p className="text-[12px] font-[600] text-[#2048EE] mb-1">Payment guidance</p>
+                    <p className="text-[12px] text-[#2048EE] leading-relaxed">
                       Remit{" "}
                       <strong>
                         {formatCurrency(

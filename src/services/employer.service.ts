@@ -20,6 +20,15 @@ const toEmployerProfileApiPayload = (payload: EmployerProfilePayload) => ({
   phone: payload.phone
 });
 
+export interface EmployerProductConfig {
+  id: string;
+  productId: string;
+  maximumAdvanceAmountOverride: number | null;
+  requiresEmployerApproval: boolean;
+  isEnabled: boolean;
+  product: { productType: string; name: string };
+}
+
 export const employerService = {
   async getEmployerProfile(): Promise<EmployerProfile> {
     const currentUser = await authService.getCurrentUser();
@@ -46,5 +55,20 @@ export const employerService = {
   async updateEmployerProfile(payload: EmployerProfilePayload): Promise<EmployerProfile> {
     const { data } = await httpClient.put("/employers/profile", toEmployerProfileApiPayload(payload));
     return mapEmployerProfile(unwrapItem(data, ["profile", "employer"]));
+  },
+
+  /** Get the employer's own product configs (SA advance limit override, etc.) */
+  async getMyProductConfigs(): Promise<EmployerProductConfig[]> {
+    const { data } = await httpClient.get("/employers/my/product-configs");
+    return Array.isArray(data) ? data : data?.data ?? [];
+  },
+
+  /** Update the advance amount override for a product type (absolute ₹, or null to clear) */
+  async setAdvanceOverride(productType: string, maximumAdvanceAmountOverride: number | null): Promise<EmployerProductConfig> {
+    const { data } = await httpClient.put(
+      `/employers/my/product-configs/${productType}`,
+      { maximumAdvanceAmountOverride }
+    );
+    return data;
   }
 };

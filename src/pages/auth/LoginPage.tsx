@@ -4,8 +4,8 @@ import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { isForbidden, getApiErrorMessage } from "../../services/api-errors";
 
-const P  = "#6C4CFF";
-const PD = "#5B34FF";
+const P  = "#315eff";
+const PD = "#2048EE";
 
 
 // Mini employer dashboard preview for right panel
@@ -32,11 +32,11 @@ function EmployerPreview() {
       {/* Stats row */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginBottom: 12 }}>
         {[
-          { label: "Total Employees", value: "1,248",         color: "#F3F0FF" },
+          { label: "Total Employees", value: "1,248",         color: "#EEF2FF" },
           { label: "Pending Requests", value: "14",            color: "#FEF3C7" },
           { label: "This Month",       value: "₹18,42,500",   color: "#DCFCE7" },
         ].map((s) => (
-          <div key={s.label} style={{ background: s.color, borderRadius: 10, padding: "10px 12px" }}>
+          <div key={s.label} style={{ background: s.color, borderRadius: 8, padding: "10px 12px" }}>
             <p style={{ fontSize: 9, color: "#6B7280", marginBottom: 4 }}>{s.label}</p>
             <p style={{ fontSize: 13, fontWeight: 700, color: "#111827" }}>{s.value}</p>
           </div>
@@ -44,7 +44,7 @@ function EmployerPreview() {
       </div>
 
       {/* Recent requests */}
-      <div style={{ background: "#F8F9FC", borderRadius: 10, padding: "10px 12px" }}>
+      <div style={{ background: "#F8F9FC", borderRadius: 8, padding: "10px 12px" }}>
         <p style={{ fontSize: 10, fontWeight: 600, color: "#111827", marginBottom: 8 }}>Recent Requests</p>
         {[
           { name: "Ananya Sharma",  action: "Salary advance request",  time: "Today",       status: "Pending",   color: "#FEF3C7", text: "#92400E" },
@@ -53,7 +53,7 @@ function EmployerPreview() {
           { name: "Karan Iyer",     action: "Salary advance approved",  time: "10 Jun 2025", status: "Approved",  color: "#DCFCE7", text: "#16A34A" },
         ].map((r) => (
           <div key={r.name} style={{ display: "flex", alignItems: "center", gap: 8, paddingBottom: 7, marginBottom: 7, borderBottom: "1px solid #E5E7EB" }}>
-            <div style={{ width: 22, height: 22, borderRadius: "50%", background: "linear-gradient(135deg, #8B7CFF, #6C4CFF)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, color: "white", fontWeight: 700, flexShrink: 0 }}>
+            <div style={{ width: 22, height: 22, borderRadius: "50%", background: "linear-gradient(135deg, #8B7CFF, #315eff)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, color: "white", fontWeight: 700, flexShrink: 0 }}>
               {r.name[0]}
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
@@ -212,7 +212,7 @@ export function LoginPage() {
 
               {/* Pending */}
               {pending && (
-                <div style={{ display: "flex", gap: 10, alignItems: "flex-start", background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 10, padding: "12px 14px" }}>
+                <div style={{ display: "flex", gap: 10, alignItems: "flex-start", background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 8, padding: "12px 14px" }}>
                   <Clock size={14} color="#d97706" style={{ flexShrink: 0, marginTop: 1 }} />
                   <div>
                     <p style={{ fontSize: 13, fontWeight: 600, color: "#92400e" }}>Account Pending Approval</p>
@@ -223,7 +223,7 @@ export function LoginPage() {
 
               {/* Error */}
               {error && (
-                <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 10, padding: "10px 14px", fontSize: 13, color: "#DC2626", fontWeight: 500 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 8, padding: "10px 14px", fontSize: 13, color: "#DC2626", fontWeight: 500 }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                   {error}
                 </div>
@@ -239,7 +239,7 @@ export function LoginPage() {
                   fontSize: 14, fontWeight: 600, letterSpacing: "0.01em",
                   display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
                   cursor: loading ? "not-allowed" : "pointer",
-                  boxShadow: loading ? "none" : "0 4px 20px rgba(108,76,255,0.30)",
+                  boxShadow: loading ? "none" : "0 4px 20px rgba(49,94,255,0.30)",
                   transition: "all 0.15s",
                   fontFamily: "inherit",
                 }}
@@ -256,7 +256,7 @@ export function LoginPage() {
             </form>
 
             {/* Trust note */}
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 28, padding: "12px 16px", background: "#F8F9FC", borderRadius: 10 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 28, padding: "12px 16px", background: "#F8F9FC", borderRadius: 8 }}>
               <Shield size={14} style={{ color: "#9CA3AF", flexShrink: 0 }} />
               <p style={{ fontSize: 12, color: "#9CA3AF", lineHeight: 1.5 }}>
                 Your data is protected with bank-grade encryption and security.
@@ -273,7 +273,7 @@ export function LoginPage() {
       {/* ── RIGHT — Brand panel ──────────────────────────────────── */}
       <div style={{
         flex: 1,
-        background: "linear-gradient(135deg, #8B7CFF 0%, #6C4CFF 50%, #5B34FF 100%)",
+        background: "linear-gradient(135deg, #8B7CFF 0%, #315eff 50%, #2048EE 100%)",
         display: "flex", flexDirection: "column",
         justifyContent: "center", alignItems: "center",
         padding: "48px 48px",

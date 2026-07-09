@@ -95,7 +95,7 @@ export function EmployeesPage() {
   const active = employees.filter(e => e.employmentStatus === "ACTIVE").length;
   const appOn  = employees.filter(e => e.appActivated).length;
 
-  const btnBase: React.CSSProperties = { height: 36, display: "flex", alignItems: "center", gap: 7, padding: "0 14px", borderRadius: 10, fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s" };
+  const btnBase: React.CSSProperties = { height: 36, display: "flex", alignItems: "center", gap: 7, padding: "0 14px", borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s" };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20, fontFamily: "Inter, ui-sans-serif, sans-serif" }}>
@@ -118,7 +118,7 @@ export function EmployeesPage() {
             <UploadCloud size={14} />Bulk add
           </button>
           <button onClick={() => { setEditEmployee(undefined); setDrawerMode("CREATE"); }}
-            style={{ ...btnBase, background: "#6C4CFF", border: "none", color: "white", boxShadow: "0 4px 14px rgba(108,76,255,0.25)", fontWeight: 600 }}>
+            style={{ ...btnBase, background: "#315eff", border: "none", color: "white", boxShadow: "0 4px 14px rgba(49,94,255,0.25)", fontWeight: 600 }}>
             <Plus size={14} />Add employee
           </button>
         </div>
@@ -132,19 +132,19 @@ export function EmployeesPage() {
             value={query}
             onChange={e => { setQuery(e.target.value); setPage(1); }}
             placeholder="Search employees…"
-            style={{ width: "100%", height: 38, paddingLeft: 36, paddingRight: 12, fontSize: 13, background: "white", border: "1px solid #E5E7EB", borderRadius: 10, color: "#111827", outline: "none", fontFamily: "inherit" }}
-            onFocus={e => (e.target.style.borderColor = "#6C4CFF")}
+            style={{ width: "100%", height: 38, paddingLeft: 36, paddingRight: 12, fontSize: 13, background: "white", border: "1px solid #E5E7EB", borderRadius: 8, color: "#111827", outline: "none", fontFamily: "inherit" }}
+            onFocus={e => (e.target.style.borderColor = "#315eff")}
             onBlur={e  => (e.target.style.borderColor = "#E5E7EB")}
           />
         </div>
         <select value={statusFilter} onChange={e => setStatusFilter(e.target.value as "ALL" | EmploymentStatus)}
-          style={{ height: 38, padding: "0 12px", fontSize: 13, background: "white", border: "1px solid #E5E7EB", borderRadius: 10, color: "#6B7280", cursor: "pointer", fontFamily: "inherit", outline: "none" }}>
+          style={{ height: 38, padding: "0 12px", fontSize: 13, background: "white", border: "1px solid #E5E7EB", borderRadius: 8, color: "#6B7280", cursor: "pointer", fontFamily: "inherit", outline: "none" }}>
           <option value="ALL">All employment</option>
           <option value="ACTIVE">Active only</option>
           <option value="INACTIVE">Inactive only</option>
         </select>
         <select value={appFilter} onChange={e => setAppFilter(e.target.value as "ALL" | "ON" | "OFF")}
-          style={{ height: 38, padding: "0 12px", fontSize: 13, background: "white", border: "1px solid #E5E7EB", borderRadius: 10, color: "#6B7280", cursor: "pointer", fontFamily: "inherit", outline: "none" }}>
+          style={{ height: 38, padding: "0 12px", fontSize: 13, background: "white", border: "1px solid #E5E7EB", borderRadius: 8, color: "#6B7280", cursor: "pointer", fontFamily: "inherit", outline: "none" }}>
           <option value="ALL">All app access</option>
           <option value="ON">App activated</option>
           <option value="OFF">Not activated</option>
@@ -164,7 +164,7 @@ export function EmployeesPage() {
               } catch (err) { toast.error("Bulk activation failed", getApiErrorMessage(err)); }
               finally { setBulkLoading(false); }
             }}
-            style={{ ...btnBase, marginLeft: "auto", background: "#6C4CFF", border: "none", color: "white", boxShadow: "0 4px 14px rgba(108,76,255,0.25)", fontWeight: 600, opacity: bulkLoading ? 0.7 : 1 }}>
+            style={{ ...btnBase, marginLeft: "auto", background: "#315eff", border: "none", color: "white", boxShadow: "0 4px 14px rgba(49,94,255,0.25)", fontWeight: 600, opacity: bulkLoading ? 0.7 : 1 }}>
             <Zap size={13} />{bulkLoading ? "Activating…" : `Activate ${selectedIds.length}`}
           </button>
         )}
@@ -194,8 +194,8 @@ export function EmployeesPage() {
           </div>
         ) : employees.length === 0 ? (
           <div style={{ padding: "64px 0", textAlign: "center" }}>
-            <div style={{ width: 40, height: 40, borderRadius: 12, background: "#F3F0FF", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6C4CFF" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+            <div style={{ width: 40, height: 40, borderRadius: 12, background: "#EEF2FF", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#315eff" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
                 <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
               </svg>
@@ -271,7 +271,7 @@ export function EmployeesPage() {
           }}
         />
         {(bulkResult?.errors.length ?? 0) > 0 && (
-          <div style={{ marginTop: 16, background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 10, overflow: "hidden" }}>
+          <div style={{ marginTop: 16, background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 8, overflow: "hidden" }}>
             <div style={{ padding: "10px 14px", borderBottom: "1px solid #FECACA" }}>
               <p style={{ fontSize: 12, fontWeight: 600, color: "#DC2626" }}>{bulkResult!.failureCount} rows skipped</p>
             </div>

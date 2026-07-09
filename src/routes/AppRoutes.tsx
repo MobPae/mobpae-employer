@@ -34,7 +34,7 @@ export function AppRoutes() {
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard"       element={<DashboardPage />}       />
             <Route path="/employees"       element={<EmployeesPage />}       />
-            <Route path="/salary-requests" element={<SalaryRequestsPage />}  />
+            <Route path="/loan-applications" element={<SalaryRequestsPage />}  />
             <Route path="/recoveries"      element={<RecoveriesPage />}       />
             <Route path="/repayments"      element={<RepaymentsPage />}       />
             <Route path="/settlements"     element={<SettlementsPage />}      />

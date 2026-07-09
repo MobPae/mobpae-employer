@@ -20,7 +20,7 @@ import { ConfirmModal } from "../ui/ConfirmModal";
 const NAV = [
   { label: "Dashboard",       to: "/dashboard",       icon: LayoutDashboard  },
   { label: "Employees",       to: "/employees",       icon: UsersRound       },
-  { label: "Salary Requests", to: "/salary-requests", icon: ClipboardList    },
+  { label: "Loan Applications", to: "/loan-applications", icon: ClipboardList    },
   { label: "Recoveries",      to: "/recoveries",      icon: ArrowDownCircle  },
   { label: "Repayments",      to: "/repayments",       icon: CreditCard       },
   { label: "Settlements",     to: "/settlements",      icon: Landmark         },
@@ -30,7 +30,7 @@ const NAV = [
 const PAGE_TITLES: Record<string, string> = {
   "/dashboard":       "Dashboard",
   "/employees":       "Employees",
-  "/salary-requests": "Salary Requests",
+  "/loan-applications": "Loan Applications",
   "/recoveries":      "Recoveries",
   "/repayments":      "Repayments",
   "/settlements":     "Settlements",
@@ -81,15 +81,15 @@ function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
                 }
                 style={({ isActive }) => ({
                   height: 40,
-                  background: isActive ? "#F3F0FF" : "transparent",
-                  color: isActive ? "#6C4CFF" : "#6B7280",
+                  background: isActive ? "#EEF2FF" : "transparent",
+                  color: isActive ? "#315eff" : "#6B7280",
                   fontWeight: isActive ? 600 : 500,
                   fontSize: 13.5,
                 })}
               >
                 {({ isActive }) => (
                   <>
-                    <Icon size={16} style={{ color: isActive ? "#6C4CFF" : "#9CA3AF", flexShrink: 0 }} strokeWidth={isActive ? 2 : 1.75} />
+                    <Icon size={16} style={{ color: isActive ? "#315eff" : "#9CA3AF", flexShrink: 0 }} strokeWidth={isActive ? 2 : 1.75} />
                     <span>{label}</span>
                   </>
                 )}
@@ -103,7 +103,7 @@ function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
           <div className="flex items-center gap-3 px-2">
             <div
               className="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-[700] flex-shrink-0"
-              style={{ background: "linear-gradient(135deg, #8B7CFF 0%, #6C4CFF 100%)", color: "white" }}
+              style={{ background: "linear-gradient(135deg, #8B7CFF 0%, #315eff 100%)", color: "white" }}
             >
               {companyInitials}
             </div>
@@ -114,7 +114,7 @@ function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
             <div className="flex items-center gap-0.5">
               <button
                 onClick={() => navigate("/change-password")}
-                className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors hover:bg-[#F3F0FF]"
+                className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors hover:bg-[#EEF2FF]"
                 title="Change password"
                 style={{ color: "#9CA3AF" }}
               >
@@ -168,7 +168,7 @@ function Header({ onMenuClick }: { onMenuClick: () => void }) {
         <div className="flex items-center gap-2.5">
           <div
             className="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-[700] flex-shrink-0"
-            style={{ background: "linear-gradient(135deg, #8B7CFF 0%, #6C4CFF 100%)", color: "white" }}
+            style={{ background: "linear-gradient(135deg, #8B7CFF 0%, #315eff 100%)", color: "white" }}
             title={displayName}
           >
             {userInitials}

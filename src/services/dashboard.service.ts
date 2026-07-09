@@ -1,4 +1,4 @@
-import type { DashboardStats, DashboardTrend, NotificationItem, SalaryRequest } from "../types";
+import type { DashboardStats, DashboardTrend, LoanApplication, NotificationItem } from "../types";
 import { mapDashboardStats, unwrapItem, unwrapList } from "./api-mappers";
 import { httpClient } from "./http-client";
 
@@ -27,7 +27,7 @@ export const dashboardService = {
       totalEmployees:        stats.totalEmployees        ?? 0,
       activeEmployees:       stats.activeEmployees       ?? 0,
       appActivatedEmployees: stats.appActivatedEmployees ?? 0,
-      pendingSalaryRequests: stats.pendingSalaryRequests ?? 0,
+      pendingLoanApplications: stats.pendingLoanApplications ?? 0,
       approvedRequests:      stats.approvedRequests      ?? 0,
       disbursedRequests:     stats.disbursedRequests     ?? 0,
       scheduledRecoveries:   stats.scheduledRecoveries   ?? 0,
@@ -40,7 +40,7 @@ export const dashboardService = {
     };
   },
 
-  async getRecentSalaryRequests(): Promise<SalaryRequest[]> {
+  async getRecentLoanApplications(): Promise<LoanApplication[]> {
     const stats = await this.getDashboardStats();
     return (stats.recentActivity ?? []).slice(0, 5);
   },

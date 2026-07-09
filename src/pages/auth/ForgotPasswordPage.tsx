@@ -57,7 +57,7 @@ export function ForgotPasswordPage() {
             <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               <div>
                 <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#333", marginBottom: 8 }}>Work Email</label>
-                <div style={{ display: "flex", alignItems: "center", gap: 10, background: "white", border: "1.5px solid #e8e0d8", borderRadius: 10, padding: "11px 14px", transition: "border-color 0.15s" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, background: "white", border: "1.5px solid #e8e0d8", borderRadius: 8, padding: "11px 14px", transition: "border-color 0.15s" }}>
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8D90A3" strokeWidth="2" strokeLinecap="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
                   <input
                     type="email" value={email} onChange={e => setEmail(e.target.value)}
@@ -72,7 +72,7 @@ export function ForgotPasswordPage() {
               <button type="submit" disabled={loading} style={{
                 width: "100%", height: 48, marginTop: 4,
                 background: loading ? "#c4825e" : `linear-gradient(135deg, ${BD} 0%, ${B} 100%)`,
-                color: "white", borderRadius: 10, border: "none", fontSize: 14, fontWeight: 700,
+                color: "white", borderRadius: 8, border: "none", fontSize: 14, fontWeight: 700,
                 display: "flex", alignItems: "center", justifyContent: "center",
                 cursor: loading ? "not-allowed" : "pointer",
                 boxShadow: loading ? "none" : "0 4px 16px rgba(118,121,255,0.30)", transition: "all 0.15s",

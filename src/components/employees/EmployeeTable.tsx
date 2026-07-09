@@ -3,20 +3,20 @@ import { useState } from "react";
 import type { Employee } from "../../types";
 import { formatCurrency } from "../../utils/formatters";
 
-const P  = "#6C4CFF";
-const PS = "#F3F0FF";
+const P  = "#315eff";
+const PS = "#EEF2FF";
 const T1 = "#111827";
 const T2 = "#6B7280";
 const T3 = "#9CA3AF";
 
 // Per-letter colorful avatar (matches admin design)
 const AVATAR_COLORS: Record<string, string> = {
-  A: "#EF4444", B: "#EC4899", C: "#A855F7", D: "#6C4CFF",
+  A: "#EF4444", B: "#EC4899", C: "#A855F7", D: "#315eff",
   E: "#6366F1", F: "#3B82F6", G: "#0EA5E9", H: "#06B6D4",
   I: "#10B981", J: "#22C55E", K: "#84CC16", L: "#EAB308",
-  M: "#F59E0B", N: "#F97316", O: "#EF4444", P2: "#6C4CFF",
+  M: "#F59E0B", N: "#F97316", O: "#EF4444", P2: "#315eff",
   Q: "#8B5CF6", R: "#D946EF", S: "#EC4899", T: "#F43F5E",
-  U: "#6C4CFF", V: "#6366F1", W: "#3B82F6", X: "#0EA5E9",
+  U: "#315eff", V: "#6366F1", W: "#3B82F6", X: "#0EA5E9",
   Y: "#14B8A6", Z: "#10B981",
 };
 const avatarColor = (name: string) =>
@@ -136,7 +136,7 @@ export function EmployeeTable({
                   <td style={{ padding: "16px 20px 16px 0", verticalAlign: "middle" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                       <div style={{
-                        width: 36, height: 36, borderRadius: 10,
+                        width: 36, height: 36, borderRadius: 8,
                         background: ac, color: "white",
                         display: "flex", alignItems: "center", justifyContent: "center",
                         fontSize: 14, fontWeight: 700, flexShrink: 0,
@@ -181,7 +181,7 @@ export function EmployeeTable({
                       onClick={() => onEdit(emp)}
                       style={{
                         height: 30, padding: "0 14px",
-                        background: "#F3F0FF", color: P,
+                        background: "#EEF2FF", color: P,
                         border: "none", borderRadius: 8,
                         fontSize: 12, fontWeight: 600, cursor: "pointer",
                         fontFamily: "inherit", display: "flex", alignItems: "center", gap: 5,

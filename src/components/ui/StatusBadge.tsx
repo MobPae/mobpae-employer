@@ -1,9 +1,9 @@
-import type { EmploymentStatus, RepaymentStatus, SalaryRequestStatus } from "../../types";
+import type { EmploymentStatus, LoanApplicationStatus, RepaymentStatus } from "../../types";
 import { readableStatus } from "../../utils/formatters";
 
-type Status = EmploymentStatus | SalaryRequestStatus | RepaymentStatus | "ACTIVE_ACCESS" | "NO_ACCESS";
+type Status = EmploymentStatus | LoanApplicationStatus | RepaymentStatus | "ACTIVE_ACCESS" | "NO_ACCESS";
 
-const toneByStatus: Record<Status, string> = {
+const toneByStatus: Partial<Record<Status, string>> & Record<string, string> = {
   ACTIVE:              "bg-[#EBF6E3] text-[#3B6D11] ring-[#9FD5B0]",
   INACTIVE:            "bg-[#F0F0F8] text-[#62657A] ring-[#D4D5E0]",
   SUBMITTED:           "bg-amber-50 text-amber-700 ring-amber-200",
@@ -21,13 +21,15 @@ const toneByStatus: Record<Status, string> = {
   SCHEDULED:           "bg-[#FEF1E7] text-[#9A4910] ring-[#F5CBA7]",
   PAID:                "bg-[#EBF6E3] text-[#3B6D11] ring-[#9FD5B0]",
   OVERDUE:             "bg-red-50 text-red-600 ring-red-200",
+  CANCELLED:           "bg-[#F0F0F8] text-[#62657A] ring-[#D4D5E0]",
+  EXPIRED:             "bg-[#F0F0F8] text-[#62657A] ring-[#D4D5E0]",
   ACTIVE_ACCESS:       "bg-[#EBF6E3] text-[#3B6D11] ring-[#9FD5B0]",
   NO_ACCESS:           "bg-[#F0F0F8] text-[#62657A] ring-[#D4D5E0]",
 };
 
 export function StatusBadge({ status, label }: { status: Status; label?: string }) {
   return (
-    <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-semibold ring-1 ${toneByStatus[status]}`}>
+    <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-semibold ring-1 ${toneByStatus[status] ?? "bg-[#F0F0F8] text-[#62657A] ring-[#D4D5E0]"}`}>
       {label ?? readableStatus(status)}
     </span>
   );
