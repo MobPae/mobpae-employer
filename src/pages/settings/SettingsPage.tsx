@@ -1,92 +1,126 @@
-import { Building2, CheckCircle2, Lock, Mail, Phone, Save, User, Wallet } from "lucide-react";
+import {
+  Building2, CheckCircle2, Mail, Phone, Save, Shield,
+  User, Wallet, Lock, Info, AlertTriangle,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { useToast } from "../../hooks/useToast";
 import { getApiErrorMessage } from "../../services/api-errors";
-import { employerService, type EmployerProductConfig } from "../../services/employer.service";
+import { employerService, type EmployerProductConfig, type ProductAdvanceRules } from "../../services/employer.service";
 import type { EmployerProfile } from "../../types";
 
-const P  = "#315eff";
-const PS = "#EEF2FF";
-const T1 = "#111827";
-const T2 = "#6B7280";
-const T3 = "#9CA3AF";
-const BDR = "1px solid #E5E7EB";
+// ── design tokens ─────────────────────────────────────────────────────────────
+const T1  = "var(--color-ink)";
+const T2  = "var(--color-ink-3)";
+const T3  = "var(--color-ink-4)";
+const P   = "var(--color-brand)";
+const PS  = "var(--color-brand-soft)";
+
+
+const BDR = "1px solid var(--color-edge)";
 const SHD = "0 1px 4px rgba(17,24,39,0.04)";
 
 const FALLBACK: EmployerProfile = {
   companyName: "", companyCode: "", contactPerson: "",
   companyEmail: "", loginEmail: "", payrollDate: null,
-  payrollCutoffDate: null, phone: "", status: ""
+  payrollCutoffDate: null, phone: "", status: "",
 };
 
-function Field({ label, icon, children }: { label: string; icon?: React.ReactNode; children: React.ReactNode }) {
+// ── helpers ───────────────────────────────────────────────────────────────────
+
+function card(extra?: React.CSSProperties): React.CSSProperties {
+  return { background: "white", border: BDR, borderRadius: 16, overflow: "hidden", boxShadow: SHD, ...extra };
+}
+
+// ── read-only info row ────────────────────────────────────────────────────────
+
+function InfoRow({ icon, label, value, badge }: {
+  icon: React.ReactNode; label: string;
+  value?: React.ReactNode; badge?: React.ReactNode;
+}) {
   return (
-    <div>
-      <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 500, color: T2, marginBottom: 6 }}>
-        {icon && <span style={{ color: T3 }}>{icon}</span>}
-        {label}
-      </label>
-      {children}
+    <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 20px", borderBottom: BDR }}>
+      <div style={{
+        width: 36, height: 36, borderRadius: 10, background: "var(--color-surface-muted)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        color: T3, flexShrink: 0,
+      }}>
+        {icon}
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{ fontSize: 10.5, fontWeight: 600, color: T3, textTransform: "uppercase", letterSpacing: "0.07em", margin: 0 }}>{label}</p>
+        <p style={{ fontSize: 13.5, fontWeight: 500, color: T1, margin: "3px 0 0", lineHeight: 1.2 }}>{value ?? "—"}</p>
+      </div>
+      {badge && <div style={{ flexShrink: 0 }}>{badge}</div>}
     </div>
   );
 }
+
+// ── section header ────────────────────────────────────────────────────────────
+
+function SectionHeader({ title, subtitle }: { title: string; subtitle?: string }) {
+  return (
+    <div style={{ padding: "16px 20px", borderBottom: BDR }}>
+      <p style={{ fontSize: 13, fontWeight: 600, color: T1, margin: 0 }}>{title}</p>
+      {subtitle && <p style={{ fontSize: 12, color: T2, margin: "3px 0 0" }}>{subtitle}</p>}
+    </div>
+  );
+}
+
+// ── editable input ────────────────────────────────────────────────────────────
 
 const inputBase: React.CSSProperties = {
   width: "100%", height: 36, padding: "0 12px", fontSize: 13,
   background: "white", border: BDR, borderRadius: 8,
   color: T1, outline: "none", transition: "border-color 0.15s",
-  boxSizing: "border-box",
+  boxSizing: "border-box", fontFamily: "inherit",
 };
 
-function Input({ value, onChange, disabled, type, placeholder }: {
-  value: string; onChange?: (v: string) => void; disabled?: boolean; type?: string; placeholder?: string;
-}) {
-  const [focused, setFocused] = useState(false);
+function FieldLabel({ label }: { label: string }) {
   return (
-    <input
-      type={type}
-      value={value}
-      onChange={onChange ? e => onChange(e.target.value) : undefined}
-      disabled={disabled}
-      placeholder={placeholder}
-      onFocus={() => setFocused(true)}
-      onBlur={() => setFocused(false)}
-      style={{
-        ...inputBase,
-        borderColor: focused ? P : "#E5E7EB",
-        boxShadow: focused ? `0 0 0 3px ${PS}` : "none",
-        background: disabled ? "#F9FAFB" : "white",
-        color: disabled ? T2 : T1,
-        cursor: disabled ? "not-allowed" : "text",
-      }}
-    />
+    <p style={{ fontSize: 11, fontWeight: 600, color: T2, margin: "0 0 6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>{label}</p>
   );
 }
 
-function card(style?: React.CSSProperties): React.CSSProperties {
-  return { background: "white", border: BDR, borderRadius: 16, overflow: "hidden", boxShadow: SHD, ...style };
-}
+
+// ── page ──────────────────────────────────────────────────────────────────────
 
 export function SettingsPage() {
   const toast = useToast();
-  const [profile, setProfile]           = useState<EmployerProfile>(FALLBACK);
-  const [saving,  setSaving]            = useState(false);
-  const [saved,   setSaved]             = useState(false);
+
+  const [profile,       setProfile]       = useState<EmployerProfile>(FALLBACK);
+  const [saving,        setSaving]        = useState(false);
+  const [saved,         setSaved]         = useState(false);
   const [productConfig, setProductConfig] = useState<EmployerProductConfig | null>(null);
-  const [overrideInput, setOverrideInput] = useState<string>("");
-  const [savingOverride, setSavingOverride] = useState(false);
+  const [advanceRules,  setAdvanceRules]  = useState<ProductAdvanceRules | null>(null);
+  const [pctInput,      setPctInput]      = useState("");
+  const [pctError,      setPctError]      = useState("");
+  const [savingLimit,   setSavingLimit]   = useState(false);
 
   useEffect(() => {
     employerService.getEmployerProfile()
       .then(setProfile)
       .catch(err => toast.error("Failed to load profile", getApiErrorMessage(err)));
+
     employerService.getMyProductConfigs()
       .then(configs => {
         const sa = configs.find(c => c.product.productType === "SA") ?? null;
         setProductConfig(sa);
-        setOverrideInput(sa?.maximumAdvanceAmountOverride != null ? String(sa.maximumAdvanceAmountOverride) : "");
+        setPctInput(sa?.maximumAdvancePercentageOverride != null
+          ? String(sa.maximumAdvancePercentageOverride)
+          : "");
       })
-      .catch(() => {}); // non-critical, silently ignore
+      .catch(() => {});
+
+    employerService.getProductAdvanceRules("SA")
+      .then(rules => {
+        // Validate the response has the expected shape before setting state
+        if (rules && typeof rules.defaultAdvancePercentage === "number") {
+          setAdvanceRules(rules);
+        } else {
+          console.error("[SettingsPage] Unexpected rules response shape:", rules);
+        }
+      })
+      .catch(err => console.error("[SettingsPage] Failed to load advance rules:", err));
   }, []);
 
   const set = <K extends keyof EmployerProfile>(k: K, v: EmployerProfile[K]) => {
@@ -99,9 +133,9 @@ export function SettingsPage() {
     setSaving(true);
     try {
       const updated = await employerService.updateEmployerProfile({
-        contactPerson:  profile.contactPerson,
-        companyEmail:   profile.companyEmail,
-        phone:          profile.phone,
+        contactPerson: profile.contactPerson,
+        companyEmail:  profile.companyEmail,
+        phone:         profile.phone,
       });
       setProfile(updated);
       setSaved(true);
@@ -111,81 +145,258 @@ export function SettingsPage() {
     } finally { setSaving(false); }
   };
 
-  const handleSaveOverride = async () => {
-    const amount = overrideInput.trim() === "" ? null : parseInt(overrideInput, 10);
-    if (amount !== null && (isNaN(amount) || amount < 1000)) {
-      toast.error("Invalid amount", "Minimum advance override is ₹1,000");
+  const ceiling = advanceRules?.hardCeilingPercentage ?? 50;
+
+  const handleSaveLimit = async () => {
+    setPctError("");
+    if (pctInput.trim() === "") {
+      // clear override
+      setSavingLimit(true);
+      try {
+        const updated = await employerService.setAdvanceOverride("SA", null);
+        setProductConfig(updated);
+        toast.success("Override cleared — platform default restored");
+      } catch (err) {
+        toast.error("Save failed", getApiErrorMessage(err));
+      } finally { setSavingLimit(false); }
       return;
     }
-    setSavingOverride(true);
+    const pct = parseFloat(pctInput);
+    if (isNaN(pct) || pct <= 0) {
+      setPctError("Enter a valid percentage greater than 0.");
+      return;
+    }
+    if (pct > ceiling) {
+      setPctError(`Cannot exceed the maximum cap of ${ceiling}%.`);
+      return;
+    }
+    setSavingLimit(true);
     try {
-      const updated = await employerService.setAdvanceOverride("SA", amount);
+      const updated = await employerService.setAdvanceOverride("SA", pct);
       setProductConfig(updated);
       toast.success("Advance limit updated");
     } catch (err) {
       toast.error("Save failed", getApiErrorMessage(err));
-    } finally { setSavingOverride(false); }
+    } finally { setSavingLimit(false); }
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-      {/* Page header */}
-      <div>
-        <h1 style={{ fontSize: 24, fontWeight: 700, color: T1, letterSpacing: "-0.025em", margin: 0 }}>Settings</h1>
-        <p style={{ fontSize: 13, color: T2, marginTop: 4 }}>Manage your company profile and contact details</p>
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+
+      {/* ── ADVANCE LIMIT — top priority ────────────────────────────────────── */}
+      <div style={card()}>
+        <SectionHeader
+          title="Salary Advance Limit"
+          subtitle="The maximum advance your employees can request per salary cycle"
+        />
+
+        <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 16 }}>
+
+          {/* Platform rules — from API */}
+          {advanceRules ? (
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+              <div style={{ background: "var(--color-canvas)", border: BDR, borderRadius: 12, padding: "14px 16px" }}>
+                <p style={{ fontSize: 10.5, fontWeight: 600, color: T3, textTransform: "uppercase", letterSpacing: "0.07em", margin: 0 }}>Default advance rule</p>
+                <p style={{ fontSize: 22, fontWeight: 700, color: T1, margin: "6px 0 2px", letterSpacing: "-0.02em" }}>
+                  {advanceRules.defaultAdvancePercentage}%
+                  <span style={{ fontSize: 13, fontWeight: 400, color: T2, marginLeft: 6 }}>of salary</span>
+                </p>
+                <p style={{ fontSize: 11.5, color: T3, margin: 0 }}>
+                  up to ₹{(advanceRules.platformMaxAdvanceAmount ?? 0).toLocaleString("en-IN")} (interest-free tier)
+                </p>
+              </div>
+              <div style={{ background: "var(--color-canvas)", border: BDR, borderRadius: 12, padding: "14px 16px" }}>
+                <p style={{ fontSize: 10.5, fontWeight: 600, color: T3, textTransform: "uppercase", letterSpacing: "0.07em", margin: 0 }}>Maximum cap</p>
+                <p style={{ fontSize: 22, fontWeight: 700, color: T1, margin: "6px 0 2px", letterSpacing: "-0.02em" }}>
+                  {advanceRules.hardCeilingPercentage}%
+                  <span style={{ fontSize: 13, fontWeight: 400, color: T2, marginLeft: 6 }}>of salary</span>
+                </p>
+                <p style={{ fontSize: 11.5, color: T3, margin: 0 }}>hard ceiling — cannot be exceeded</p>
+              </div>
+            </div>
+          ) : (
+            <div style={{ height: 80, background: "var(--color-canvas)", borderRadius: 12, border: BDR, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <p style={{ fontSize: 12, color: T3, margin: 0 }}>Loading platform rules…</p>
+            </div>
+          )}
+
+          {/* Current override status */}
+          {productConfig?.maximumAdvancePercentageOverride != null && (
+            <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", background: PS, border: `1px solid #C7D4FF`, borderRadius: 10 }}>
+              <Wallet size={14} style={{ color: P, flexShrink: 0 }} />
+              <p style={{ fontSize: 12.5, color: "var(--color-brand)", margin: 0 }}>
+                Your current override: <strong>{productConfig.maximumAdvancePercentageOverride}% of salary</strong>
+              </p>
+            </div>
+          )}
+
+          {/* Divider */}
+          <div style={{ borderTop: BDR }} />
+
+          {/* Override input — FIX #19 (no pre-fill), #20 (sentence-case label), #21 (aligned row) */}
+          <div>
+            {/* FIX #20: sentence-case, not ALL CAPS */}
+            <p style={{ fontSize: 12, fontWeight: 600, color: T2, margin: "0 0 8px" }}>Set your override <span style={{ fontWeight: 400, color: T3 }}>(optional)</span></p>
+            <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+              <div style={{ flex: 1, position: "relative" }}>
+                <input
+                  type="number"
+                  min={1}
+                  max={ceiling}
+                  step={1}
+                  value={pctInput}
+                  onChange={e => { setPctInput(e.target.value); setPctError(""); }}
+                  placeholder={`e.g. 20  (max ${ceiling}%)`}
+                  style={{
+                    ...inputBase,
+                    paddingRight: 30,
+                    borderColor: pctError ? "#EF4444" : "#E5E7EB",
+                  }}
+                />
+                <span style={{ position: "absolute", right: 11, top: "50%", transform: "translateY(-50%)", fontSize: 13, color: T3, pointerEvents: "none" }}>%</span>
+              </div>
+              {/* FIX #21: buttons vertically centred with input */}
+              <button
+                onClick={handleSaveLimit}
+                disabled={savingLimit}
+                style={{
+                  height: 38, padding: "0 18px", display: "flex", alignItems: "center", gap: 6,
+                  borderRadius: 8, background: P, border: "none", color: "white", flexShrink: 0,
+                  fontSize: 13, fontWeight: 600, cursor: savingLimit ? "not-allowed" : "pointer",
+                  opacity: savingLimit ? 0.6 : 1, boxShadow: "0 4px 14px rgba(49,94,255,0.22)",
+                  fontFamily: "inherit",
+                }}
+              >
+                <Save size={13} />
+                {savingLimit ? "Saving…" : "Save"}
+              </button>
+              {pctInput !== "" && (
+                <button
+                  onClick={() => { setPctInput(""); setPctError(""); }}
+                  style={{ height: 38, padding: "0 14px", borderRadius: 8, background: "white", border: BDR, color: T2, fontSize: 13, cursor: "pointer", fontFamily: "inherit", flexShrink: 0 }}
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+            {pctError ? (
+              <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 7 }}>
+                <AlertTriangle size={12} style={{ color: "#EF4444", flexShrink: 0 }} />
+                <p style={{ fontSize: 12, color: "#EF4444", margin: 0 }}>{pctError}</p>
+              </div>
+            ) : (
+              <p style={{ fontSize: 12, color: T3, margin: "7px 0 0" }}>
+                Leave blank to use platform default ({advanceRules?.defaultAdvancePercentage ?? "—"}%). Cannot exceed {ceiling}%.
+              </p>
+            )}
+          </div>
+
+          {/* Info note — FIX #22: increase text to 12.5px */}
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 8, padding: "11px 14px", background: "var(--color-warning-soft)", border: "1px solid var(--color-warning-bg)", borderRadius: 10 }}>
+            <Info size={13} style={{ color: "var(--color-warning)", flexShrink: 0, marginTop: 2 }} />
+            <p style={{ fontSize: 12.5, color: "var(--color-warning-dark)", margin: 0, lineHeight: 1.55 }}>
+              Your override applies to all employees. Each employee's advance is further limited by their individual salary eligibility. Contact MobPae to request a higher cap.
+            </p>
+          </div>
+        </div>
       </div>
 
-      {/* Company identity (read-only) */}
+      {/* ── COMPANY IDENTITY — read-only ─────────────────────────────────────── */}
       <div style={card()}>
-        <div style={{ padding: "16px 20px", borderBottom: BDR }}>
-          <p style={{ fontSize: 13, fontWeight: 600, color: T1 }}>Company identity</p>
-          <p style={{ fontSize: 12, color: T2, marginTop: 2 }}>Read-only — set by your MobPae administrator</p>
-        </div>
-        <div style={{ padding: "20px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-          <Field label="Company name" icon={<Building2 size={11} />}>
-            <Input value={profile.companyName} disabled />
-          </Field>
-          <Field label="Company code" icon={<Lock size={11} />}>
-            <Input value={profile.companyCode} disabled />
-          </Field>
-          <Field label="Login email" icon={<Mail size={11} />}>
-            <Input value={profile.loginEmail} disabled />
-          </Field>
-          <Field label="Account status" icon={<CheckCircle2 size={11} />}>
-            <div style={{ height: 36, padding: "0 12px", display: "flex", alignItems: "center" }}>
-              {profile.status ? (
-                <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "2px 9px", borderRadius: 999, fontSize: 11, fontWeight: 500, background: "#DCFCE7", color: "#16A34A" }}>
-                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#16A34A" }} />
-                  {profile.status}
-                </span>
-              ) : <span style={{ fontSize: 12, color: T2 }}>—</span>}
-            </div>
-          </Field>
-        </div>
-        <div style={{ padding: "10px 20px", background: PS + "40", borderTop: BDR }}>
-          <p style={{ fontSize: 11, color: P }}>
-            Login email is used for authentication and cannot be changed here. Contact support to update it.
+        <SectionHeader
+          title="Company identity"
+          subtitle="Managed by your MobPae administrator — contact support to update"
+        />
+
+        <InfoRow
+          icon={<Building2 size={16} />}
+          label="Company name"
+          value={profile.companyName || "—"}
+        />
+        <InfoRow
+          icon={<Lock size={16} />}
+          label="Company code"
+          value={
+            profile.companyCode
+              ? <span style={{ fontFamily: "ui-monospace, monospace", fontSize: 13, background: "var(--color-surface-muted)", padding: "2px 8px", borderRadius: 6 }}>{profile.companyCode}</span>
+              : "—"
+          }
+        />
+        <InfoRow
+          icon={<Mail size={16} />}
+          label="Login email"
+          value={profile.loginEmail || "—"}
+        />
+        <InfoRow
+          icon={<Shield size={16} />}
+          label="Account status"
+          value={null}
+          badge={
+            profile.status ? (
+              <span style={{
+                display: "inline-flex", alignItems: "center", gap: 5,
+                padding: "4px 10px", borderRadius: 999, fontSize: 11, fontWeight: 600,
+                background: profile.status === "ACTIVE" ? "var(--color-success-bg)" : "var(--color-warning-bg)",
+                color: profile.status === "ACTIVE" ? "var(--color-success)" : "var(--color-warning)",
+              }}>
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: profile.status === "ACTIVE" ? "var(--color-success)" : "var(--color-warning)" }} />
+                {profile.status}
+              </span>
+            ) : <span style={{ fontSize: 13, color: T3 }}>—</span>
+          }
+        />
+        {/* Last row: no border-bottom */}
+        <div style={{ padding: "10px 20px", background: PS + "55", borderTop: BDR }}>
+          <p style={{ fontSize: 11, color: P, margin: 0 }}>
+            Login email is your authentication credential and cannot be changed here.
           </p>
         </div>
       </div>
 
-      {/* Editable contact info */}
+      {/* ── CONTACT INFO — editable ───────────────────────────────────────────── */}
       <div style={card()}>
-        <div style={{ padding: "16px 20px", borderBottom: BDR }}>
-          <p style={{ fontSize: 13, fontWeight: 600, color: T1 }}>Contact information</p>
-          <p style={{ fontSize: 12, color: T2, marginTop: 2 }}>Update company contact and billing details</p>
-        </div>
+        <SectionHeader title="Contact information" subtitle="Update your company's contact and billing details" />
+
         <form onSubmit={handleSubmit} style={{ padding: 20, display: "flex", flexDirection: "column", gap: 16 }}>
-          <Field label="Contact person" icon={<User size={11} />}>
-            <Input value={profile.contactPerson} onChange={v => set("contactPerson", v)} placeholder="Arjun Sharma" />
-          </Field>
+          <div>
+            <FieldLabel label="Contact person" />
+            <div style={{ position: "relative" }}>
+              <User size={13} style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", color: T3 }} />
+              <input
+                value={profile.contactPerson}
+                onChange={e => set("contactPerson", e.target.value)}
+                placeholder="Arjun Sharma"
+                style={{ ...inputBase, paddingLeft: 30 }}
+              />
+            </div>
+          </div>
+
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-            <Field label="Company email" icon={<Mail size={11} />}>
-              <Input type="email" value={profile.companyEmail} onChange={v => set("companyEmail", v)} placeholder="hr@company.com" />
-            </Field>
-            <Field label="Phone" icon={<Phone size={11} />}>
-              <Input value={profile.phone} onChange={v => set("phone", v)} placeholder="+91 98765 00000" />
-            </Field>
+            <div>
+              <FieldLabel label="Company email" />
+              <div style={{ position: "relative" }}>
+                <Mail size={13} style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", color: T3 }} />
+                <input
+                  type="email"
+                  value={profile.companyEmail}
+                  onChange={e => set("companyEmail", e.target.value)}
+                  placeholder="hr@company.com"
+                  style={{ ...inputBase, paddingLeft: 30 }}
+                />
+              </div>
+            </div>
+            <div>
+              <FieldLabel label="Phone" />
+              <div style={{ position: "relative" }}>
+                <Phone size={13} style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", color: T3 }} />
+                <input
+                  value={profile.phone}
+                  onChange={e => set("phone", e.target.value)}
+                  placeholder="+91 98765 00000"
+                  style={{ ...inputBase, paddingLeft: 30 }}
+                />
+              </div>
+            </div>
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: 12, paddingTop: 4 }}>
@@ -196,89 +407,20 @@ export function SettingsPage() {
                 height: 36, padding: "0 16px", display: "flex", alignItems: "center", gap: 6,
                 borderRadius: 8, background: P, border: "none", color: "white",
                 fontSize: 12, fontWeight: 600, cursor: saving ? "not-allowed" : "pointer",
-                opacity: saving ? 0.6 : 1, boxShadow: "0 4px 14px rgba(49,94,255,0.25)",
-                transition: "opacity 0.15s",
+                opacity: saving ? 0.6 : 1, boxShadow: "0 4px 14px rgba(49,94,255,0.22)",
+                fontFamily: "inherit",
               }}
             >
               <Save size={13} />
               {saving ? "Saving…" : "Save changes"}
             </button>
             {saved && (
-              <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 500, color: "#16A34A" }}>
-                <CheckCircle2 size={13} />Changes saved
+              <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 500, color: "var(--color-success)" }}>
+                <CheckCircle2 size={13} /> Saved
               </div>
             )}
           </div>
         </form>
-      </div>
-
-      {/* Salary advance limit */}
-      <div style={card()}>
-        <div style={{ padding: "16px 20px", borderBottom: BDR }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <Wallet size={14} color={P} />
-            <p style={{ fontSize: 13, fontWeight: 600, color: T1 }}>Salary advance limit</p>
-          </div>
-          <p style={{ fontSize: 12, color: T2, marginTop: 2 }}>
-            Set a custom advance cap for your employees. Leave blank to use the platform default
-            (min of 10% of salary or ₹5,000). The hard ceiling of 50% of salary still applies.
-          </p>
-        </div>
-        <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 16 }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, alignItems: "end" }}>
-            <Field label="Max advance amount (₹)" icon={<Wallet size={11} />}>
-              <div style={{ position: "relative" }}>
-                <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", fontSize: 12, color: T3, pointerEvents: "none" }}>₹</span>
-                <input
-                  type="number"
-                  min={1000}
-                  step={500}
-                  value={overrideInput}
-                  onChange={e => setOverrideInput(e.target.value)}
-                  placeholder="e.g. 7000 (blank = platform default)"
-                  style={{ ...inputBase, paddingLeft: 22 }}
-                />
-              </div>
-            </Field>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, paddingBottom: 0 }}>
-              <button
-                type="button"
-                onClick={handleSaveOverride}
-                disabled={savingOverride}
-                style={{
-                  height: 36, padding: "0 16px", display: "flex", alignItems: "center", gap: 6,
-                  borderRadius: 8, background: P, border: "none", color: "white",
-                  fontSize: 12, fontWeight: 600, cursor: savingOverride ? "not-allowed" : "pointer",
-                  opacity: savingOverride ? 0.6 : 1, boxShadow: "0 4px 14px rgba(49,94,255,0.25)",
-                }}
-              >
-                <Save size={13} />
-                {savingOverride ? "Saving…" : "Save limit"}
-              </button>
-              {overrideInput !== "" && (
-                <button
-                  type="button"
-                  onClick={() => { setOverrideInput(""); }}
-                  style={{ height: 36, padding: "0 12px", borderRadius: 8, background: "white", border: BDR, color: T2, fontSize: 12, cursor: "pointer" }}
-                >
-                  Clear (use default)
-                </button>
-              )}
-            </div>
-          </div>
-          {productConfig && (
-            <div style={{ background: "#F9FAFB", border: BDR, borderRadius: 8, padding: "10px 14px" }}>
-              <p style={{ fontSize: 11.5, color: T2, margin: 0 }}>
-                Current override:&nbsp;
-                <strong style={{ color: T1 }}>
-                  {productConfig.maximumAdvanceAmountOverride != null
-                    ? `₹${productConfig.maximumAdvanceAmountOverride.toLocaleString("en-IN")}`
-                    : "Platform default (min of 10% salary or ₹5,000)"}
-                </strong>
-              </p>
-            </div>
-          )}
-        </div>
       </div>
     </div>
   );

@@ -8,7 +8,6 @@ import { ResetPasswordPage } from "../pages/auth/ResetPasswordPage";
 import { ChangePasswordPage } from "../pages/auth/ChangePasswordPage";
 import { DashboardPage } from "../pages/dashboard/DashboardPage";
 import { EmployeesPage } from "../pages/employees/EmployeesPage";
-import { RecoveriesPage } from "../pages/recoveries/RecoveriesPage";
 import { RepaymentsPage } from "../pages/repayments/RepaymentsPage";
 import { SalaryRequestsPage } from "../pages/salary-requests/SalaryRequestsPage";
 import { SettingsPage } from "../pages/settings/SettingsPage";
@@ -35,7 +34,7 @@ export function AppRoutes() {
             <Route path="/dashboard"       element={<DashboardPage />}       />
             <Route path="/employees"       element={<EmployeesPage />}       />
             <Route path="/loan-applications" element={<SalaryRequestsPage />}  />
-            <Route path="/recoveries"      element={<RecoveriesPage />}       />
+            <Route path="/recoveries"      element={<Navigate to="/repayments" replace />} />
             <Route path="/repayments"      element={<RepaymentsPage />}       />
             <Route path="/settlements"     element={<SettlementsPage />}      />
             <Route path="/settings"        element={<SettingsPage />}         />

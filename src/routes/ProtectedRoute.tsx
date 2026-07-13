@@ -18,7 +18,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   }, [isWrongRole, logout]);
 
   if (loading) {
-    return <div className="grid min-h-screen place-items-center bg-[#ECEBFF] text-sm font-semibold text-[#5659D9]">Loading MobPae...</div>;
+    return <div className="grid min-h-screen place-items-center bg-brand-soft text-sm font-semibold text-[#5659D9]">Loading MobPae...</div>;
   }
 
   if (!isAuthenticated) {

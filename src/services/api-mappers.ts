@@ -64,7 +64,7 @@ const normalizeEmploymentStatus = (value: unknown): EmploymentStatus =>
 
 const normalizeLoanApplicationStatus = (value: unknown): LoanApplicationStatus => {
   const normalized = String(value ?? "SUBMITTED").toUpperCase();
-  const allowed: LoanApplicationStatus[] = ["PENDING", "SUBMITTED", "UNDER_REVIEW", "EMPLOYER_APPROVED", "EMPLOYER_REJECTED", "AWAITING_MEMBERSHIP_PAYMENT", "APPROVED", "REJECTED", "READY_FOR_DISBURSAL", "DISBURSED", "REPAYMENT_SCHEDULED", "REPAID", "CANCELLED", "EXPIRED"];
+  const allowed: LoanApplicationStatus[] = ["PENDING", "SUBMITTED", "UNDER_REVIEW", "EMPLOYER_APPROVED", "EMPLOYER_REJECTED", "AWAITING_MEMBERSHIP_PAYMENT", "AWAITING_PLATFORM_FEE_PAYMENT", "APPROVED", "REJECTED", "READY_FOR_DISBURSAL", "DISBURSED", "REPAYMENT_SCHEDULED", "REPAID", "CANCELLED", "EXPIRED"];
   return allowed.includes(normalized as LoanApplicationStatus) ? (normalized as LoanApplicationStatus) : "SUBMITTED";
 };
 
@@ -124,9 +124,7 @@ export const toEmployeeApiPayload = (payload: EmployeePayload) => ({
   phone: payload.phone,
   salaryInHand: payload.salaryInHand,
   employmentStatus: payload.employmentStatus,
-  appActivated: payload.appActivated,
-  department: payload.department,
-  joinedAt: payload.joinedAt
+  appActivated: payload.appActivated
 });
 
 export const mapBulkEmployeeUploadError = (value: unknown): BulkEmployeeUploadError => {
@@ -267,9 +265,11 @@ export const mapDashboardStats = (value: unknown): Partial<DashboardStats> => {
 };
 
 const normalizeSettlementStatus = (value: unknown): SettlementStatus => {
-  const s = String(value ?? "PENDING").toUpperCase();
-  const allowed: SettlementStatus[] = ["NO_DUES", "PENDING", "PARTIALLY_PAID", "PAID", "OVERDUE"];
-  return allowed.includes(s as SettlementStatus) ? (s as SettlementStatus) : "PENDING";
+  const s = String(value ?? "GENERATED").toUpperCase();
+  // Map legacy values
+  if (s === "PENDING" || s === "NO_DUES") return "GENERATED";
+  const allowed: SettlementStatus[] = ["DRAFT", "GENERATED", "PARTIALLY_PAID", "PAID", "OVERDUE", "CANCELLED"];
+  return allowed.includes(s as SettlementStatus) ? (s as SettlementStatus) : "GENERATED";
 };
 
 // Parse amount that may arrive as string or number from backend
@@ -285,22 +285,26 @@ const amountValue = (value: unknown): number => {
 export const mapSettlement = (value: unknown): EmployerSettlement => {
   const r = asRecord(value);
   return {
-    id:                text(r.id ?? r._id, ""),
-    employerId:        text(r.employerId, ""),
-    payrollMonth:      text(r.payrollMonth ?? r.month ?? r.period, ""),
-    principalAmount:   amountValue(r.principalAmount),
-    interestAmount:    amountValue(r.interestAmount),
-    lateFeeAmount:     amountValue(r.lateFeeAmount ?? r.lateFee ?? r.penaltyAmount),
-    totalAmount:       amountValue(r.totalAmount),
-    outstandingAmount: amountValue(r.outstandingAmount ?? r.amountDue),
-    dueDate:           text(r.dueDate, new Date().toISOString()),
-    gracePeriodEnd:    typeof r.gracePeriodEnd === "string" ? r.gracePeriodEnd : null,
-    paidDate:          typeof r.paidDate === "string" ? r.paidDate : null,
-    status:            normalizeSettlementStatus(r.status),
-    referenceNumber:   typeof r.referenceNumber === "string" ? r.referenceNumber : null,
-    notes:             typeof r.notes === "string" ? r.notes : null,
-    createdAt:         text(r.createdAt, new Date().toISOString()),
-    updatedAt:         text(r.updatedAt, new Date().toISOString()),
+    id:                   text(r.id ?? r._id, ""),
+    employerId:           text(r.employerId, ""),
+    settlementNumber:     text(r.settlementNumber, ""),
+    cycleDate:            text(r.cycleDate ?? r.payrollMonth ?? r.month ?? r.period, ""),
+    principalAmount:      amountValue(r.principalAmount),
+    interestAmount:       amountValue(r.interestAmount),
+    lateFeeAmount:        amountValue(r.lateFeeAmount ?? r.lateFee ?? r.penaltyAmount),
+    processingFeeAmount:  amountValue(r.processingFeeAmount ?? r.processingFee),
+    gstAmount:            amountValue(r.gstAmount),
+    totalAmount:          amountValue(r.totalAmount),
+    outstandingAmount:    amountValue(r.outstandingAmount ?? r.amountDue),
+    employeeCount:        numberValue(r.employeeCount),
+    dueDate:              text(r.dueDate, new Date().toISOString()),
+    gracePeriodEnd:       typeof r.gracePeriodEnd === "string" ? r.gracePeriodEnd : null,
+    paidDate:             typeof r.paidDate === "string" ? r.paidDate : null,
+    generatedAt:          typeof r.generatedAt === "string" ? r.generatedAt : null,
+    status:               normalizeSettlementStatus(r.status),
+    notes:                typeof r.notes === "string" ? r.notes : null,
+    createdAt:            text(r.createdAt, new Date().toISOString()),
+    updatedAt:            text(r.updatedAt, new Date().toISOString()),
   };
 };
 

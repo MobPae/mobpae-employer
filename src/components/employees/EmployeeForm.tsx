@@ -20,13 +20,13 @@ function validateSalary(v: number): string | null {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-[11px] font-[500] text-[#62657A] mb-1">{label}</label>
+      <label className="block text-[11px] font-[500] text-ink-3 mb-1">{label}</label>
       {children}
     </div>
   );
 }
 
-const inputCls = "w-full h-9 px-3 text-[13px] bg-white border border-[#E4E4EF] rounded-lg text-[#191A2E] placeholder-[#B7B9C7] focus:outline-none focus:border-[#7679FF] focus:ring-2 focus:ring-[#7679FF]/10 transition";
+const inputCls = "w-full h-9 px-3 text-[13px] bg-white border border-edge rounded-lg text-ink placeholder-[#B7B9C7] focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition";
 const selectCls = inputCls + " appearance-none cursor-pointer";
 
 export function EmployeeForm({ employee, onSubmit }: { employee?: Employee; onSubmit: (p: EmployeePayload) => Promise<void> }) {
@@ -79,7 +79,7 @@ export function EmployeeForm({ employee, onSubmit }: { employee?: Employee; onSu
             required
             placeholder="50000"
           />
-          {salaryErr && <p className="text-[11px] text-red-600 mt-1">{salaryErr}</p>}
+          {salaryErr && <p className="text-[11px] text-danger mt-1">{salaryErr}</p>}
         </Field>
       </div>
 
@@ -96,16 +96,16 @@ export function EmployeeForm({ employee, onSubmit }: { employee?: Employee; onSu
       </div>
 
       {/* App access toggle */}
-      <div className="flex items-center justify-between bg-[#F7F7FB] border border-[#E4E4EF] rounded-lg px-4 py-3">
+      <div className="flex items-center justify-between bg-surface-raised border border-edge rounded-lg px-4 py-3">
         <div>
-          <p className="text-[13px] font-[500] text-[#191A2E]">App access</p>
-          <p className="text-[11px] text-[#62657A] mt-0.5">Allow employee to use the MobPae app</p>
+          <p className="text-[13px] font-[500] text-ink">App access</p>
+          <p className="text-[11px] text-ink-3 mt-0.5">Allow employee to use the MobPae app</p>
         </div>
         <button
           type="button"
           onClick={() => set("appActivated", !form.appActivated)}
           style={{ width: 36, height: 20 }}
-          className={`relative inline-flex items-center rounded-full transition-colors flex-shrink-0 ${form.appActivated ? "bg-[#7679FF]" : "bg-[#E4E4EF]"}`}
+          className={`relative inline-flex items-center rounded-full transition-colors flex-shrink-0 ${form.appActivated ? "bg-brand" : "bg-[#E4E4EF]"}`}
         >
           <span className={`inline-block w-4 h-4 rounded-full bg-white shadow transition-transform ${form.appActivated ? "translate-x-[17px]" : "translate-x-[2px]"}`} />
         </button>
@@ -114,7 +114,7 @@ export function EmployeeForm({ employee, onSubmit }: { employee?: Employee; onSu
       <button
         type="submit"
         disabled={saving}
-        className="w-full h-10 rounded-lg bg-[#7679FF] hover:bg-[#5659D9] text-white text-[13px] font-[600] transition disabled:opacity-50"
+        className="w-full h-10 rounded-lg bg-brand hover:bg-[#5659D9] text-white text-[13px] font-[600] transition disabled:opacity-50"
       >
         {saving ? "Saving…" : employee ? "Save changes" : "Add employee"}
       </button>

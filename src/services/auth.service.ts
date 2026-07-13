@@ -50,7 +50,10 @@ const ensureEmployerRole = (user: AuthUser) => {
 
 export const authService = {
   async login(credentials: LoginCredentials): Promise<LoginResponse> {
-    const { data } = await httpClient.post("/auth/login", credentials);
+    const { data } = await httpClient.post("/auth/login", {
+      ...credentials,
+      email: credentials.email.trim().toLowerCase(),
+    });
     const responseData = unwrapItem<Record<string, unknown>>(data);
     const token = String(responseData.accessToken ?? responseData.token ?? responseData.jwt ?? "");
 
@@ -133,7 +136,9 @@ export const authService = {
   },
 
   async forgotPassword(email: string): Promise<void> {
-    await httpClient.post("/auth/forgot-password", { email });
+    await httpClient.post("/auth/forgot-password", {
+      email: email.trim().toLowerCase(),
+    });
   },
 
   async resetPassword(token: string, newPassword: string): Promise<void> {

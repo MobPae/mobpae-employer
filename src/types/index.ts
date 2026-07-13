@@ -7,6 +7,7 @@ export type LoanApplicationStatus =
   | "EMPLOYER_APPROVED"
   | "EMPLOYER_REJECTED"
   | "AWAITING_MEMBERSHIP_PAYMENT"
+  | "AWAITING_PLATFORM_FEE_PAYMENT"
   | "APPROVED"
   | "REJECTED"
   | "READY_FOR_DISBURSAL"
@@ -100,6 +101,7 @@ export interface Repayment {
   employeeId: string;
   employeeName: string;
   loanApplicationId: string;
+  /** @deprecated Repayments are linked via SettlementLineItem, not directly to settlement */
   settlementId?: string | null;
   amount: number;
   principalAmount: number;
@@ -185,22 +187,34 @@ export interface NotificationItem {
 
 // ── Settlements ───────────────────────────────────────────────────────────────
 
-export type SettlementStatus = "NO_DUES" | "PENDING" | "PARTIALLY_PAID" | "PAID" | "OVERDUE";
+export type SettlementStatus =
+  | "DRAFT"
+  | "GENERATED"
+  | "PARTIALLY_PAID"
+  | "PAID"
+  | "OVERDUE"
+  | "CANCELLED";
 
 export interface EmployerSettlement {
   id: string;
   employerId: string;
-  payrollMonth: string;       // "2024-01" or human-readable
+  /** Settlement number, e.g. MPS-LTIM-202607-0001 */
+  settlementNumber: string;
+  /** ISO DateTime of first day of payroll recovery month */
+  cycleDate: string;
   principalAmount: number;
   interestAmount: number;
   lateFeeAmount: number;
+  processingFeeAmount: number;
+  gstAmount: number;
   totalAmount: number;
   outstandingAmount: number;
+  employeeCount: number;
   dueDate: string;
   gracePeriodEnd: string | null;
   paidDate: string | null;
+  generatedAt: string | null;
   status: SettlementStatus;
-  referenceNumber: string | null;
   notes: string | null;
   createdAt: string;
   updatedAt: string;

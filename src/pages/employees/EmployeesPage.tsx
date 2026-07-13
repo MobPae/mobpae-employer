@@ -33,14 +33,14 @@ function DrawerPanel({ open, title, subtitle, onClose, children }: {
   return (
     <>
       {open && <div className="fixed inset-0 z-30 bg-black/20 backdrop-blur-[1px]" onClick={onClose} />}
-      <div className={`fixed inset-y-0 right-0 z-40 w-[440px] bg-white flex flex-col transition-transform duration-200 ${open ? "translate-x-0" : "translate-x-full"}`}
+      <div className={`fixed inset-y-0 right-0 z-40 w-full max-w-[480px] bg-white flex flex-col transition-transform duration-200 ${open ? "translate-x-0" : "translate-x-full"}`}
         style={{ borderLeft: "1px solid #E5E7EB", boxShadow: "0 8px 40px rgba(17,24,39,0.10)" }}>
         <div style={{ padding: "18px 20px 16px", borderBottom: "1px solid #E5E7EB", display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
           <div>
-            <p style={{ fontSize: 14, fontWeight: 600, color: "#111827" }}>{title}</p>
-            {subtitle && <p style={{ fontSize: 12, color: "#6B7280", marginTop: 3 }}>{subtitle}</p>}
+            <p style={{ fontSize: 14, fontWeight: 600, color: "var(--color-ink)" }}>{title}</p>
+            {subtitle && <p style={{ fontSize: 12, color: "var(--color-ink-3)", marginTop: 3 }}>{subtitle}</p>}
           </div>
-          <button onClick={onClose} style={{ width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 8, border: "1px solid #E5E7EB", color: "#6B7280", background: "transparent", cursor: "pointer" }}>
+          <button onClick={onClose} style={{ width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 8, border: "1px solid #E5E7EB", color: "var(--color-ink-3)", background: "transparent", cursor: "pointer" }}>
             <X size={14} />
           </button>
         </div>
@@ -101,54 +101,42 @@ export function EmployeesPage() {
     <div style={{ display: "flex", flexDirection: "column", gap: 20, fontFamily: "Inter, ui-sans-serif, sans-serif" }}>
 
       {/* Page header */}
-      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
-        <div>
-          <h1 style={{ fontSize: 24, fontWeight: 700, color: "#111827", letterSpacing: "-0.025em", margin: 0 }}>Employees</h1>
-          <p style={{ fontSize: 14, color: "#6B7280", marginTop: 6 }}>
-            <span style={{ fontWeight: 600, color: "#111827" }}>{total}</span> total · <span style={{ fontWeight: 600, color: "#111827" }}>{active}</span> active · <span style={{ fontWeight: 600, color: "#111827" }}>{appOn}</span> on app
-          </p>
-        </div>
-        <div style={{ display: "flex", gap: 8 }}>
-          <button onClick={() => exportToCsv(filtered.map(e => ({ Name: e.name, Code: e.employeeCode, Email: e.email, Phone: e.phone, Salary: e.salaryInHand, Department: e.department ?? "", Status: e.employmentStatus, AppActivated: e.appActivated ? "Yes" : "No" })), `employees-${Date.now()}`)}
-            style={{ ...btnBase, background: "white", border: "1px solid #E5E7EB", color: "#6B7280" }}>
-            <Download size={14} />Export
-          </button>
-          <button onClick={() => { setBulkResult(null); setDrawerMode("BULK"); }}
-            style={{ ...btnBase, background: "white", border: "1px solid #E5E7EB", color: "#6B7280" }}>
-            <UploadCloud size={14} />Bulk add
-          </button>
-          <button onClick={() => { setEditEmployee(undefined); setDrawerMode("CREATE"); }}
-            style={{ ...btnBase, background: "#315eff", border: "none", color: "white", boxShadow: "0 4px 14px rgba(49,94,255,0.25)", fontWeight: 600 }}>
-            <Plus size={14} />Add employee
-          </button>
-        </div>
+      <div>
+        <h1 style={{ fontSize: 24, fontWeight: 700, color: "var(--color-ink)", letterSpacing: "-0.025em", margin: 0 }}>Employees</h1>
+        <p style={{ fontSize: 14, color: "var(--color-ink-3)", marginTop: 6 }}>
+          <span style={{ fontWeight: 600, color: "var(--color-ink)" }}>{total}</span> total · <span style={{ fontWeight: 600, color: "var(--color-ink)" }}>{active}</span> active · <span style={{ fontWeight: 600, color: "var(--color-ink)" }}>{appOn}</span> on app
+        </p>
       </div>
 
-      {/* Search + filters */}
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <div style={{ position: "relative", flex: 1, maxWidth: 300 }}>
-          <Search size={14} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "#9CA3AF" }} />
+      {/* Search + filters | actions toolbar */}
+      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+        {/* Search */}
+        <div style={{ position: "relative", flex: "1 1 200px", maxWidth: 300 }}>
+          <Search size={14} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--color-ink-4)" }} />
           <input
             value={query}
             onChange={e => { setQuery(e.target.value); setPage(1); }}
             placeholder="Search employees…"
-            style={{ width: "100%", height: 38, paddingLeft: 36, paddingRight: 12, fontSize: 13, background: "white", border: "1px solid #E5E7EB", borderRadius: 8, color: "#111827", outline: "none", fontFamily: "inherit" }}
-            onFocus={e => (e.target.style.borderColor = "#315eff")}
-            onBlur={e  => (e.target.style.borderColor = "#E5E7EB")}
+            style={{ width: "100%", height: 38, paddingLeft: 36, paddingRight: 12, fontSize: 13, background: "white", border: "1px solid #E5E7EB", borderRadius: 8, color: "var(--color-ink)", outline: "none", fontFamily: "inherit" }}
+            onFocus={e => (e.target.style.borderColor = "var(--color-brand)")}
+            onBlur={e  => (e.target.style.borderColor = "var(--color-edge)")}
           />
         </div>
+        {/* Filters */}
         <select value={statusFilter} onChange={e => setStatusFilter(e.target.value as "ALL" | EmploymentStatus)}
-          style={{ height: 38, padding: "0 12px", fontSize: 13, background: "white", border: "1px solid #E5E7EB", borderRadius: 8, color: "#6B7280", cursor: "pointer", fontFamily: "inherit", outline: "none" }}>
+          style={{ height: 38, padding: "0 12px", fontSize: 13, background: "white", border: "1px solid #E5E7EB", borderRadius: 8, color: "var(--color-ink-3)", cursor: "pointer", fontFamily: "inherit", outline: "none" }}>
           <option value="ALL">All employment</option>
           <option value="ACTIVE">Active only</option>
           <option value="INACTIVE">Inactive only</option>
         </select>
         <select value={appFilter} onChange={e => setAppFilter(e.target.value as "ALL" | "ON" | "OFF")}
-          style={{ height: 38, padding: "0 12px", fontSize: 13, background: "white", border: "1px solid #E5E7EB", borderRadius: 8, color: "#6B7280", cursor: "pointer", fontFamily: "inherit", outline: "none" }}>
+          style={{ height: 38, padding: "0 12px", fontSize: 13, background: "white", border: "1px solid #E5E7EB", borderRadius: 8, color: "var(--color-ink-3)", cursor: "pointer", fontFamily: "inherit", outline: "none" }}>
           <option value="ALL">All app access</option>
           <option value="ON">App activated</option>
           <option value="OFF">Not activated</option>
         </select>
+
+        {/* Bulk activate (conditional) */}
         {selectedIds.length > 0 && (
           <button
             disabled={bulkLoading}
@@ -164,44 +152,61 @@ export function EmployeesPage() {
               } catch (err) { toast.error("Bulk activation failed", getApiErrorMessage(err)); }
               finally { setBulkLoading(false); }
             }}
-            style={{ ...btnBase, marginLeft: "auto", background: "#315eff", border: "none", color: "white", boxShadow: "0 4px 14px rgba(49,94,255,0.25)", fontWeight: 600, opacity: bulkLoading ? 0.7 : 1 }}>
+            style={{ ...btnBase, background: "var(--color-brand)", border: "none", color: "white", boxShadow: "0 4px 14px rgba(49,94,255,0.25)", fontWeight: 600, opacity: bulkLoading ? 0.7 : 1 }}>
             <Zap size={13} />{bulkLoading ? "Activating…" : `Activate ${selectedIds.length}`}
           </button>
         )}
+
+        {/* Divider + action buttons */}
+        <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ width: 1, height: 24, background: "var(--color-edge)" }} />
+          <button onClick={() => exportToCsv(filtered.map(e => ({ Name: e.name, Code: e.employeeCode, Email: e.email, Phone: e.phone, Salary: e.salaryInHand, Department: e.department ?? "", Status: e.employmentStatus, AppActivated: e.appActivated ? "Yes" : "No" })), `employees-${Date.now()}`)}
+            style={{ ...btnBase, background: "white", border: "1px solid #E5E7EB", color: "var(--color-ink-3)" }}>
+            <Download size={14} />Export
+          </button>
+          <button onClick={() => { setBulkResult(null); setDrawerMode("BULK"); }}
+            style={{ ...btnBase, background: "white", border: "1px solid #E5E7EB", color: "var(--color-ink-3)" }}>
+            <UploadCloud size={14} />Bulk add
+          </button>
+          <button onClick={() => { setEditEmployee(undefined); setDrawerMode("CREATE"); }}
+            style={{ ...btnBase, background: "var(--color-brand)", border: "none", color: "white", boxShadow: "0 4px 14px rgba(49,94,255,0.25)", fontWeight: 600 }}>
+            <Plus size={14} />Add employee
+          </button>
+        </div>
       </div>
 
       {/* Table card */}
       <div style={{ background: "white", borderRadius: 16, border: "1px solid #E5E7EB", boxShadow: "0 1px 4px rgba(17,24,39,0.04)", overflow: "hidden" }}>
         {loadError ? (
           <div style={{ padding: "48px 0", textAlign: "center" }}>
-            <p style={{ fontSize: 13, fontWeight: 500, color: "#DC2626" }}>Failed to load employees</p>
-            <p style={{ fontSize: 12, color: "#6B7280", marginTop: 4 }}>{loadError}</p>
-            <button onClick={refresh} style={{ marginTop: 16, height: 34, padding: "0 16px", fontSize: 12, fontWeight: 500, background: "white", border: "1px solid #E5E7EB", borderRadius: 8, cursor: "pointer", color: "#6B7280", fontFamily: "inherit" }}>Retry</button>
+            <p style={{ fontSize: 13, fontWeight: 500, color: "var(--color-danger)" }}>Failed to load employees</p>
+            <p style={{ fontSize: 12, color: "var(--color-ink-3)", marginTop: 4 }}>{loadError}</p>
+            <button onClick={refresh} style={{ marginTop: 16, height: 34, padding: "0 16px", fontSize: 12, fontWeight: 500, background: "white", border: "1px solid #E5E7EB", borderRadius: 8, cursor: "pointer", color: "var(--color-ink-3)", fontFamily: "inherit" }}>Retry</button>
           </div>
         ) : loading ? (
           <div>
             {[...Array(6)].map((_, i) => (
               <div key={i} style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 20px", borderBottom: i < 5 ? "1px solid #F9FAFB" : "none" }}>
-                <div className="animate-pulse" style={{ width: 32, height: 32, borderRadius: "50%", background: "#F3F4F6", flexShrink: 0 }} />
+                <div className="animate-pulse" style={{ width: 32, height: 32, borderRadius: "50%", background: "var(--color-surface-muted)", flexShrink: 0 }} />
                 <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
-                  <div className="animate-pulse" style={{ height: 10, width: 128, background: "#F3F4F6", borderRadius: 6 }} />
-                  <div className="animate-pulse" style={{ height: 8, width: 96, background: "#F3F4F6", borderRadius: 6 }} />
+                  <div className="animate-pulse" style={{ height: 10, width: 128, background: "var(--color-surface-muted)", borderRadius: 6 }} />
+                  <div className="animate-pulse" style={{ height: 8, width: 96, background: "var(--color-surface-muted)", borderRadius: 6 }} />
                 </div>
-                <div className="animate-pulse" style={{ height: 10, width: 80, background: "#F3F4F6", borderRadius: 6 }} />
-                <div className="animate-pulse" style={{ height: 18, width: 60, background: "#F3F4F6", borderRadius: 999 }} />
+                <div className="animate-pulse" style={{ height: 10, width: 80, background: "var(--color-surface-muted)", borderRadius: 6 }} />
+                <div className="animate-pulse" style={{ height: 18, width: 60, background: "var(--color-surface-muted)", borderRadius: 999 }} />
               </div>
             ))}
           </div>
         ) : employees.length === 0 ? (
           <div style={{ padding: "64px 0", textAlign: "center" }}>
-            <div style={{ width: 40, height: 40, borderRadius: 12, background: "#EEF2FF", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#315eff" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+            <div style={{ width: 40, height: 40, borderRadius: 12, background: "var(--color-brand-soft)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-brand)" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
                 <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
               </svg>
             </div>
-            <p style={{ fontSize: 13, fontWeight: 500, color: "#6B7280" }}>No employees added yet</p>
-            <p style={{ fontSize: 12, color: "#9CA3AF", marginTop: 4 }}>Employees will appear here once your workforce is onboarded.</p>
+            <p style={{ fontSize: 13, fontWeight: 500, color: "var(--color-ink-3)" }}>No employees added yet</p>
+            <p style={{ fontSize: 12, color: "var(--color-ink-4)", marginTop: 4 }}>Employees will appear here once your workforce is onboarded.</p>
           </div>
         ) : (
           <>
@@ -271,26 +276,26 @@ export function EmployeesPage() {
           }}
         />
         {(bulkResult?.errors.length ?? 0) > 0 && (
-          <div style={{ marginTop: 16, background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 8, overflow: "hidden" }}>
+          <div style={{ marginTop: 16, background: "var(--color-danger-soft)", border: "1px solid var(--color-danger-bg)", borderRadius: 8, overflow: "hidden" }}>
             <div style={{ padding: "10px 14px", borderBottom: "1px solid #FECACA" }}>
-              <p style={{ fontSize: 12, fontWeight: 600, color: "#DC2626" }}>{bulkResult!.failureCount} rows skipped</p>
+              <p style={{ fontSize: 12, fontWeight: 600, color: "var(--color-danger)" }}>{bulkResult!.failureCount} rows skipped</p>
             </div>
             <div style={{ overflowX: "auto", maxHeight: 200, overflowY: "auto" }}>
               <table style={{ width: "100%", fontSize: 11, borderCollapse: "collapse" }}>
                 <thead>
                   <tr style={{ borderBottom: "1px solid #FECACA" }}>
                     {["Row", "Code", "Email", "Error"].map(h => (
-                      <th key={h} style={{ padding: "8px 12px", textAlign: "left", fontWeight: 500, color: "#DC2626" }}>{h}</th>
+                      <th key={h} style={{ padding: "8px 12px", textAlign: "left", fontWeight: 500, color: "var(--color-danger)" }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {bulkResult!.errors.map(e => (
                     <tr key={`${e.row}-${e.email}`} style={{ borderBottom: "1px solid #FEE2E2" }}>
-                      <td style={{ padding: "7px 12px", color: "#DC2626" }}>{e.row}</td>
-                      <td style={{ padding: "7px 12px", color: "#6B7280" }}>{e.employeeCode || "—"}</td>
-                      <td style={{ padding: "7px 12px", color: "#6B7280" }}>{e.email || "—"}</td>
-                      <td style={{ padding: "7px 12px", color: "#6B7280" }}>{e.message}</td>
+                      <td style={{ padding: "7px 12px", color: "var(--color-danger)" }}>{e.row}</td>
+                      <td style={{ padding: "7px 12px", color: "var(--color-ink-3)" }}>{e.employeeCode || "—"}</td>
+                      <td style={{ padding: "7px 12px", color: "var(--color-ink-3)" }}>{e.email || "—"}</td>
+                      <td style={{ padding: "7px 12px", color: "var(--color-ink-3)" }}>{e.message}</td>
                     </tr>
                   ))}
                 </tbody>

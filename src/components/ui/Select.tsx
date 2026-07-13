@@ -7,16 +7,19 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
 
 export function Select({ label, options, className = "", ...props }: SelectProps) {
   return (
-    <label className="grid gap-1.5 text-[12px] font-[600] text-[#191A2E]">
-      {label}
+    <label className="grid gap-1.5">
+      {label && (
+        <span className="text-xs font-semibold text-ink">{label}</span>
+      )}
       <select
-        className={`h-10 w-full rounded-lg border border-[#E4E4EF] bg-white px-3 text-[13px] text-[#191A2E] transition focus:border-[#7679FF] focus:ring-4 focus:ring-[#7679FF]/10 ${className}`}
+        className={`h-10 w-full rounded-lg border border-edge bg-surface px-3 text-sm text-ink transition-colors
+          focus:border-brand focus:ring-2 focus:ring-brand/15
+          disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-ink-disabled
+          ${className}`}
         {...props}
       >
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
+        {options.map((o) => (
+          <option key={o.value} value={o.value}>{o.label}</option>
         ))}
       </select>
     </label>

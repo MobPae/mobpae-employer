@@ -6,6 +6,7 @@ interface Props {
   title: string;
   description: string;
   confirmLabel?: string;
+  confirmVariant?: "danger" | "primary";
   confirmClass?: string;
   loading?: boolean;
   onConfirm: () => void;
@@ -17,7 +18,8 @@ export function ConfirmModal({
   title,
   description,
   confirmLabel = "Confirm",
-  confirmClass = "bg-red-600 hover:bg-red-700 text-white",
+  confirmVariant = "danger",
+  confirmClass,
   loading = false,
   onConfirm,
   onCancel,
@@ -31,36 +33,40 @@ export function ConfirmModal({
 
   if (!open) return null;
 
+  const confirmCls = confirmClass ?? (confirmVariant === "danger"
+    ? "bg-danger text-white hover:bg-danger-dark"
+    : "bg-brand text-white hover:bg-brand-hover");
+
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" onClick={onCancel} />
       <div
-        className="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl border border-[#E4E4EF] p-6"
+        className="relative w-full max-w-sm rounded-2xl border border-edge bg-surface p-6 shadow-overlay"
         role="alertdialog"
         aria-modal="true"
         aria-label={title}
       >
-        <div className="flex items-start gap-3 mb-4">
-          <div className="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center flex-shrink-0">
-            <AlertTriangle size={16} className="text-amber-500" />
+        <div className="mb-4 flex items-start gap-3">
+          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-warning-soft">
+            <AlertTriangle size={16} className="text-warning" />
           </div>
           <div>
-            <h3 className="text-[14px] font-[700] text-[#191A2E] leading-snug">{title}</h3>
-            <p className="text-[12px] text-[#62657A] mt-1 leading-relaxed">{description}</p>
+            <h3 className="text-sm font-bold text-ink leading-snug">{title}</h3>
+            <p className="mt-1 text-xs text-ink-3 leading-relaxed">{description}</p>
           </div>
         </div>
-        <div className="flex gap-2 justify-end">
+        <div className="flex justify-end gap-2">
           <button
             onClick={onCancel}
             disabled={loading}
-            className="h-8 px-4 text-[12px] font-[500] text-[#62657A] bg-white border border-[#E4E4EF] rounded-lg hover:bg-[#F0F0F8] transition-colors disabled:opacity-50"
+            className="h-8 rounded-lg border border-edge bg-surface px-4 text-xs font-medium text-ink-3 transition-colors hover:bg-surface-raised disabled:opacity-50"
           >
             Cancel
           </button>
           <button
             onClick={onConfirm}
             disabled={loading}
-            className={`h-8 px-4 text-[12px] font-[600] rounded-lg transition-colors disabled:opacity-50 ${confirmClass}`}
+            className={`h-8 rounded-lg px-4 text-xs font-semibold transition-colors disabled:opacity-50 ${confirmCls}`}
           >
             {loading ? "Please wait…" : confirmLabel}
           </button>

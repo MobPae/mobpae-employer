@@ -14,27 +14,28 @@ import { formatCurrency, formatDate } from "../../utils/formatters";
 // ── status config ─────────────────────────────────────────────────────────────
 
 const STATUS_CFG: Record<string, { label: string; bg: string; text: string }> = {
-  PENDING:             { label: "Pending",          bg: "#FEF3C7", text: "#D97706" },
-  SUBMITTED:           { label: "Submitted",         bg: "#FEF3C7", text: "#D97706" },
-  UNDER_REVIEW:        { label: "Under review",      bg: "#FEF3C7", text: "#D97706" },
-  EMPLOYER_APPROVED:           { label: "Approved by you",      bg: "#DBEAFE", text: "#1D4ED8" },
-  EMPLOYER_REJECTED:           { label: "Rejected by you",      bg: "#FEE2E2", text: "#DC2626" },
-  AWAITING_MEMBERSHIP_PAYMENT: { label: "Awaiting membership",  bg: "#FEF3C7", text: "#D97706" },
-  APPROVED:                    { label: "Admin approved",        bg: "#DBEAFE", text: "#1D4ED8" },
-  REJECTED:            { label: "Rejected",          bg: "#FEE2E2", text: "#DC2626" },
-  READY_FOR_DISBURSAL: { label: "Ready to disburse", bg: "#DCFCE7", text: "#16A34A" },
-  DISBURSED:           { label: "Disbursed",         bg: "#DCFCE7", text: "#16A34A" },
-  REPAYMENT_SCHEDULED: { label: "Repaying",          bg: "#FEF3C7", text: "#D97706" },
-  REPAID:              { label: "Repaid",             bg: "#F0FDF4", text: "#166534" },
-  CANCELLED:           { label: "Cancelled",          bg: "#F3F4F6", text: "#6B7280" },
-  EXPIRED:             { label: "Expired",            bg: "#F3F4F6", text: "#6B7280" },
+  PENDING:             { label: "Pending",          bg: "var(--color-warning-bg)", text: "var(--color-warning)" },
+  SUBMITTED:           { label: "Submitted",         bg: "var(--color-warning-bg)", text: "var(--color-warning)" },
+  UNDER_REVIEW:        { label: "Under review",      bg: "var(--color-warning-bg)", text: "var(--color-warning)" },
+  EMPLOYER_APPROVED:           { label: "Approved by you",      bg: "var(--color-info-bg)", text: "var(--color-info)" },
+  EMPLOYER_REJECTED:           { label: "Rejected by you",      bg: "var(--color-danger-bg)", text: "var(--color-danger)" },
+  AWAITING_MEMBERSHIP_PAYMENT: { label: "Platform fee pending",  bg: "var(--color-warning-bg)", text: "var(--color-warning)" },
+  AWAITING_PLATFORM_FEE_PAYMENT: { label: "Platform fee pending",  bg: "var(--color-warning-bg)", text: "var(--color-warning)" },
+  APPROVED:                    { label: "Admin approved",        bg: "var(--color-info-bg)", text: "var(--color-info)" },
+  REJECTED:            { label: "Rejected",          bg: "var(--color-danger-bg)", text: "var(--color-danger)" },
+  READY_FOR_DISBURSAL: { label: "Ready to disburse", bg: "var(--color-success-bg)", text: "var(--color-success)" },
+  DISBURSED:           { label: "Disbursed",         bg: "var(--color-success-bg)", text: "var(--color-success)" },
+  REPAYMENT_SCHEDULED: { label: "Repaying",          bg: "var(--color-warning-bg)", text: "var(--color-warning)" },
+  REPAID:              { label: "Repaid",             bg: "var(--color-success-soft)", text: "var(--color-success-dark)" },
+  CANCELLED:           { label: "Cancelled",          bg: "var(--color-surface-muted)", text: "var(--color-ink-3)" },
+  EXPIRED:             { label: "Expired",            bg: "var(--color-surface-muted)", text: "var(--color-ink-3)" },
 };
 
 // Employer can only review SUBMITTED requests
 const REVIEWABLE = new Set(["SUBMITTED"]);
 
 function StatusPill({ status }: { status: string }) {
-  const c = STATUS_CFG[status] ?? { label: status, bg: "#F3F4F6", text: "#6B7280" };
+  const c = STATUS_CFG[status] ?? { label: status, bg: "var(--color-surface-muted)", text: "var(--color-ink-3)" };
   return (
     <span style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "2px 9px", borderRadius: 999, fontSize: 11, fontWeight: 500, background: c.bg, color: c.text }}>
       <span style={{ width: 6, height: 6, borderRadius: "50%", background: c.text, flexShrink: 0 }} />
@@ -50,7 +51,7 @@ const FILTERS: { label: string; value: "ALL" | LoanApplicationStatus }[] = [
   { label: "Submitted",       value: "SUBMITTED"          },
   { label: "Approved by you",   value: "EMPLOYER_APPROVED"           },
   { label: "Rejected by you",   value: "EMPLOYER_REJECTED"           },
-  { label: "Awaiting membership", value: "AWAITING_MEMBERSHIP_PAYMENT" },
+  { label: "Platform fee", value: "AWAITING_PLATFORM_FEE_PAYMENT" },
   { label: "Disbursed",         value: "DISBURSED"                   },
   { label: "Repaying",        value: "REPAYMENT_SCHEDULED"},
   { label: "Repaid",          value: "REPAID"             },
@@ -73,8 +74,8 @@ function DrawerPanel({ open, onClose, children }: { open: boolean; onClose: () =
 function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid #F9FAFB" }}>
-      <span style={{ fontSize: 12, color: "#6B7280" }}>{label}</span>
-      <span style={{ fontSize: 12, fontWeight: 500, color: "#111827" }}>{value}</span>
+      <span style={{ fontSize: 12, color: "var(--color-ink-3)" }}>{label}</span>
+      <span style={{ fontSize: 12, fontWeight: 500, color: "var(--color-ink)" }}>{value}</span>
     </div>
   );
 }
@@ -206,9 +207,15 @@ export function SalaryRequestsPage() {
   };
 
   // ── bulk actions ─────────────────────────────────────────────────────────────
+  const MAX_BULK = 50;
+
   const handleBulkApprove = async () => {
     const ids = Array.from(selectedIds);
     if (!ids.length) return;
+    if (ids.length > MAX_BULK) {
+      toast.error("Too many selected", `Bulk actions are limited to ${MAX_BULK} requests at a time.`);
+      return;
+    }
     setBulkLoading(true);
     try {
       const result = await salaryRequestService.bulkAction("APPROVE", ids);
@@ -225,6 +232,10 @@ export function SalaryRequestsPage() {
   const handleBulkReject = async () => {
     const ids = Array.from(selectedIds);
     if (!ids.length || !bulkRemarks.trim()) return;
+    if (ids.length > MAX_BULK) {
+      toast.error("Too many selected", `Bulk actions are limited to ${MAX_BULK} requests at a time.`);
+      return;
+    }
     setBulkLoading(true);
     try {
       const result = await salaryRequestService.bulkAction("REJECT", ids, bulkRemarks.trim());
@@ -242,12 +253,17 @@ export function SalaryRequestsPage() {
 
   const hasBulkSelection = selectedIds.size > 0;
 
-  const P  = "#315eff";
-  const PS = "#EEF2FF";
-  const T1 = "#111827";
-  const T2 = "#6B7280";
-  const T3 = "#9CA3AF";
-  const BDR = "1px solid #E5E7EB";
+  
+  
+  
+  
+  
+  const T1  = "var(--color-ink)";
+  const T2  = "var(--color-ink-3)";
+  const T3  = "var(--color-ink-4)";
+  const P   = "var(--color-brand)";
+  const PS  = "var(--color-brand-soft)";
+  const BDR = "1px solid var(--color-edge)";
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20, fontFamily: "Inter, ui-sans-serif, sans-serif" }}>
@@ -271,7 +287,7 @@ export function SalaryRequestsPage() {
           <Search size={14} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: T3 }} />
           <input value={query} onChange={e => { setQuery(e.target.value); setPage(1); }} placeholder="Search by name, code, ID…"
             style={{ width: "100%", height: 38, paddingLeft: 36, paddingRight: 12, fontSize: 13, background: "white", border: BDR, borderRadius: 8, color: T1, outline: "none", fontFamily: "inherit" }}
-            onFocus={e => (e.target.style.borderColor = P)} onBlur={e => (e.target.style.borderColor = "#E5E7EB")} />
+            onFocus={e => (e.target.style.borderColor = P)} onBlur={e => (e.target.style.borderColor = "var(--color-edge)")} />
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
           <Calendar size={13} color={T3} />
@@ -282,7 +298,7 @@ export function SalaryRequestsPage() {
             style={{ height: 34, padding: "0 10px", fontSize: 12, background: "white", border: BDR, borderRadius: 8, outline: "none", color: T2, fontFamily: "inherit" }} />
           {(dateFrom || dateTo) && (
             <button onClick={() => { setDateFrom(""); setDateTo(""); setPage(1); }}
-              style={{ width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "50%", background: "#F3F4F6", border: "none", cursor: "pointer", color: T2 }}>
+              style={{ width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "50%", background: "var(--color-surface-muted)", border: "none", cursor: "pointer", color: T2 }}>
               <X size={11} />
             </button>
           )}
@@ -314,7 +330,7 @@ export function SalaryRequestsPage() {
               <input autoFocus value={bulkRemarks} onChange={e => setBulkRemarks(e.target.value)} placeholder="Rejection remarks (required)…"
                 style={{ flex: 1, height: 34, padding: "0 12px", fontSize: 12, background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 8, color: "white", outline: "none", fontFamily: "inherit" }} />
               <button onClick={handleBulkReject} disabled={bulkLoading || !bulkRemarks.trim()}
-                style={{ height: 34, padding: "0 14px", fontSize: 12, fontWeight: 600, background: "#DC2626", color: "white", border: "none", borderRadius: 8, cursor: bulkLoading || !bulkRemarks.trim() ? "not-allowed" : "pointer", opacity: bulkLoading || !bulkRemarks.trim() ? 0.5 : 1, fontFamily: "inherit" }}>
+                style={{ height: 34, padding: "0 14px", fontSize: 12, fontWeight: 600, background: "var(--color-danger)", color: "white", border: "none", borderRadius: 8, cursor: bulkLoading || !bulkRemarks.trim() ? "not-allowed" : "pointer", opacity: bulkLoading || !bulkRemarks.trim() ? 0.5 : 1, fontFamily: "inherit" }}>
                 {bulkLoading ? "Rejecting…" : "Confirm Reject"}
               </button>
               <button onClick={() => { setBulkRejectOpen(false); setBulkRemarks(""); }}
@@ -329,7 +345,7 @@ export function SalaryRequestsPage() {
                 <CheckCheck size={13} />{bulkLoading ? "Approving…" : `Approve ${selectedIds.size}`}
               </button>
               <button onClick={() => setBulkRejectOpen(true)} disabled={bulkLoading}
-                style={{ height: 34, padding: "0 14px", display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, background: "#DC2626", color: "white", border: "none", borderRadius: 8, cursor: "pointer", opacity: bulkLoading ? 0.5 : 1, fontFamily: "inherit" }}>
+                style={{ height: 34, padding: "0 14px", display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, background: "var(--color-danger)", color: "white", border: "none", borderRadius: 8, cursor: "pointer", opacity: bulkLoading ? 0.5 : 1, fontFamily: "inherit" }}>
                 <Ban size={13} />Reject {selectedIds.size}
               </button>
             </>
@@ -341,7 +357,7 @@ export function SalaryRequestsPage() {
       <div style={{ background: "white", borderRadius: 16, border: BDR, boxShadow: "0 1px 4px rgba(17,24,39,0.04)", overflow: "hidden" }}>
         {loadError ? (
           <div style={{ padding: "48px 0", textAlign: "center" }}>
-            <p style={{ fontSize: 13, fontWeight: 500, color: "#DC2626" }}>Failed to load loan applications</p>
+            <p style={{ fontSize: 13, fontWeight: 500, color: "var(--color-danger)" }}>Failed to load loan applications</p>
             <p style={{ fontSize: 12, color: T2, marginTop: 4 }}>{loadError}</p>
             <button onClick={load} style={{ marginTop: 16, height: 34, padding: "0 16px", fontSize: 12, fontWeight: 500, background: "white", border: BDR, borderRadius: 8, cursor: "pointer", color: T2, fontFamily: "inherit" }}>Retry</button>
           </div>
@@ -349,14 +365,14 @@ export function SalaryRequestsPage() {
           <div>
             {[...Array(8)].map((_, i) => (
               <div key={i} style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 20px", borderBottom: i < 7 ? "1px solid #F9FAFB" : "none" }}>
-                <div className="animate-pulse" style={{ width: 14, height: 14, borderRadius: 3, background: "#F3F4F6" }} />
-                <div className="animate-pulse" style={{ width: 28, height: 28, borderRadius: 8, background: "#F3F4F6" }} />
+                <div className="animate-pulse" style={{ width: 14, height: 14, borderRadius: 3, background: "var(--color-surface-muted)" }} />
+                <div className="animate-pulse" style={{ width: 28, height: 28, borderRadius: 8, background: "var(--color-surface-muted)" }} />
                 <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 5 }}>
-                  <div className="animate-pulse" style={{ height: 10, width: 112, background: "#F3F4F6", borderRadius: 6 }} />
-                  <div className="animate-pulse" style={{ height: 8, width: 64, background: "#F3F4F6", borderRadius: 6 }} />
+                  <div className="animate-pulse" style={{ height: 10, width: 112, background: "var(--color-surface-muted)", borderRadius: 6 }} />
+                  <div className="animate-pulse" style={{ height: 8, width: 64, background: "var(--color-surface-muted)", borderRadius: 6 }} />
                 </div>
-                <div className="animate-pulse" style={{ height: 10, width: 64, background: "#F3F4F6", borderRadius: 6 }} />
-                <div className="animate-pulse" style={{ height: 18, width: 80, background: "#F3F4F6", borderRadius: 999 }} />
+                <div className="animate-pulse" style={{ height: 10, width: 64, background: "var(--color-surface-muted)", borderRadius: 6 }} />
+                <div className="animate-pulse" style={{ height: 18, width: 80, background: "var(--color-surface-muted)", borderRadius: 999 }} />
               </div>
             ))}
           </div>
@@ -377,7 +393,7 @@ export function SalaryRequestsPage() {
                 <col style={{ width: "12%" }} /><col style={{ width: "12%" }} />
               </colgroup>
               <thead>
-                <tr style={{ background: "#FAFAFA", borderBottom: "1px solid #F3F4F6" }}>
+                <tr style={{ background: "var(--color-surface-raised)", borderBottom: "1px solid var(--color-edge-2)" }}>
                   <th style={{ padding: "14px 16px", width: 44 }}>
                     <input type="checkbox" checked={allPageSelected} onChange={toggleAll} disabled={reviewableOnPage.length === 0}
                       style={{ width: 14, height: 14, accentColor: P, cursor: reviewableOnPage.length === 0 ? "not-allowed" : "pointer", opacity: reviewableOnPage.length === 0 ? 0.3 : 1 }} />
@@ -394,7 +410,7 @@ export function SalaryRequestsPage() {
                   const isSelected   = selected?.id === r.id;
                   return (
                     <tr key={r.id} style={{ borderBottom: "1px solid #F9FAFB", background: isSelected ? `${PS}80` : isChecked ? `${PS}60` : "transparent", cursor: "pointer", transition: "background 0.1s" }}
-                      onMouseEnter={e => { if (!isSelected && !isChecked) (e.currentTarget as HTMLElement).style.background = "#FAFAFC"; }}
+                      onMouseEnter={e => { if (!isSelected && !isChecked) (e.currentTarget as HTMLElement).style.background = "var(--color-surface-raised)"; }}
                       onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = isSelected ? `${PS}80` : isChecked ? `${PS}60` : "transparent"; }}>
                       <td style={{ padding: "16px 16px", verticalAlign: "middle" }} onClick={e => e.stopPropagation()}>
                         {isReviewable ? (
@@ -426,7 +442,7 @@ export function SalaryRequestsPage() {
         )}
         {/* Footer strip */}
         {!loading && filtered.length > 0 && (
-          <div style={{ padding: "12px 20px", borderTop: "1px solid #F3F4F6", background: "#FAFAFA", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div style={{ padding: "12px 20px", borderTop: "1px solid var(--color-edge-2)", background: "var(--color-surface-raised)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <p style={{ fontSize: 12, color: T3, margin: 0 }}>{filtered.length} {filtered.length === 1 ? "application" : "applications"}</p>
             <Pagination page={safePage} totalPages={totalPages} total={filtered.length} limit={PAGE_SIZE} onPage={setPage} />
           </div>
@@ -461,14 +477,14 @@ export function SalaryRequestsPage() {
             <div style={{ flex: 1, overflowY: "auto", padding: "16px 20px", display: "flex", flexDirection: "column", gap: 16 }}>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                 {[{ label: "Requested", val: formatCurrency(selected.requestedAmount) }, { label: "Employer Approved", val: selected.employerApprovedAmount ? formatCurrency(selected.employerApprovedAmount) : "—" }].map(({ label, val }) => (
-                  <div key={label} style={{ background: "#F9FAFB", border: BDR, borderRadius: 12, padding: 14 }}>
+                  <div key={label} style={{ background: "var(--color-canvas)", border: BDR, borderRadius: 12, padding: 14 }}>
                     <p style={{ fontSize: 11, color: T3, marginBottom: 4 }}>{label}</p>
                     <p style={{ fontSize: 18, fontWeight: 700, color: T1, fontVariantNumeric: "tabular-nums" }}>{val}</p>
                   </div>
                 ))}
               </div>
 
-              <div style={{ background: "#EEF2FF", border: "1px solid #E5E7EB", borderRadius: 12, padding: 14, display: "flex", gap: 10 }}>
+              <div style={{ background: "var(--color-brand-soft)", border: "1px solid #E5E7EB", borderRadius: 12, padding: 14, display: "flex", gap: 10 }}>
                 <ShieldCheck size={16} color={P} style={{ flexShrink: 0, marginTop: 1 }} />
                 <div>
                   <p style={{ fontSize: 12, fontWeight: 700, color: T1, margin: 0 }}>Employer review context</p>
@@ -485,13 +501,13 @@ export function SalaryRequestsPage() {
               </div>
 
               {canReview && (
-                <div style={{ background: "#FFFBEB", border: "1px solid #FDE68A", borderRadius: 12, padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
-                  <p style={{ fontSize: 12, fontWeight: 600, color: "#D97706", margin: 0 }}>Review this application</p>
+                <div style={{ background: "var(--color-warning-soft)", border: "1px solid var(--color-warning-bg)", borderRadius: 12, padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: "var(--color-warning)", margin: 0 }}>Review this application</p>
                   <div>
                     <label style={{ display: "block", fontSize: 11, fontWeight: 500, color: T2, marginBottom: 6 }}>Rejection remarks (required to reject)</label>
                     <textarea value={remarks} onChange={e => setRemarks(e.target.value)} placeholder="Employee not eligible…" rows={3}
                       style={{ width: "100%", padding: "8px 12px", fontSize: 12, background: "white", border: BDR, borderRadius: 8, color: T1, outline: "none", resize: "none", fontFamily: "inherit" }}
-                      onFocus={e => (e.target.style.borderColor = P)} onBlur={e => (e.target.style.borderColor = "#E5E7EB")} />
+                      onFocus={e => (e.target.style.borderColor = P)} onBlur={e => (e.target.style.borderColor = "var(--color-edge)")} />
                   </div>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
                     <button onClick={handleApprove} disabled={Boolean(action)}
@@ -499,7 +515,7 @@ export function SalaryRequestsPage() {
                       <Check size={13} />{action === "APPROVE" ? "Approving…" : "Approve for review"}
                     </button>
                     <button onClick={handleReject} disabled={Boolean(action) || !remarks.trim()}
-                      style={{ height: 36, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, borderRadius: 8, background: "#DC2626", color: "white", border: "none", fontSize: 12, fontWeight: 600, cursor: "pointer", opacity: Boolean(action) || !remarks.trim() ? 0.4 : 1, fontFamily: "inherit" }}>
+                      style={{ height: 36, display: "flex", alignItems: "center", justifyContent: "center", gap: 6, borderRadius: 8, background: "var(--color-danger)", color: "white", border: "none", fontSize: 12, fontWeight: 600, cursor: "pointer", opacity: Boolean(action) || !remarks.trim() ? 0.4 : 1, fontFamily: "inherit" }}>
                       <X size={13} />{action === "REJECT" ? "Rejecting…" : "Reject"}
                     </button>
                   </div>
@@ -515,7 +531,7 @@ export function SalaryRequestsPage() {
         title={`Approve ${selectedIds.size} request${selectedIds.size !== 1 ? "s" : ""}?`}
         description={`This will approve ${selectedIds.size} submitted loan application${selectedIds.size !== 1 ? "s" : ""} on behalf of your company. MobPae admin will still complete final review and disbursal.`}
         confirmLabel={`Approve ${selectedIds.size}`}
-        confirmClass="bg-[#315eff] hover:bg-[#2048EE] text-white"
+        confirmClass="bg-brand hover:bg-[#2048EE] text-white"
         loading={bulkLoading}
         onConfirm={() => { setConfirmBulkApprove(false); void handleBulkApprove(); }}
         onCancel={() => setConfirmBulkApprove(false)}

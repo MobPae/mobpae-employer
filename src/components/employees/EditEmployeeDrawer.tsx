@@ -78,18 +78,18 @@ export default function EditEmployeeDrawer({
       />
 
       <div className="fixed top-0 right-0 h-screen w-full max-w-md bg-white shadow-2xl z-50 flex flex-col">
-        <div className="flex items-center justify-between px-6 py-5 border-b border-[#E4E4EF]">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-edge">
           <div>
             <h2 className="text-lg font-semibold">Edit Employee</h2>
 
-            <p className="text-sm text-[#62657A] mt-1">
+            <p className="text-sm text-ink-3 mt-1">
               Update employee information
             </p>
           </div>
 
           <button
             onClick={onClose}
-            className="h-9 w-9 rounded-xl border border-[#E4E4EF] flex items-center justify-center hover:bg-[#F7F7FB]"
+            className="h-9 w-9 rounded-xl border border-edge flex items-center justify-center hover:bg-surface-raised"
           >
             <X size={16} />
           </button>
@@ -127,7 +127,7 @@ export default function EditEmployeeDrawer({
           />
 
           <div>
-            <label className="block text-sm font-medium text-[#62657A] mb-2">
+            <label className="block text-sm font-medium text-ink-3 mb-2">
               Employment Status
             </label>
 
@@ -136,18 +136,18 @@ export default function EditEmployeeDrawer({
               onChange={(e) =>
                 setEmploymentStatus(e.target.value as "ACTIVE" | "INACTIVE")
               }
-              className="w-full px-4 py-3 text-sm border border-[#E4E4EF] rounded-xl"
+              className="w-full px-4 py-3 text-sm border border-edge rounded-xl"
             >
               <option value="ACTIVE">ACTIVE</option>
               <option value="INACTIVE">INACTIVE</option>
             </select>
           </div>
 
-          <div className="pt-6 border-t border-[#E4E4EF] flex justify-end gap-3">
+          <div className="pt-6 border-t border-edge flex justify-end gap-3">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl border border-[#E4E4EF]"
+              className="px-4 py-2 rounded-xl border border-edge"
             >
               Cancel
             </button>
@@ -155,7 +155,7 @@ export default function EditEmployeeDrawer({
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-2 rounded-xl bg-[#7679FF] text-white"
+              className="px-4 py-2 rounded-xl bg-brand text-white"
             >
               {loading ? "Saving..." : "Save Changes"}
             </button>
@@ -187,7 +187,7 @@ function FormField({
 }: FormFieldProps) {
   return (
     <div>
-      <label className="block text-sm font-medium text-[#62657A] mb-2">
+      <label className="block text-sm font-medium text-ink-3 mb-2">
         {label}
       </label>
 
@@ -203,14 +203,14 @@ function FormField({
             py-3
             text-sm
             border
-            border-[#E4E4EF]
+            border-edge
             rounded-xl
-            ${disabled ? "bg-[#F0F0F8] text-[#62657A] cursor-not-allowed" : ""}
+            ${disabled ? "bg-surface-raised text-ink-3 cursor-not-allowed" : ""}
           `}
       />
 
       {helperText && (
-        <p className="mt-2 text-xs text-[#62657A]">{helperText}</p>
+        <p className="mt-2 text-xs text-ink-3">{helperText}</p>
       )}
     </div>
   );

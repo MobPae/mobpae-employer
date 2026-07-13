@@ -1,6 +1,112 @@
 @import "tailwindcss";
 
-/* Override browser autofill background */
+/* ─────────────────────────────────────────────────────────────────────────────
+   MobPae Design Tokens — Employer Portal
+   Tailwind v4: @theme creates both CSS vars (var(--color-brand)) AND utilities
+   (bg-brand, text-brand, border-brand, shadow-card, etc.)
+───────────────────────────────────────────────────────────────────────────── */
+@theme {
+  /* ── Typography ── */
+  --font-sans:    "Tasa Orbiter Display", "TASA Orbiter Display Medium", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Tasa Orbiter Display", "TASA Orbiter Display Medium", ui-sans-serif, system-ui, sans-serif;
+  --font-mono:    ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, monospace;
+
+  /* Extra-small text (11px) — use text-2xs in components */
+  --text-2xs:                0.6875rem;
+  --text-2xs--line-height:   1rem;
+
+  /* ── Brand Blue — remap Tailwind blue-* → MobPae palette ── */
+  --color-blue-50:  #EEF2FF;
+  --color-blue-100: #E0E7FF;
+  --color-blue-200: #C7D2FE;
+  --color-blue-300: #A5B4FC;
+  --color-blue-400: #315eff;
+  --color-blue-500: #2048EE;
+  --color-blue-600: #1A3CD4;
+  --color-blue-700: #152DB0;
+  --color-blue-800: #11238C;
+  --color-blue-900: #0C1A68;
+  --color-blue-950: #080F44;
+
+  /* ── Brand tokens ──────────────────────────────────────────
+     Usage: bg-brand  text-brand  border-brand  hover:bg-brand-hover
+  ── */
+  --color-brand:        #315eff;
+  --color-brand-hover:  #2048EE;
+  --color-brand-active: #1A3CD4;
+  --color-brand-soft:   #EEF2FF;
+  --color-brand-muted:  #C7D2FE;
+  --color-brand-on:     #ffffff;
+
+  /* ── Canvas / Surfaces ─────────────────────────────────────
+     bg-canvas        → page background  (#F9FAFB)
+     bg-surface        → card / panel    (#FFFFFF)
+     bg-surface-raised → table header, hover bg
+     bg-surface-muted  → skeleton / disabled input
+  ── */
+  --color-canvas:         #F9FAFB;
+  --color-surface:        #FFFFFF;
+  --color-surface-raised: #FAFAFA;
+  --color-surface-muted:  #F3F4F6;
+
+  /* ── Borders ────────────────────────────────────────────────
+     border-edge        → default border  (#E5E7EB)
+     border-edge-2      → inner row separator
+     border-edge-strong → stronger border
+  ── */
+  --color-edge:        #E5E7EB;
+  --color-edge-2:      #F3F4F6;
+  --color-edge-strong: #D1D5DB;
+
+  /* ── Ink (Text) ────────────────────────────────────────────
+     text-ink   → primary text   (#111827)
+     text-ink-2 → secondary headings
+     text-ink-3 → secondary / label text (#6B7280)
+     text-ink-4 → placeholder / muted    (#9CA3AF)
+  ── */
+  --color-ink:          #111827;
+  --color-ink-2:        #374151;
+  --color-ink-3:        #6B7280;
+  --color-ink-4:        #9CA3AF;
+  --color-ink-disabled: #D1D5DB;
+
+  /* ── Semantic: Success ── */
+  --color-success:      #16A34A;
+  --color-success-dark: #15803D;
+  --color-success-bg:   #DCFCE7;
+  --color-success-soft: #F0FDF4;
+
+  /* ── Semantic: Warning ── */
+  --color-warning:      #D97706;
+  --color-warning-dark: #B45309;
+  --color-warning-bg:   #FEF3C7;
+  --color-warning-soft: #FFFBEB;
+
+  /* ── Semantic: Danger ── */
+  --color-danger:       #DC2626;
+  --color-danger-dark:  #B91C1C;
+  --color-danger-bg:    #FEE2E2;
+  --color-danger-soft:  #FFF1F2;
+
+  /* ── Semantic: Info ── */
+  --color-info:         #2048EE;
+  --color-info-dark:    #1A3CD4;
+  --color-info-bg:      #EEF2FF;
+  --color-info-soft:    #EEF2FF;
+
+  /* ── Shadows ────────────────────────────────────────────────
+     shadow-card    → default card shadow
+     shadow-raised  → elevated / hover card
+     shadow-overlay → drawers, modals
+     shadow-brand   → primary CTA buttons
+  ── */
+  --shadow-card:    0 1px 4px rgba(17, 24, 39, 0.04);
+  --shadow-raised:  0 4px 14px rgba(17, 24, 39, 0.08);
+  --shadow-overlay: 0 8px 40px rgba(17, 24, 39, 0.10);
+  --shadow-brand:   0 4px 14px rgba(49, 94, 255, 0.25);
+}
+
+/* ── Autofill suppression ── */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus {
@@ -9,66 +115,7 @@ input:-webkit-autofill:focus {
   transition: background-color 9999s ease-in-out 0s;
 }
 
-@theme inline {
-  --font-sans:    "Tasa Orbiter Display", "TASA Orbiter Display Medium", sans-serif;
-  --font-display: "Tasa Orbiter Display", "TASA Orbiter Display Medium", sans-serif;
-  --font-serif:   "Tasa Orbiter Display", "TASA Orbiter Display Medium", sans-serif;
-
-  /* Remap Tailwind blue-* → MobPae brand palette (matches admin) */
-  --color-blue-50:  #EEF2FF;
-  --color-blue-100: #E0E7FF;
-  --color-blue-200: #C7D2FE;
-  --color-blue-300: #A5B4FC;
-  --color-blue-400: #315EFF;
-  --color-blue-500: #2048EE;
-  --color-blue-600: #1A3CD4;
-  --color-blue-700: #152DB0;
-  --color-blue-800: #11238C;
-  --color-blue-900: #0C1A68;
-  --color-blue-950: #080F44;
-}
-
-/* ── MobPae Design System — Employer Portal ─────────────────────── */
-:root {
-  /* Brand (aligned with admin) */
-  --brand-primary:       #315eff;
-  --brand-primary-dark:  #2048EE;
-  --brand-primary-soft:  #EEF2FF;
-
-  /* Legacy aliases */
-  --primary:        #315eff;
-  --primary-dark:   #2048EE;
-  --primary-light:  #EEF2FF;
-
-  /* Surface */
-  --background:     #F9FAFB;
-  --surface:        #FFFFFF;
-  --border:         #E5E7EB;
-
-  /* Text */
-  --text-primary:   #111827;
-  --text-secondary: #6B7280;
-  --text-muted:     #9CA3AF;
-  --text-disabled:  #D1D5DB;
-  --text-on-brand:  #FFFFFF;
-  --text-link:      #315eff;
-  --text-success:   #16A34A;
-  --text-warning:   #D97706;
-  --text-error:     #DC2626;
-
-  /* Semantic */
-  --success:        #16A34A;
-  --warning:        #D97706;
-  --error:          #DC2626;
-
-  font-family: "Tasa Orbiter Display", "TASA Orbiter Display Medium", sans-serif;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  font-variant-numeric: tabular-nums;
-}
-
+/* ── Reset & base ── */
 *, *::before, *::after { box-sizing: border-box; }
 
 html { min-width: 320px; }
@@ -76,11 +123,15 @@ html { min-width: 320px; }
 body {
   margin: 0;
   min-height: 100vh;
-  min-width: 320px;
   font-size: 14px;
   line-height: 1.5;
-  color: var(--text-primary);
-  background: var(--background);
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-variant-numeric: tabular-nums;
 }
 
 button, input, select, textarea { font: inherit; }
@@ -88,10 +139,17 @@ button { cursor: pointer; }
 button:disabled { cursor: not-allowed; }
 input, select, textarea { outline: none; }
 
-::selection { color: #fff; background: var(--primary); }
+::selection { color: #fff; background: var(--color-brand); }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { border-radius: 999px; background: #D1D5DB; }
+/* ── Focus ring ── */
+:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--color-brand) 40%, transparent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar        { width: 5px; height: 5px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { border-radius: 9999px; background: #D1D5DB; }
 ::-webkit-scrollbar-thumb:hover { background: #9CA3AF; }

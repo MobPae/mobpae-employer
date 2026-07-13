@@ -4,8 +4,8 @@ import { Eye, EyeOff, KeyRound, Lock, ShieldCheck } from "lucide-react";
 import { authService } from "../../services/auth.service";
 import { getApiErrorMessage } from "../../services/api-errors";
 
-const BRAND = "#7679FF";
-const BRAND_LIGHT = "#ECEBFF";
+
+
 
 export function ChangePasswordPage() {
   const navigate = useNavigate();
@@ -50,36 +50,35 @@ export function ChangePasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#fafafa] flex items-center justify-center px-4">
+    <div className="min-h-screen bg-canvas flex items-center justify-center px-4">
       <div className="w-full max-w-[400px]">
         {/* Icon */}
         <div className="flex justify-center mb-6">
           <div
-            className="w-14 h-14 rounded-2xl flex items-center justify-center"
-            style={{ background: BRAND_LIGHT, border: `1.5px solid ${BRAND}22` }}
+            className="w-14 h-14 rounded-2xl flex items-center justify-center border border-brand-muted bg-brand-soft"
           >
-            <KeyRound size={26} style={{ color: BRAND }} />
+            <KeyRound size={26} className="text-brand" />
           </div>
         </div>
 
         {/* Heading */}
         <div className="text-center mb-7">
-          <h1 className="text-[22px] font-[700] text-[#191A2E] tracking-[-0.02em]">Change Password</h1>
-          <p className="text-[13px] text-[#62657A] mt-1.5 leading-relaxed">
+          <h1 className="text-[22px] font-[700] text-ink tracking-[-0.02em]">Change Password</h1>
+          <p className="text-[13px] text-ink-3 mt-1.5 leading-relaxed">
             Set a new password for your Employer account.
           </p>
         </div>
 
         {success ? (
-          <div className="bg-[#ECEBFF] border border-[#C8C9FF] rounded-xl p-5 text-center">
-            <ShieldCheck size={28} className="text-[#7679FF] mx-auto mb-2" />
-            <p className="text-[14px] font-[600] text-[#191A2E]">Password changed successfully!</p>
-            <p className="text-[12px] text-[#7679FF] mt-1">Redirecting to dashboard…</p>
+          <div className="bg-brand-soft border border-brand-muted rounded-xl p-5 text-center">
+            <ShieldCheck size={28} className="text-brand mx-auto mb-2" />
+            <p className="text-[14px] font-[600] text-ink">Password changed successfully!</p>
+            <p className="text-[12px] text-brand mt-1">Redirecting to dashboard…</p>
           </div>
         ) : (
           <form
             onSubmit={handleSubmit}
-            className="bg-white border border-[#E4E4EF] rounded-2xl p-6 shadow-sm space-y-4"
+            className="bg-white border border-edge rounded-2xl p-6 shadow-sm space-y-4"
           >
             <Field
               label="Current Password"
@@ -110,16 +109,15 @@ export function ChangePasswordPage() {
             />
 
             {error && (
-              <div className="bg-red-50 border border-red-100 rounded-lg px-3 py-2.5">
-                <p className="text-[12px] text-red-600 font-[500]">{error}</p>
+              <div className="bg-danger-soft border border-red-100 rounded-lg px-3 py-2.5">
+                <p className="text-[12px] text-danger font-[500]">{error}</p>
               </div>
             )}
 
             <button
               type="submit"
               disabled={loading || !current || !next || !confirm}
-              className="w-full h-10 rounded-lg text-white text-[13px] font-[600] flex items-center justify-center gap-2 transition disabled:opacity-50 mt-1"
-              style={{ background: BRAND }}
+              className="w-full h-10 rounded-lg bg-brand text-white text-[13px] font-[600] flex items-center justify-center gap-2 transition disabled:opacity-50 mt-1"
             >
               {loading
                 ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -146,9 +144,9 @@ function Field({
 }) {
   return (
     <div>
-      <label className="block text-[12px] font-[500] text-[#62657A] mb-1.5">{label}</label>
+      <label className="block text-[12px] font-[500] text-ink-3 mb-1.5">{label}</label>
       <div className="relative">
-        <Lock size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#62657A]" />
+        <Lock size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-3" />
         <input
           type={show ? "text" : "password"}
           value={value}
@@ -156,12 +154,12 @@ function Field({
           placeholder={placeholder}
           autoComplete={autoComplete}
           required
-          className="w-full h-10 pl-9 pr-10 text-[13px] bg-white border border-[#E4E4EF] rounded-lg text-[#191A2E] placeholder-[#B7B9C7] outline-none focus:border-[#7679FF] focus:ring-2 focus:ring-[#7679FF]/10 transition"
+          className="w-full h-10 pl-9 pr-10 text-[13px] bg-white border border-edge rounded-lg text-ink placeholder-[#B7B9C7] outline-none focus:border-brand focus:ring-2 focus:ring-brand/15 transition"
         />
         <button
           type="button"
           onClick={onToggle}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-[#62657A] hover:text-[#62657A]"
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-3 hover:text-ink-3"
         >
           {show ? <EyeOff size={13} /> : <Eye size={13} />}
         </button>

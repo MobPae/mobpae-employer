@@ -24,9 +24,17 @@ export interface EmployerProductConfig {
   id: string;
   productId: string;
   maximumAdvanceAmountOverride: number | null;
+  maximumAdvancePercentageOverride: number | null;
   requiresEmployerApproval: boolean;
   isEnabled: boolean;
   product: { productType: string; name: string };
+}
+
+/** Only the advance-limit fields the employer is allowed to see */
+export interface ProductAdvanceRules {
+  defaultAdvancePercentage: number;   // e.g. 10 (platform default %)
+  hardCeilingPercentage: number;      // e.g. 50 (absolute max %)
+  platformMaxAdvanceAmount: number;   // e.g. 5000 (₹ cap for interest-free tier)
 }
 
 export const employerService = {
@@ -63,12 +71,18 @@ export const employerService = {
     return Array.isArray(data) ? data : data?.data ?? [];
   },
 
-  /** Update the advance amount override for a product type (absolute ₹, or null to clear) */
-  async setAdvanceOverride(productType: string, maximumAdvanceAmountOverride: number | null): Promise<EmployerProductConfig> {
+  /** Set the employer's advance percentage override (or null to clear) */
+  async setAdvanceOverride(productType: string, maximumAdvancePercentageOverride: number | null): Promise<EmployerProductConfig> {
     const { data } = await httpClient.put(
       `/employers/my/product-configs/${productType}`,
-      { maximumAdvanceAmountOverride }
+      { maximumAdvancePercentageOverride }
     );
     return data;
-  }
+  },
+
+  /** Get the advance limit rules the employer is allowed to see */
+  async getProductAdvanceRules(productType: string): Promise<ProductAdvanceRules> {
+    const { data } = await httpClient.get(`/employers/my/product-configs/${productType}/rules`);
+    return data;
+  },
 };

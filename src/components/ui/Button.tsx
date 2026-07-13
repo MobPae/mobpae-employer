@@ -1,23 +1,38 @@
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 
-type ButtonVariant = "primary" | "secondary" | "danger" | "ghost";
+type Variant = "primary" | "secondary" | "danger" | "ghost";
+type Size    = "sm" | "md" | "lg";
 
-const variants: Record<ButtonVariant, string> = {
-  primary:   "bg-[#7679FF] text-white shadow-sm shadow-[#7679FF]/20 hover:bg-[#5659D9] disabled:bg-[#A5A7FF]",
-  secondary: "border border-[#E4E4EF] bg-white text-[#191A2E] hover:bg-[#F0F0F8] disabled:text-[#62657A]",
-  danger:    "bg-red-600 text-white hover:bg-red-700 disabled:bg-red-300",
-  ghost:     "text-[#5659D9] hover:bg-[#ECEBFF] disabled:text-[#62657A]",
+const VARIANT_CLS: Record<Variant, string> = {
+  primary:   "bg-brand text-white shadow-brand hover:bg-brand-hover active:bg-brand-active disabled:opacity-50 disabled:shadow-none",
+  secondary: "bg-surface text-ink-3 border border-edge hover:bg-surface-raised disabled:opacity-50",
+  danger:    "bg-danger text-white hover:bg-danger-dark disabled:opacity-50",
+  ghost:     "text-brand hover:bg-brand-soft disabled:opacity-50",
+};
+
+const SIZE_CLS: Record<Size, string> = {
+  sm: "h-7 px-3 text-xs gap-1.5 rounded-lg",
+  md: "h-9 px-4 text-sm gap-2 rounded-lg",
+  lg: "h-10 px-5 text-sm gap-2 rounded-xl",
 };
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: ButtonVariant;
+  variant?: Variant;
+  size?: Size;
   icon?: ReactNode;
 }
 
-export function Button({ className = "", variant = "primary", icon, children, ...props }: ButtonProps) {
+export function Button({
+  className = "",
+  variant = "primary",
+  size = "md",
+  icon,
+  children,
+  ...props
+}: ButtonProps) {
   return (
     <button
-      className={`inline-flex min-h-9 items-center justify-center gap-2 rounded-lg px-3 text-[13px] font-[600] transition disabled:cursor-not-allowed disabled:shadow-none ${variants[variant]} ${className}`}
+      className={`inline-flex items-center justify-center font-semibold transition-colors duration-150 disabled:cursor-not-allowed ${VARIANT_CLS[variant]} ${SIZE_CLS[size]} ${className}`}
       {...props}
     >
       {icon}

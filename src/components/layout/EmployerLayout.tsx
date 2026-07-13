@@ -1,10 +1,9 @@
 import {
-  ArrowDownCircle,
   ClipboardList,
   CreditCard,
+  KeyRound,
   Landmark,
   LayoutDashboard,
-  KeyRound,
   LogOut,
   Menu,
   Settings,
@@ -18,23 +17,21 @@ import { NotificationBell } from "./NotificationBell";
 import { ConfirmModal } from "../ui/ConfirmModal";
 
 const NAV = [
-  { label: "Dashboard",       to: "/dashboard",       icon: LayoutDashboard  },
-  { label: "Employees",       to: "/employees",       icon: UsersRound       },
-  { label: "Loan Applications", to: "/loan-applications", icon: ClipboardList    },
-  { label: "Recoveries",      to: "/recoveries",      icon: ArrowDownCircle  },
-  { label: "Repayments",      to: "/repayments",       icon: CreditCard       },
-  { label: "Settlements",     to: "/settlements",      icon: Landmark         },
-  { label: "Settings",        to: "/settings",         icon: Settings         },
+  { label: "Dashboard",         to: "/dashboard",         icon: LayoutDashboard },
+  { label: "Employees",         to: "/employees",         icon: UsersRound      },
+  { label: "Loan Applications", to: "/loan-applications", icon: ClipboardList   },
+  { label: "Repayments",        to: "/repayments",        icon: CreditCard      },
+  { label: "Settlements",       to: "/settlements",       icon: Landmark        },
+  { label: "Settings",          to: "/settings",          icon: Settings        },
 ];
 
 const PAGE_TITLES: Record<string, string> = {
-  "/dashboard":       "Dashboard",
-  "/employees":       "Employees",
+  "/dashboard":         "Dashboard",
+  "/employees":         "Employees",
   "/loan-applications": "Loan Applications",
-  "/recoveries":      "Recoveries",
-  "/repayments":      "Repayments",
-  "/settlements":     "Settlements",
-  "/settings":        "Settings",
+  "/repayments":        "Repayments",
+  "/settlements":       "Settlements",
+  "/settings":          "Settings",
 };
 
 function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -53,19 +50,28 @@ function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   return (
     <>
       {open && (
-        <button aria-label="Close sidebar" className="fixed inset-0 z-30 bg-black/40 backdrop-blur-[2px] lg:hidden" onClick={onClose} />
+        <button
+          aria-label="Close sidebar"
+          className="fixed inset-0 z-30 bg-ink/40 backdrop-blur-[2px] lg:hidden"
+          onClick={onClose}
+        />
       )}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-60 flex-col transition-transform duration-200 ${open ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0 bg-white`}
-        style={{ borderRight: "1px solid #E5E7EB" }}
+        className={`fixed inset-y-0 left-0 z-40 flex w-60 flex-col border-r border-edge bg-surface transition-transform duration-200 ${
+          open ? "translate-x-0" : "-translate-x-full"
+        } lg:translate-x-0`}
       >
         {/* Logo */}
-        <div className="h-[60px] flex items-center justify-between px-5 flex-shrink-0" style={{ borderBottom: "1px solid #E5E7EB" }}>
+        <div className="flex h-[60px] flex-shrink-0 items-center justify-between border-b border-edge px-5">
           <div className="flex items-center gap-3">
-            <img src="/logo-icon.svg" alt="MobPae" width="32" height="21" style={{ objectFit: "contain", flexShrink: 0 }} />
-            <span style={{ fontSize: 15, fontWeight: 700, color: "#111827", letterSpacing: "-0.02em", lineHeight: 1 }}>MobPae</span>
+            <img src="/logo-icon.svg" alt="MobPae" width="32" height="21" className="flex-shrink-0 object-contain" />
+            <span className="text-[15px] font-bold tracking-tight text-ink">MobPae</span>
           </div>
-          <button aria-label="Close navigation" onClick={onClose} className="lg:hidden w-7 h-7 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors" style={{ color: "#9CA3AF" }}>
+          <button
+            aria-label="Close navigation"
+            onClick={onClose}
+            className="flex h-7 w-7 items-center justify-center rounded-lg text-ink-4 transition-colors hover:bg-surface-muted lg:hidden"
+          >
             <X size={15} />
           </button>
         </div>
@@ -75,21 +81,24 @@ function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
           <div className="space-y-0.5">
             {NAV.map(({ label, to, icon: Icon }) => (
               <NavLink
-                key={to} to={to} onClick={onClose}
+                key={to}
+                to={to}
+                onClick={onClose}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 rounded-xl transition-all ${isActive ? "" : "hover:bg-gray-50"}`
+                  `flex h-10 items-center gap-3 rounded-xl px-3 text-[13.5px] font-medium transition-all ${
+                    isActive
+                      ? "bg-brand-soft font-semibold text-brand"
+                      : "text-ink-3 hover:bg-surface-muted"
+                  }`
                 }
-                style={({ isActive }) => ({
-                  height: 40,
-                  background: isActive ? "#EEF2FF" : "transparent",
-                  color: isActive ? "#315eff" : "#6B7280",
-                  fontWeight: isActive ? 600 : 500,
-                  fontSize: 13.5,
-                })}
               >
                 {({ isActive }) => (
                   <>
-                    <Icon size={16} style={{ color: isActive ? "#315eff" : "#9CA3AF", flexShrink: 0 }} strokeWidth={isActive ? 2 : 1.75} />
+                    <Icon
+                      size={16}
+                      strokeWidth={isActive ? 2 : 1.75}
+                      className={`flex-shrink-0 ${isActive ? "text-brand" : "text-ink-4"}`}
+                    />
                     <span>{label}</span>
                   </>
                 )}
@@ -99,32 +108,29 @@ function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
         </nav>
 
         {/* Footer — company info */}
-        <div className="px-3 py-4 flex-shrink-0" style={{ borderTop: "1px solid #E5E7EB" }}>
+        <div className="flex-shrink-0 border-t border-edge px-3 py-4">
           <div className="flex items-center gap-3 px-2">
-            <div
-              className="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-[700] flex-shrink-0"
-              style={{ background: "linear-gradient(135deg, #8B7CFF 0%, #315eff 100%)", color: "white" }}
-            >
+            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#8B7CFF] to-brand text-[12px] font-bold text-white">
               {companyInitials}
             </div>
-            <div className="flex-1 min-w-0">
-              <p style={{ fontSize: 13, fontWeight: 600, color: "#111827", lineHeight: 1 }} className="truncate">{user?.companyName ?? "Company"}</p>
-              <p style={{ fontSize: 11, color: "#9CA3AF", marginTop: 2 }} className="truncate">{user?.companyCode}</p>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[13px] font-semibold leading-none text-ink" title={user?.companyName ?? "Company"}>
+                {user?.companyName ?? "Company"}
+              </p>
+              <p className="mt-0.5 truncate text-2xs text-ink-4">{user?.companyCode}</p>
             </div>
-            <div className="flex items-center gap-0.5">
+            <div className="flex items-center gap-1">
               <button
                 onClick={() => navigate("/change-password")}
-                className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors hover:bg-[#EEF2FF]"
                 title="Change password"
-                style={{ color: "#9CA3AF" }}
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-4 transition-colors hover:bg-brand-soft hover:text-brand"
               >
                 <KeyRound size={13} />
               </button>
               <button
                 onClick={() => setConfirmLogout(true)}
-                className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors hover:bg-red-50 hover:text-red-500"
                 title="Sign out"
-                style={{ color: "#9CA3AF" }}
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-4 transition-colors hover:bg-danger-soft hover:text-danger"
               >
                 <LogOut size={13} />
               </button>
@@ -132,6 +138,7 @@ function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
           </div>
         </div>
       </aside>
+
       <ConfirmModal
         open={confirmLogout}
         title="Sign out of MobPae?"
@@ -152,30 +159,34 @@ function Header({ onMenuClick }: { onMenuClick: () => void }) {
   const displayName = user?.name && !user.name.includes("@")
     ? user.name
     : user?.companyName || "Employer";
-  const userInitials = displayName.split(" ").filter(Boolean).slice(0, 2).map((w: string) => w[0]).join("").toUpperCase() || "E";
+  const userInitials = displayName
+    .split(" ").filter(Boolean).slice(0, 2).map((w: string) => w[0]).join("").toUpperCase() || "E";
 
   return (
-    <header className="sticky top-0 z-20 h-[60px] flex items-center justify-between px-6 bg-white" style={{ borderBottom: "1px solid #E5E7EB" }}>
+    <header className="sticky top-0 z-20 flex h-[60px] items-center justify-between border-b border-edge bg-surface px-6">
       <div className="flex items-center gap-3">
-        <button aria-label="Open navigation" onClick={onMenuClick} className="lg:hidden w-8 h-8 flex items-center justify-center rounded-lg transition-colors hover:bg-gray-100" style={{ color: "#6B7280" }}>
+        <button
+          aria-label="Open navigation"
+          onClick={onMenuClick}
+          className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-3 transition-colors hover:bg-surface-muted lg:hidden"
+        >
           <Menu size={16} />
         </button>
-        <h1 style={{ fontSize: 15, fontWeight: 600, color: "#111827" }}>{pageTitle}</h1>
+        <span className="text-[15px] font-semibold text-ink lg:hidden">{pageTitle}</span>
       </div>
       <div className="flex items-center gap-2">
         <NotificationBell />
-        <div className="w-px h-5 mx-1" style={{ background: "#E5E7EB" }} />
+        <div className="mx-1 h-5 w-px bg-edge" />
         <div className="flex items-center gap-2.5">
           <div
-            className="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-[700] flex-shrink-0"
-            style={{ background: "linear-gradient(135deg, #8B7CFF 0%, #315eff 100%)", color: "white" }}
+            className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#8B7CFF] to-brand text-[12px] font-bold text-white"
             title={displayName}
           >
             {userInitials}
           </div>
           <div className="hidden sm:block">
-            <p style={{ fontSize: 13, fontWeight: 600, color: "#111827", lineHeight: 1 }}>{displayName}</p>
-            <p style={{ fontSize: 11, color: "#9CA3AF", marginTop: 2 }}>{user?.email}</p>
+            <p className="text-[13px] font-semibold leading-none text-ink">{displayName}</p>
+            <p className="mt-0.5 text-2xs text-ink-4">{user?.email}</p>
           </div>
         </div>
       </div>
@@ -186,11 +197,13 @@ function Header({ onMenuClick }: { onMenuClick: () => void }) {
 export function EmployerLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   return (
-    <div className="min-h-screen" style={{ background: "#F9FAFB", fontFamily: "Inter, ui-sans-serif, sans-serif" }}>
+    <div className="min-h-screen bg-canvas">
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      <div className="lg:pl-60 flex flex-col min-h-screen">
+      <div className="flex min-h-screen flex-col lg:pl-60">
         <Header onMenuClick={() => setSidebarOpen(true)} />
-        <main className="flex-1 p-6"><Outlet /></main>
+        <main className="flex-1 p-6">
+          <Outlet />
+        </main>
       </div>
     </div>
   );

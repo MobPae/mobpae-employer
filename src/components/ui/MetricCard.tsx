@@ -4,23 +4,29 @@ export function MetricCard({
   label,
   value,
   icon,
-  helper
+  iconBg = "bg-brand-soft",
+  iconColor = "text-brand",
+  helper,
 }: {
   label: string;
   value: string | number;
   icon: ReactNode;
+  iconBg?: string;
+  iconColor?: string;
   helper?: string;
 }) {
   return (
-    <article className="rounded-xl border border-[#E4E4EF] bg-white p-5">
+    <article className="flex-1 min-w-0 rounded-2xl border border-edge bg-surface p-5 shadow-card">
       <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-[11px] font-[700] uppercase tracking-[0.06em] text-[#62657A]">{label}</p>
-          <p className="mt-2 text-[22px] font-[700] text-[#191A2E] tabular-nums">{value}</p>
+        <div className="min-w-0">
+          <p className="text-2xs font-semibold uppercase tracking-[0.07em] text-ink-4">{label}</p>
+          <p className="mt-2 text-[22px] font-bold text-ink tabular-nums leading-none">{value}</p>
+          {helper && <p className="mt-2 text-2xs text-ink-4">{helper}</p>}
         </div>
-        <div className="grid h-9 w-9 place-items-center rounded-lg bg-[#ECEBFF] text-[#7679FF]">{icon}</div>
+        <div className={`grid h-10 w-10 flex-shrink-0 place-items-center rounded-xl ${iconBg} ${iconColor}`}>
+          {icon}
+        </div>
       </div>
-      {helper ? <p className="mt-3 text-[11px] text-[#62657A]">{helper}</p> : null}
     </article>
   );
 }
