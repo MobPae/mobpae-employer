@@ -23,7 +23,10 @@ export function useFetch<T>(
       if (mountedRef.current)
         setState({ data: null, loading: false, error: getApiErrorMessage(err, "Failed to load") });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // `deps` is intentionally a caller-supplied array, not a literal — that's
+  // the whole point of this generic hook's API (mirrors useCallback/useEffect
+  // deps for the wrapped fetcher). Not expressible as a literal by design.
+  // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/use-memo
   }, deps);
 
   useEffect(() => {

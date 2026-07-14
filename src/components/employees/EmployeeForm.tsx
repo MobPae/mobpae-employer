@@ -104,6 +104,9 @@ export function EmployeeForm({ employee, onSubmit }: { employee?: Employee; onSu
         <button
           type="button"
           onClick={() => set("appActivated", !form.appActivated)}
+          role="switch"
+          aria-checked={form.appActivated}
+          aria-label={form.appActivated ? "Disable app access" : "Enable app access"}
           style={{ width: 36, height: 20 }}
           className={`relative inline-flex items-center rounded-full transition-colors flex-shrink-0 ${form.appActivated ? "bg-brand" : "bg-[#E4E4EF]"}`}
         >

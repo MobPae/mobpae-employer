@@ -1,5 +1,6 @@
 import axios from "axios";
 import { tokenStore } from "./token-store";
+import { decodeJwtPayload } from "../utils/jwt";
 
 export const httpClient = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3000",
@@ -20,18 +21,7 @@ let isRefreshing = false;
 let refreshQueue: Array<(token: string) => void> = [];
 
 function hasEmployerRole(token: string) {
-  try {
-    const [, payload] = token.split(".");
-    if (!payload) return false;
-    const normalized = payload.replace(/-/g, "+").replace(/_/g, "/");
-    const padded = normalized.padEnd(
-      normalized.length + ((4 - (normalized.length % 4)) % 4),
-      "="
-    );
-    return JSON.parse(atob(padded))?.role === "EMPLOYER";
-  } catch {
-    return false;
-  }
+  return decodeJwtPayload(token).role === "EMPLOYER";
 }
 
 function drainQueue(newToken: string) {
@@ -44,6 +34,47 @@ function forceLogout() {
   sessionStorage.setItem("mobpae_session_expired", "1");
   window.dispatchEvent(new CustomEvent("mobpae:session:expired"));
   setTimeout(() => { window.location.replace("/login"); }, 50);
+}
+
+// Shared by the reactive 401 handler below and any proactive "stay signed in"
+// call (e.g. a session-expiry warning) — both need the exact same refresh +
+// role-check + token-storage behavior, just triggered at a different time.
+async function refreshAccessToken(): Promise<string | null> {
+  const storedRefreshToken = tokenStore.getRefreshToken();
+  if (!storedRefreshToken) return null;
+
+  try {
+    const { data } = await axios.post<{ accessToken: string; refreshToken: string }>(
+      `${httpClient.defaults.baseURL}/auth/refresh`,
+      { refreshToken: storedRefreshToken },
+      { headers: { "Content-Type": "application/json" } }
+    );
+
+    if (!hasEmployerRole(data.accessToken)) {
+      throw new Error("This account does not have access to the Employer portal.");
+    }
+
+    tokenStore.setToken(data.accessToken);
+    if (data.refreshToken) tokenStore.setRefreshToken(data.refreshToken);
+    httpClient.defaults.headers.common.Authorization = `Bearer ${data.accessToken}`;
+
+    return data.accessToken;
+  } catch {
+    return null;
+  }
+}
+
+/** Proactively refresh the session (e.g. from a "stay signed in" prompt) without waiting for a 401. */
+export async function tryRefreshSession(): Promise<boolean> {
+  if (isRefreshing) return false;
+  isRefreshing = true;
+  try {
+    const token = await refreshAccessToken();
+    if (token) { drainQueue(token); return true; }
+    return false;
+  } finally {
+    isRefreshing = false;
+  }
 }
 
 httpClient.interceptors.response.use(
@@ -62,8 +93,7 @@ httpClient.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    const storedRefreshToken = tokenStore.getRefreshToken();
-    if (!storedRefreshToken) {
+    if (!tokenStore.getRefreshToken()) {
       forceLogout();
       return Promise.reject(error);
     }
@@ -82,23 +112,11 @@ httpClient.interceptors.response.use(
     isRefreshing = true;
 
     try {
-      const { data } = await axios.post<{ accessToken: string; refreshToken: string }>(
-        `${httpClient.defaults.baseURL}/auth/refresh`,
-        { refreshToken: storedRefreshToken },
-        { headers: { "Content-Type": "application/json" } }
-      );
+      const newToken = await refreshAccessToken();
+      if (!newToken) throw new Error("refresh failed");
 
-      if (!hasEmployerRole(data.accessToken)) {
-        throw new Error("This account does not have access to the Employer portal.");
-      }
-
-      tokenStore.setToken(data.accessToken);
-      if (data.refreshToken) tokenStore.setRefreshToken(data.refreshToken);
-
-      httpClient.defaults.headers.common.Authorization = `Bearer ${data.accessToken}`;
-      originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
-
-      drainQueue(data.accessToken);
+      originalRequest.headers.Authorization = `Bearer ${newToken}`;
+      drainQueue(newToken);
       return httpClient(originalRequest);
     } catch {
       drainQueue("");

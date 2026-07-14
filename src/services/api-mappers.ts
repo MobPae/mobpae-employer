@@ -7,6 +7,8 @@ import type {
   EmployerSettlement,
   EmploymentStatus,
   LoanApplication,
+  LoanApplicationActorType,
+  LoanApplicationHistoryEvent,
   LoanApplicationStatus,
   PayrollSummary,
   Repayment,
@@ -15,7 +17,8 @@ import type {
   BulkEmployeeUploadResult,
   SettlementStatus,
   SettlementSummary,
-  UserRole
+  UserRole,
+  UserSession
 } from "../types";
 
 type ApiRecord = Record<string, unknown>;
@@ -84,15 +87,21 @@ const normalizeUserRole = (value: unknown): UserRole => {
 export const mapAuthUser = (value: unknown): AuthUser => {
   const record = asRecord(value);
   const employer = asRecord(record.employer ?? record.company);
+  const email = text(record.email, "");
 
+  // Fall back to real data (email) rather than fabricated placeholder text —
+  // a string like "MobPae Employer" reads as legitimate data and hides a
+  // missing API field instead of surfacing it. Leave companyName/companyCode
+  // empty when unknown; callers use `||` to show an honest generic label.
   return {
     id: text(record.id ?? record.userId ?? record.sub, "current-user"),
     employerId: text(record.employerId ?? record.employer_id ?? employer.id ?? record.companyId, ""),
-    name: text(record.name ?? record.fullName ?? record.email, "Employer User"),
-    email: text(record.email, ""),
+    name: text(record.name ?? record.fullName, "") || email,
+    email,
     role: normalizeUserRole(record.role),
-    companyName: text(record.companyName ?? employer.companyName ?? employer.name, "MobPae Employer"),
-    companyCode: text(record.companyCode ?? employer.companyCode ?? employer.code, "EMPLOYER")
+    companyName: text(record.companyName ?? employer.companyName ?? employer.name, ""),
+    companyCode: text(record.companyCode ?? employer.companyCode ?? employer.code, ""),
+    lastLoginAt: typeof record.lastLoginAt === "string" ? record.lastLoginAt : null
   };
 };
 
@@ -176,6 +185,25 @@ export const mapLoanApplication = (value: unknown): LoanApplication => {
 
 /** @deprecated Use mapLoanApplication */
 export const mapSalaryRequest = mapLoanApplication;
+
+const normalizeActorType = (value: unknown): LoanApplicationActorType => {
+  const normalized = String(value ?? "SYSTEM").toUpperCase();
+  const allowed: LoanApplicationActorType[] = ["EMPLOYEE", "EMPLOYER", "ADMIN", "SYSTEM"];
+  return allowed.includes(normalized as LoanApplicationActorType) ? (normalized as LoanApplicationActorType) : "SYSTEM";
+};
+
+export const mapLoanApplicationHistoryEvent = (value: unknown): LoanApplicationHistoryEvent => {
+  const record = asRecord(value);
+  return {
+    id: text(record.id ?? record._id, ""),
+    status: normalizeLoanApplicationStatus(record.status),
+    actorType: normalizeActorType(record.actorType),
+    actorName: text(record.actorName, "MobPae"),
+    actorId: text(record.actorId, ""),
+    note: typeof record.note === "string" && record.note ? record.note : null,
+    createdAt: text(record.createdAt, new Date().toISOString()),
+  };
+};
 
 export const mapRepayment = (value: unknown): Repayment => {
   const record = asRecord(value);
@@ -345,5 +373,17 @@ export const mapPayrollSummary = (value: unknown): PayrollSummary => {
     pendingRecoveries: numberValue(record.pendingRecoveries),
     completedRecoveries: numberValue(record.completedRecoveries),
     totalRecoveryAmount: numberValue(record.totalRecoveryAmount ?? record.recoveryAmount)
+  };
+};
+
+export const mapUserSession = (value: unknown): UserSession => {
+  const record = asRecord(value);
+  return {
+    id: text(record.id ?? record._id, ""),
+    current: boolValue(record.current ?? record.isCurrent),
+    device: text(record.device ?? record.userAgent, "Unknown device"),
+    ipAddress: text(record.ipAddress ?? record.ip, ""),
+    loginAt: text(record.loginAt ?? record.createdAt, new Date().toISOString()),
+    lastActiveAt: text(record.lastActiveAt ?? record.updatedAt, new Date().toISOString()),
   };
 };

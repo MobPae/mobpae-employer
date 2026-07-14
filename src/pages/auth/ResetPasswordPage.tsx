@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { authService } from "../../services/auth.service";
+import { PasswordStrengthMeter } from "../../components/ui/PasswordStrengthMeter";
 
 export function ResetPasswordPage() {
   const navigate = useNavigate();
@@ -82,10 +83,11 @@ export function ResetPasswordPage() {
                       placeholder="••••••••" required
                       className="min-w-0 flex-1 bg-transparent text-sm text-ink placeholder:text-ink-4 outline-none"
                     />
-                    <button type="button" onClick={toggle} className="flex-shrink-0 text-ink-disabled transition-colors hover:text-ink-3">
+                    <button type="button" onClick={toggle} aria-label={show ? "Hide password" : "Show password"} className="flex-shrink-0 text-ink-disabled transition-colors hover:text-ink-3">
                       {show ? <EyeOff size={15} /> : <Eye size={15} />}
                     </button>
                   </div>
+                  {label === "New Password" && <PasswordStrengthMeter password={val} />}
                 </div>
               ))}
 

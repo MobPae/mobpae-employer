@@ -1,5 +1,5 @@
 import { Clock, Eye, EyeOff, Shield } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { getApiErrorMessage, isForbidden } from "../../services/api-errors";
@@ -59,25 +59,28 @@ export function LoginPage() {
   const [email,    setEmail]    = useState("");
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
-  const [remember, setRemember] = useState(false);
   const [error,    setError]    = useState("");
   const [pending,  setPending]  = useState(false);
   const [loading,  setLoading]  = useState(false);
-  const loginAttempted = useRef(false);
+  // useState, not useRef: this value is read during render (below) to decide
+  // the redirect target, and refs aren't safe to read outside events/effects.
+  const [loginAttempted, setLoginAttempted] = useState(false);
 
+  // Mount-only check of a one-shot sessionStorage flag set by the http client.
   useEffect(() => {
     if (sessionStorage.getItem("mobpae_session_expired")) {
       sessionStorage.removeItem("mobpae_session_expired");
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setError("Your session has expired. Please sign in again.");
     }
   }, []);
 
   if (authLoading) return null;
-  if (!loginAttempted.current && isAuthenticated) return <Navigate to="/dashboard" replace />;
+  if (!loginAttempted && isAuthenticated) return <Navigate to="/dashboard" replace />;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    loginAttempted.current = true;
+    setLoginAttempted(true);
     setError(""); setPending(false); setLoading(true);
     try {
       const result = await login({ email: email.trim().toLowerCase(), password });
@@ -87,7 +90,7 @@ export function LoginPage() {
         navigate("/dashboard", { replace: true });
       }
     } catch (err) {
-      loginAttempted.current = false;
+      setLoginAttempted(false);
       if (isForbidden(err)) setPending(true);
       else setError(getApiErrorMessage(err, "Invalid email or password."));
     } finally {
@@ -130,17 +133,13 @@ export function LoginPage() {
                 <div className={inputWrap}>
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="flex-shrink-0 text-ink-disabled"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                   <input type={showPass ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} placeholder="Enter your password" required autoComplete="current-password" className={inputBase} />
-                  <button type="button" onClick={() => setShowPass(v => !v)} className="flex-shrink-0 text-ink-disabled transition-colors hover:text-ink-3">
+                  <button type="button" onClick={() => setShowPass(v => !v)} aria-label={showPass ? "Hide password" : "Show password"} className="flex-shrink-0 text-ink-disabled transition-colors hover:text-ink-3">
                     {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
                   </button>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between">
-                <label className="flex cursor-pointer items-center gap-2 text-[13px] text-ink-3">
-                  <input type="checkbox" checked={remember} onChange={e => setRemember(e.target.checked)} className="h-[15px] w-[15px] cursor-pointer rounded accent-brand" />
-                  Remember me
-                </label>
+              <div className="flex items-center justify-end">
                 <button type="button" onClick={() => navigate("/forgot-password")} className="text-[13px] font-medium text-brand hover:underline">
                   Forgot password?
                 </button>

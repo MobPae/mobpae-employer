@@ -1,4 +1,4 @@
-import type { DashboardStats, DashboardTrend, LoanApplication, NotificationItem } from "../types";
+import type { DashboardStats, LoanApplication, NotificationItem } from "../types";
 import { mapDashboardStats, unwrapItem, unwrapList } from "./api-mappers";
 import { httpClient } from "./http-client";
 
@@ -43,23 +43,6 @@ export const dashboardService = {
   async getRecentLoanApplications(): Promise<LoanApplication[]> {
     const stats = await this.getDashboardStats();
     return (stats.recentActivity ?? []).slice(0, 5);
-  },
-
-  async getDashboardTrends(): Promise<DashboardTrend[]> {
-    try {
-      const { data } = await httpClient.get("/dashboard/employer/trends", { params: { period: "monthly" } });
-      const raw = unwrapList<Record<string, unknown>>(data, ["trends"]);
-      return raw.map(r => ({
-        month:           String(r.month ?? r.period ?? r.date ?? ""),
-        requestCount:    Number(r.requestCount    ?? 0),
-        approvedCount:   Number(r.approvedCount   ?? 0),
-        disbursedCount:  Number(r.disbursedCount  ?? 0),
-        requestedAmount: Number(r.requestedAmount ?? 0),
-        disbursedAmount: Number(r.disbursedAmount ?? 0),
-      }));
-    } catch {
-      return [];
-    }
   },
 
   async getRecentNotifications(): Promise<NotificationItem[]> {

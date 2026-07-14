@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff, KeyRound, Lock, ShieldCheck } from "lucide-react";
 import { authService } from "../../services/auth.service";
 import { getApiErrorMessage } from "../../services/api-errors";
+import { PasswordStrengthMeter } from "../../components/ui/PasswordStrengthMeter";
 
 
 
@@ -89,15 +90,18 @@ export function ChangePasswordPage() {
               placeholder="Enter current password"
               autoComplete="current-password"
             />
-            <Field
-              label="New Password"
-              value={next}
-              onChange={setNext}
-              show={showNext}
-              onToggle={() => setShowNext(v => !v)}
-              placeholder="Minimum 8 characters"
-              autoComplete="new-password"
-            />
+            <div>
+              <Field
+                label="New Password"
+                value={next}
+                onChange={setNext}
+                show={showNext}
+                onToggle={() => setShowNext(v => !v)}
+                placeholder="Minimum 8 characters"
+                autoComplete="new-password"
+              />
+              <PasswordStrengthMeter password={next} />
+            </div>
             <Field
               label="Confirm New Password"
               value={confirm}
@@ -159,6 +163,7 @@ function Field({
         <button
           type="button"
           onClick={onToggle}
+          aria-label={show ? "Hide password" : "Show password"}
           className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-3 hover:text-ink-3"
         >
           {show ? <EyeOff size={13} /> : <Eye size={13} />}

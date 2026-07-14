@@ -47,7 +47,7 @@ export const employerService = {
     } catch (err) {
       // Only fall back to auth user data on 404 — auth/server errors should surface
       if (!isNotFound(err)) throw err;
-      if (!currentUser) throw new Error("Unable to load employer profile");
+      if (!currentUser) throw new Error("Unable to load employer profile", { cause: err });
 
       return {
         ...emptyProfile,

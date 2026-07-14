@@ -1,7 +1,7 @@
 import {
+  CircleUserRound,
   ClipboardList,
   CreditCard,
-  KeyRound,
   Landmark,
   LayoutDashboard,
   LogOut,
@@ -10,11 +10,12 @@ import {
   UsersRound,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { NotificationBell } from "./NotificationBell";
 import { ConfirmModal } from "../ui/ConfirmModal";
+import { ErrorBoundary } from "../ErrorBoundary";
 
 const NAV = [
   { label: "Dashboard",         to: "/dashboard",         icon: LayoutDashboard },
@@ -22,7 +23,8 @@ const NAV = [
   { label: "Loan Applications", to: "/loan-applications", icon: ClipboardList   },
   { label: "Repayments",        to: "/repayments",        icon: CreditCard      },
   { label: "Settlements",       to: "/settlements",       icon: Landmark        },
-  { label: "Settings",          to: "/settings",          icon: Settings        },
+  { label: "Salary Advance",    to: "/settings",          icon: Settings        },
+  { label: "Profile",           to: "/profile",           icon: CircleUserRound },
 ];
 
 const PAGE_TITLES: Record<string, string> = {
@@ -31,7 +33,9 @@ const PAGE_TITLES: Record<string, string> = {
   "/loan-applications": "Loan Applications",
   "/repayments":        "Repayments",
   "/settlements":       "Settlements",
-  "/settings":          "Settings",
+  "/settings":          "Salary Advance",
+  "/profile":           "Profile",
+  "/notifications":     "Notifications",
 };
 
 function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -39,7 +43,7 @@ function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const navigate = useNavigate();
   const [confirmLogout, setConfirmLogout] = useState(false);
 
-  const companyInitials = (user?.companyName ?? user?.companyCode ?? "MP")
+  const companyInitials = (user?.companyName || user?.companyCode || "MP")
     .split(" ").filter(Boolean).slice(0, 2).map((w: string) => w[0]).join("").toUpperCase() || "MP";
 
   const handleLogout = async () => {
@@ -114,27 +118,19 @@ function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
               {companyInitials}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-[13px] font-semibold leading-none text-ink" title={user?.companyName ?? "Company"}>
-                {user?.companyName ?? "Company"}
+              <p className="truncate text-[13px] font-semibold leading-none text-ink" title={user?.companyName || "Company"}>
+                {user?.companyName || "Company"}
               </p>
               <p className="mt-0.5 truncate text-2xs text-ink-4">{user?.companyCode}</p>
             </div>
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => navigate("/change-password")}
-                title="Change password"
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-4 transition-colors hover:bg-brand-soft hover:text-brand"
-              >
-                <KeyRound size={13} />
-              </button>
-              <button
-                onClick={() => setConfirmLogout(true)}
-                title="Sign out"
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-4 transition-colors hover:bg-danger-soft hover:text-danger"
-              >
-                <LogOut size={13} />
-              </button>
-            </div>
+            <button
+              onClick={() => setConfirmLogout(true)}
+              title="Sign out"
+              aria-label="Sign out"
+              className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-ink-4 transition-colors hover:bg-danger-soft hover:text-danger"
+            >
+              <LogOut size={13} />
+            </button>
           </div>
         </div>
       </aside>
@@ -161,6 +157,13 @@ function Header({ onMenuClick }: { onMenuClick: () => void }) {
     : user?.companyName || "Employer";
   const userInitials = displayName
     .split(" ").filter(Boolean).slice(0, 2).map((w: string) => w[0]).join("").toUpperCase() || "E";
+
+  // So each page is distinguishable in the browser tab bar when multiple are open.
+  useEffect(() => {
+    document.title = PAGE_TITLES[location.pathname]
+      ? `${PAGE_TITLES[location.pathname]} — MobPae`
+      : "MobPae — Employer Portal";
+  }, [location.pathname]);
 
   return (
     <header className="sticky top-0 z-20 flex h-[60px] items-center justify-between border-b border-edge bg-surface px-6">
@@ -194,15 +197,30 @@ function Header({ onMenuClick }: { onMenuClick: () => void }) {
   );
 }
 
+function PageLoadingFallback() {
+  return (
+    <div className="flex flex-col gap-5">
+      <div className="h-7 w-48 animate-pulse rounded-md bg-surface-muted" />
+      <div className="h-40 animate-pulse rounded-2xl bg-surface-muted" />
+      <div className="h-64 animate-pulse rounded-2xl bg-surface-muted" />
+    </div>
+  );
+}
+
 export function EmployerLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const location = useLocation();
   return (
     <div className="min-h-screen bg-canvas">
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex min-h-screen flex-col lg:pl-60">
         <Header onMenuClick={() => setSidebarOpen(true)} />
         <main className="flex-1 p-6">
-          <Outlet />
+          <ErrorBoundary compact key={location.pathname}>
+            <Suspense fallback={<PageLoadingFallback />}>
+              <Outlet />
+            </Suspense>
+          </ErrorBoundary>
         </main>
       </div>
     </div>

@@ -1,52 +1,13 @@
 import { AlertCircle, CheckCircle2, UploadCloud } from "lucide-react";
 import { useMemo, useState } from "react";
-import type { BulkEmployeeUploadResult, EmployeePayload, EmploymentStatus } from "../../types";
+import type { BulkEmployeeUploadResult, EmployeePayload } from "../../types";
 import { formatCurrency } from "../../utils/formatters";
-
-const SAMPLE = [
-  "EMP-001,Arjun Sharma,arjun@company.com,+91 98765 11111,54000,ACTIVE,false,Engineering",
-  "EMP-002,Priya Nair,priya@company.com,+91 98765 22222,62000,ACTIVE,true,Finance",
-].join("\n");
-
-const isStatus = (v: string): v is EmploymentStatus => v === "ACTIVE" || v === "INACTIVE";
-const parseBool = (v: string) => ["true", "yes", "1"].includes(v.trim().toLowerCase());
-
-interface ParsedRow { payload: EmployeePayload; row: number; errors: string[] }
-
-function parseRows(raw: string): ParsedRow[] {
-  return raw
-    .split("\n")
-    .map((line, i) => ({ line: line.trim(), row: i + 1 }))
-    .filter(({ line }) => line.length > 0)
-    .map(({ line, row }) => {
-      const [code = "", name = "", email = "", phone = "", salary = "", status = "ACTIVE", app = "false", dept = ""] =
-        line.split(",").map(c => c.trim());
-      const salaryNum = Number(salary);
-      const empStatus = status.toUpperCase();
-      const errors: string[] = [];
-      if (!code)                                    errors.push("code required");
-      if (!name)                                    errors.push("name required");
-      if (!email.includes("@"))                     errors.push("valid email required");
-      if (!phone)                                   errors.push("phone required");
-      if (!Number.isFinite(salaryNum) || salaryNum <= 0) errors.push("salary must be positive");
-      if (!isStatus(empStatus))                     errors.push("status: ACTIVE or INACTIVE");
-      return {
-        row,
-        errors,
-        payload: {
-          employeeCode: code, name, email, phone,
-          salaryInHand: Number.isFinite(salaryNum) ? salaryNum : 0,
-          employmentStatus: isStatus(empStatus) ? empStatus : "ACTIVE",
-          appActivated: parseBool(app),
-          department: dept,
-        },
-      };
-    });
-}
+import { MAX_BULK_FILE_SIZE_MB, parseRows, SAMPLE_BULK_EMPLOYEE_ROWS } from "../../utils/bulkEmployeeParser";
 
 export function BulkEmployeeForm({ onSubmit }: { onSubmit: (p: EmployeePayload[]) => Promise<BulkEmployeeUploadResult | void> }) {
-  const [raw, setRaw]     = useState(SAMPLE);
+  const [raw, setRaw]     = useState(SAMPLE_BULK_EMPLOYEE_ROWS);
   const [fileName, setFileName] = useState("");
+  const [fileError, setFileError] = useState("");
   const [saving, setSaving] = useState(false);
 
   const rows   = useMemo(() => parseRows(raw), [raw]);
@@ -80,6 +41,12 @@ export function BulkEmployeeForm({ onSubmit }: { onSubmit: (p: EmployeePayload[]
           onChange={e => {
             const f = e.target.files?.[0];
             if (!f) return;
+            if (f.size > MAX_BULK_FILE_SIZE_MB * 1024 * 1024) {
+              setFileError(`"${f.name}" is larger than ${MAX_BULK_FILE_SIZE_MB}MB — split it into smaller files.`);
+              e.target.value = "";
+              return;
+            }
+            setFileError("");
             setFileName(f.name);
             const reader = new FileReader();
             reader.onload = () => setRaw(String(reader.result ?? ""));
@@ -87,6 +54,11 @@ export function BulkEmployeeForm({ onSubmit }: { onSubmit: (p: EmployeePayload[]
           }}
         />
       </label>
+      {fileError && (
+        <p className="flex items-center gap-1.5 text-[11px] font-[500] text-danger">
+          <AlertCircle size={12} className="flex-shrink-0" /> {fileError}
+        </p>
+      )}
 
       {/* Textarea */}
       <div>

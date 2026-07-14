@@ -1,0 +1,10 @@
+# Best-effort security headers — Netlify / Cloudflare Pages format.
+# Vercel does not read this file; port these into vercel.json's `headers` field instead.
+# Update connect-src below to match the real production API origin.
+
+/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://api.fontshare.com; font-src 'self' https://api.fontshare.com data:; img-src 'self' data:; connect-src 'self' https://api.fontshare.com https://REPLACE-WITH-PRODUCTION-API-ORIGIN; frame-ancestors 'none'; base-uri 'self'; form-action 'self'

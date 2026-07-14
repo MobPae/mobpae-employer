@@ -32,11 +32,22 @@ export interface AuthUser {
   role: UserRole;
   companyName: string;
   companyCode: string;
+  /** Previous login time (not the current session) — omitted until the backend ships it. */
+  lastLoginAt?: string | null;
 }
 
 export interface LoginCredentials {
   email: string;
   password: string;
+}
+
+export interface UserSession {
+  id: string;
+  current: boolean;
+  device: string;
+  ipAddress: string;
+  loginAt: string;
+  lastActiveAt: string;
 }
 
 export interface LoginResponse {
@@ -95,6 +106,18 @@ export interface LoanApplication {
 
 /** @deprecated Use LoanApplication */
 export type SalaryRequest = LoanApplication;
+
+export type LoanApplicationActorType = "EMPLOYEE" | "EMPLOYER" | "ADMIN" | "SYSTEM";
+
+export interface LoanApplicationHistoryEvent {
+  id: string;
+  status: LoanApplicationStatus;
+  actorType: LoanApplicationActorType;
+  actorName: string;
+  actorId: string;
+  note: string | null;
+  createdAt: string;
+}
 
 export interface Repayment {
   id: string;
@@ -166,15 +189,6 @@ export interface DashboardStats {
   outstandingAmount: number;
   // recent activity feed
   recentActivity: LoanApplication[];
-}
-
-export interface DashboardTrend {
-  month: string;           // "2026-01"
-  requestCount: number;
-  approvedCount: number;
-  disbursedCount: number;
-  requestedAmount: number;
-  disbursedAmount: number;
 }
 
 export interface NotificationItem {

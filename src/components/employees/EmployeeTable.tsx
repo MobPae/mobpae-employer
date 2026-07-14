@@ -19,7 +19,10 @@ function Toggle({ on, loading, onClick }: { on: boolean; loading: boolean; onCli
     <button
       onClick={onClick}
       disabled={loading}
+      role="switch"
+      aria-checked={on}
       title={on ? "Deactivate app access" : "Activate app access"}
+      aria-label={on ? "Deactivate app access" : "Activate app access"}
       className={`relative inline-flex h-[18px] w-8 flex-shrink-0 items-center rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${on ? "bg-brand" : "bg-edge-strong"}`}
     >
       <span
@@ -79,6 +82,8 @@ export function EmployeeTable({
                   type="checkbox"
                   checked={allSelected}
                   onChange={e => onSelectAll(e.target.checked)}
+                  title={allSelected ? "Deselect all on this page" : "Select all on this page"}
+                  aria-label={allSelected ? "Deselect all employees on this page" : "Select all employees on this page"}
                   className="h-3.5 w-3.5 cursor-pointer rounded accent-brand"
                 />
               </th>
@@ -107,6 +112,7 @@ export function EmployeeTable({
                       type="checkbox"
                       checked={isSelected}
                       onChange={e => onSelect(emp.id, e.target.checked)}
+                      aria-label={`Select ${emp.name}`}
                       className="h-3.5 w-3.5 cursor-pointer rounded accent-brand"
                     />
                   </td>

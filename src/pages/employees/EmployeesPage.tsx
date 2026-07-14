@@ -1,7 +1,10 @@
-import { Download, Plus, Search, UploadCloud, X, Zap } from "lucide-react";
+import { Download, Plus, Search, UploadCloud, UsersRound, Zap } from "lucide-react";
 import { exportToCsv } from "../../utils/exportCsv";
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Pagination } from "../../components/ui/Pagination";
+import { Drawer } from "../../components/ui/Drawer";
+import { Button } from "../../components/ui/Button";
 
 const PAGE_SIZE = 15;
 import { BulkEmployeeForm } from "../../components/employees/BulkEmployeeForm";
@@ -24,48 +27,39 @@ function upsertStable(cur: Employee[], next: Employee[]): Employee[] {
   return [...cur.map(e => nextMap.get(e.id) ?? e), ...next.filter(e => !curSet.has(e.id))];
 }
 
-// ─── Drawer ───────────────────────────────────────────────────────────────────
 type DrawerMode = "CREATE" | "EDIT" | "BULK" | null;
 
-function DrawerPanel({ open, title, subtitle, onClose, children }: {
-  open: boolean; title: string; subtitle?: string; onClose: () => void; children: React.ReactNode;
-}) {
-  return (
-    <>
-      {open && <div className="fixed inset-0 z-30 bg-black/20 backdrop-blur-[1px]" onClick={onClose} />}
-      <div className={`fixed inset-y-0 right-0 z-40 w-full max-w-[480px] bg-white flex flex-col transition-transform duration-200 ${open ? "translate-x-0" : "translate-x-full"}`}
-        style={{ borderLeft: "1px solid #E5E7EB", boxShadow: "0 8px 40px rgba(17,24,39,0.10)" }}>
-        <div style={{ padding: "18px 20px 16px", borderBottom: "1px solid #E5E7EB", display: "flex", alignItems: "flex-start", justifyContent: "space-between" }}>
-          <div>
-            <p style={{ fontSize: 14, fontWeight: 600, color: "var(--color-ink)" }}>{title}</p>
-            {subtitle && <p style={{ fontSize: 12, color: "var(--color-ink-3)", marginTop: 3 }}>{subtitle}</p>}
-          </div>
-          <button onClick={onClose} style={{ width: 28, height: 28, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 8, border: "1px solid #E5E7EB", color: "var(--color-ink-3)", background: "transparent", cursor: "pointer" }}>
-            <X size={14} />
-          </button>
-        </div>
-        <div style={{ flex: 1, overflowY: "auto", padding: "16px 20px" }}>{children}</div>
-      </div>
-    </>
-  );
-}
+const selectCls = "h-9 rounded-lg border border-edge bg-surface px-3 text-sm text-ink-3 outline-none transition-colors focus:border-brand focus:ring-2 focus:ring-brand/15";
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export function EmployeesPage() {
   const toast = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [employees,    setEmployees]    = useState<Employee[]>([]);
   const [loading,      setLoading]      = useState(true);
   const [loadError,    setLoadError]    = useState<string | null>(null);
-  const [query,        setQuery]        = useState("");
-  const [statusFilter, setStatusFilter] = useState<"ALL" | EmploymentStatus>("ALL");
-  const [appFilter,    setAppFilter]    = useState<"ALL" | "ON" | "OFF">("ALL");
+  const [query,        setQuery]        = useState(searchParams.get("q") ?? "");
+  const [statusFilter, setStatusFilter] = useState<"ALL" | EmploymentStatus>((searchParams.get("status") as EmploymentStatus) || "ALL");
+  const [appFilter,    setAppFilter]    = useState<"ALL" | "ON" | "OFF">((searchParams.get("app") as "ON" | "OFF") || "ALL");
   const [selectedIds,  setSelectedIds]  = useState<string[]>([]);
   const [bulkLoading,  setBulkLoading]  = useState(false);
   const [actionId,     setActionId]     = useState<string | null>(null);
-  const [page,         setPage]         = useState(1);
+  const [page,         setPage]         = useState(Number(searchParams.get("page")) || 1);
   const [drawerMode,   setDrawerMode]   = useState<DrawerMode>(null);
   const [editEmployee, setEditEmployee] = useState<Employee | undefined>();
   const [bulkResult,   setBulkResult]   = useState<BulkEmployeeUploadResult | null>(null);
+
+  // Keep filters/page in the URL so refresh, back/forward, and bookmarking
+  // a filtered view all just work.
+  useEffect(() => {
+    const next = new URLSearchParams();
+    if (query) next.set("q", query);
+    if (statusFilter !== "ALL") next.set("status", statusFilter);
+    if (appFilter !== "ALL") next.set("app", appFilter);
+    if (page > 1) next.set("page", String(page));
+    setSearchParams(next, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query, statusFilter, appFilter, page]);
 
   const refresh = () => {
     setLoading(true);
@@ -76,6 +70,8 @@ export function EmployeesPage() {
       .finally(() => setLoading(false));
   };
 
+  // Fetch on mount using the same handler the "Retry" button reuses.
+  // eslint-disable-next-line react-hooks/set-state-in-effect, react-hooks/exhaustive-deps
   useEffect(() => { refresh(); }, []);
 
   const filtered = useMemo(() => employees.filter(e => {
@@ -95,118 +91,130 @@ export function EmployeesPage() {
   const active = employees.filter(e => e.employmentStatus === "ACTIVE").length;
   const appOn  = employees.filter(e => e.appActivated).length;
 
-  const btnBase: React.CSSProperties = { height: 36, display: "flex", alignItems: "center", gap: 7, padding: "0 14px", borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s" };
-
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 20, fontFamily: "Inter, ui-sans-serif, sans-serif" }}>
+    <div className="flex flex-col gap-5">
 
       {/* Page header */}
       <div>
-        <h1 style={{ fontSize: 24, fontWeight: 700, color: "var(--color-ink)", letterSpacing: "-0.025em", margin: 0 }}>Employees</h1>
-        <p style={{ fontSize: 14, color: "var(--color-ink-3)", marginTop: 6 }}>
-          <span style={{ fontWeight: 600, color: "var(--color-ink)" }}>{total}</span> total · <span style={{ fontWeight: 600, color: "var(--color-ink)" }}>{active}</span> active · <span style={{ fontWeight: 600, color: "var(--color-ink)" }}>{appOn}</span> on app
+        <h1 className="text-2xl font-bold tracking-tight text-ink">Employees</h1>
+        <p className="mt-1.5 text-sm text-ink-3">
+          <span className="font-semibold text-ink">{total}</span> total ·{" "}
+          <span className="font-semibold text-ink">{active}</span> active ·{" "}
+          <span className="font-semibold text-ink">{appOn}</span> on app
         </p>
       </div>
 
       {/* Search + filters | actions toolbar */}
-      <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-        {/* Search */}
-        <div style={{ position: "relative", flex: "1 1 200px", maxWidth: 300 }}>
-          <Search size={14} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "var(--color-ink-4)" }} />
+      <div className="flex flex-wrap items-center gap-2.5">
+        <div className="relative min-w-[200px] max-w-[300px] flex-1">
+          <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ink-4" />
           <input
             value={query}
             onChange={e => { setQuery(e.target.value); setPage(1); }}
             placeholder="Search employees…"
-            style={{ width: "100%", height: 38, paddingLeft: 36, paddingRight: 12, fontSize: 13, background: "white", border: "1px solid #E5E7EB", borderRadius: 8, color: "var(--color-ink)", outline: "none", fontFamily: "inherit" }}
-            onFocus={e => (e.target.style.borderColor = "var(--color-brand)")}
-            onBlur={e  => (e.target.style.borderColor = "var(--color-edge)")}
+            aria-label="Search employees"
+            className="h-9 w-full rounded-lg border border-edge bg-surface pl-9 pr-3 text-sm text-ink outline-none transition-colors placeholder:text-ink-4 focus:border-brand focus:ring-2 focus:ring-brand/15"
           />
         </div>
-        {/* Filters */}
-        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value as "ALL" | EmploymentStatus)}
-          style={{ height: 38, padding: "0 12px", fontSize: 13, background: "white", border: "1px solid #E5E7EB", borderRadius: 8, color: "var(--color-ink-3)", cursor: "pointer", fontFamily: "inherit", outline: "none" }}>
+        <select
+          value={statusFilter}
+          onChange={e => setStatusFilter(e.target.value as "ALL" | EmploymentStatus)}
+          aria-label="Filter by employment status"
+          className={selectCls}
+        >
           <option value="ALL">All employment</option>
           <option value="ACTIVE">Active only</option>
           <option value="INACTIVE">Inactive only</option>
         </select>
-        <select value={appFilter} onChange={e => setAppFilter(e.target.value as "ALL" | "ON" | "OFF")}
-          style={{ height: 38, padding: "0 12px", fontSize: 13, background: "white", border: "1px solid #E5E7EB", borderRadius: 8, color: "var(--color-ink-3)", cursor: "pointer", fontFamily: "inherit", outline: "none" }}>
+        <select
+          value={appFilter}
+          onChange={e => setAppFilter(e.target.value as "ALL" | "ON" | "OFF")}
+          aria-label="Filter by app access"
+          className={selectCls}
+        >
           <option value="ALL">All app access</option>
           <option value="ON">App activated</option>
           <option value="OFF">Not activated</option>
         </select>
 
-        {/* Bulk activate (conditional) */}
         {selectedIds.length > 0 && (
-          <button
-            disabled={bulkLoading}
-            onClick={async () => {
-              const ids = [...selectedIds];
-              setBulkLoading(true);
-              try {
-                const updated = await employeeService.bulkActivateEmployees(ids);
-                const updMap = new Map(updated.map(e => [e.id, e]));
-                setEmployees(cur => upsertStable(cur.map(e => ids.includes(e.id) && !updMap.has(e.id) ? { ...e, appActivated: true } : e), updated));
-                setSelectedIds([]);
-                toast.success("Activated", `${ids.length} employee${ids.length > 1 ? "s" : ""} activated`);
-              } catch (err) { toast.error("Bulk activation failed", getApiErrorMessage(err)); }
-              finally { setBulkLoading(false); }
-            }}
-            style={{ ...btnBase, background: "var(--color-brand)", border: "none", color: "white", boxShadow: "0 4px 14px rgba(49,94,255,0.25)", fontWeight: 600, opacity: bulkLoading ? 0.7 : 1 }}>
-            <Zap size={13} />{bulkLoading ? "Activating…" : `Activate ${selectedIds.length}`}
-          </button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="primary" size="md" icon={<Zap size={13} />}
+              disabled={bulkLoading}
+              onClick={async () => {
+                const ids = [...selectedIds];
+                setBulkLoading(true);
+                try {
+                  const updated = await employeeService.bulkActivateEmployees(ids);
+                  const updMap = new Map(updated.map(e => [e.id, e]));
+                  setEmployees(cur => upsertStable(cur.map(e => ids.includes(e.id) && !updMap.has(e.id) ? { ...e, appActivated: true } : e), updated));
+                  setSelectedIds([]);
+                  toast.success("Activated", `${ids.length} employee${ids.length > 1 ? "s" : ""} activated`);
+                } catch (err) { toast.error("Bulk activation failed", getApiErrorMessage(err)); }
+                finally { setBulkLoading(false); }
+              }}
+            >
+              {bulkLoading ? "Activating…" : `Activate ${selectedIds.length}`}
+            </Button>
+            {totalPages > 1 && (
+              <span className="text-xs text-ink-4">on this page only</span>
+            )}
+          </div>
         )}
 
-        {/* Divider + action buttons */}
-        <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 8 }}>
-          <div style={{ width: 1, height: 24, background: "var(--color-edge)" }} />
-          <button onClick={() => exportToCsv(filtered.map(e => ({ Name: e.name, Code: e.employeeCode, Email: e.email, Phone: e.phone, Salary: e.salaryInHand, Department: e.department ?? "", Status: e.employmentStatus, AppActivated: e.appActivated ? "Yes" : "No" })), `employees-${Date.now()}`)}
-            style={{ ...btnBase, background: "white", border: "1px solid #E5E7EB", color: "var(--color-ink-3)" }}>
-            <Download size={14} />Export
-          </button>
-          <button onClick={() => { setBulkResult(null); setDrawerMode("BULK"); }}
-            style={{ ...btnBase, background: "white", border: "1px solid #E5E7EB", color: "var(--color-ink-3)" }}>
-            <UploadCloud size={14} />Bulk add
-          </button>
-          <button onClick={() => { setEditEmployee(undefined); setDrawerMode("CREATE"); }}
-            style={{ ...btnBase, background: "var(--color-brand)", border: "none", color: "white", boxShadow: "0 4px 14px rgba(49,94,255,0.25)", fontWeight: 600 }}>
-            <Plus size={14} />Add employee
-          </button>
+        <div className="ml-auto flex items-center gap-2">
+          <div className="h-6 w-px bg-edge" />
+          <Button
+            variant="secondary" size="md" icon={<Download size={14} />}
+            onClick={() => exportToCsv(filtered.map(e => ({ Name: e.name, Code: e.employeeCode, Email: e.email, Phone: e.phone, Salary: e.salaryInHand, Department: e.department ?? "", Status: e.employmentStatus, AppActivated: e.appActivated ? "Yes" : "No" })), `employees-${Date.now()}`)}
+          >
+            Export
+          </Button>
+          <Button
+            variant="secondary" size="md" icon={<UploadCloud size={14} />}
+            onClick={() => { setBulkResult(null); setDrawerMode("BULK"); }}
+          >
+            Bulk add
+          </Button>
+          <Button
+            variant="primary" size="md" icon={<Plus size={14} />}
+            onClick={() => { setEditEmployee(undefined); setDrawerMode("CREATE"); }}
+          >
+            Add employee
+          </Button>
         </div>
       </div>
 
       {/* Table card */}
-      <div style={{ background: "white", borderRadius: 16, border: "1px solid #E5E7EB", boxShadow: "0 1px 4px rgba(17,24,39,0.04)", overflow: "hidden" }}>
+      <div className="overflow-hidden rounded-2xl border border-edge bg-surface shadow-card">
         {loadError ? (
-          <div style={{ padding: "48px 0", textAlign: "center" }}>
-            <p style={{ fontSize: 13, fontWeight: 500, color: "var(--color-danger)" }}>Failed to load employees</p>
-            <p style={{ fontSize: 12, color: "var(--color-ink-3)", marginTop: 4 }}>{loadError}</p>
-            <button onClick={refresh} style={{ marginTop: 16, height: 34, padding: "0 16px", fontSize: 12, fontWeight: 500, background: "white", border: "1px solid #E5E7EB", borderRadius: 8, cursor: "pointer", color: "var(--color-ink-3)", fontFamily: "inherit" }}>Retry</button>
+          <div className="px-6 py-12 text-center">
+            <p className="text-sm font-medium text-danger">Failed to load employees</p>
+            <p className="mt-1 text-xs text-ink-3">{loadError}</p>
+            <Button variant="secondary" size="sm" onClick={refresh} className="mt-4">Retry</Button>
           </div>
         ) : loading ? (
           <div>
             {[...Array(6)].map((_, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 20px", borderBottom: i < 5 ? "1px solid #F9FAFB" : "none" }}>
-                <div className="animate-pulse" style={{ width: 32, height: 32, borderRadius: "50%", background: "var(--color-surface-muted)", flexShrink: 0 }} />
-                <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
-                  <div className="animate-pulse" style={{ height: 10, width: 128, background: "var(--color-surface-muted)", borderRadius: 6 }} />
-                  <div className="animate-pulse" style={{ height: 8, width: 96, background: "var(--color-surface-muted)", borderRadius: 6 }} />
+              <div key={i} className={`flex items-center gap-3.5 px-5 py-3.5 ${i < 5 ? "border-b border-edge-2" : ""}`}>
+                <div className="h-8 w-8 flex-shrink-0 animate-pulse rounded-full bg-surface-muted" />
+                <div className="flex flex-1 flex-col gap-1.5">
+                  <div className="h-2.5 w-32 animate-pulse rounded-md bg-surface-muted" />
+                  <div className="h-2 w-24 animate-pulse rounded-md bg-surface-muted" />
                 </div>
-                <div className="animate-pulse" style={{ height: 10, width: 80, background: "var(--color-surface-muted)", borderRadius: 6 }} />
-                <div className="animate-pulse" style={{ height: 18, width: 60, background: "var(--color-surface-muted)", borderRadius: 999 }} />
+                <div className="h-2.5 w-20 animate-pulse rounded-md bg-surface-muted" />
+                <div className="h-4 w-16 animate-pulse rounded-full bg-surface-muted" />
               </div>
             ))}
           </div>
         ) : employees.length === 0 ? (
-          <div style={{ padding: "64px 0", textAlign: "center" }}>
-            <div style={{ width: 40, height: 40, borderRadius: 12, background: "var(--color-brand-soft)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-brand)" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-              </svg>
+          <div className="px-6 py-16 text-center">
+            <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-brand/10">
+              <UsersRound size={18} strokeWidth={1.75} className="text-brand" />
             </div>
-            <p style={{ fontSize: 13, fontWeight: 500, color: "var(--color-ink-3)" }}>No employees added yet</p>
-            <p style={{ fontSize: 12, color: "var(--color-ink-4)", marginTop: 4 }}>Employees will appear here once your workforce is onboarded.</p>
+            <p className="text-sm font-medium text-ink-3">No employees added yet</p>
+            <p className="mt-1 text-xs text-ink-4">Employees will appear here once your workforce is onboarded.</p>
           </div>
         ) : (
           <>
@@ -227,7 +235,7 @@ export function EmployeesPage() {
               }}
               actionEmployeeId={actionId}
             />
-            <div style={{ padding: "8px 20px 16px", borderTop: "1px solid #F9FAFB" }}>
+            <div className="border-t border-edge-2 px-5 py-3">
               <Pagination page={safePage} totalPages={totalPages} total={filtered.length} limit={PAGE_SIZE} onPage={setPage} />
             </div>
           </>
@@ -235,7 +243,12 @@ export function EmployeesPage() {
       </div>
 
       {/* Add / Edit drawer */}
-      <DrawerPanel open={drawerMode === "CREATE" || drawerMode === "EDIT"} title={drawerMode === "EDIT" ? "Edit employee" : "Add employee"} subtitle={drawerMode === "EDIT" ? editEmployee?.name : "New team member"} onClose={closeDrawer}>
+      <Drawer
+        open={drawerMode === "CREATE" || drawerMode === "EDIT"}
+        title={drawerMode === "EDIT" ? "Edit employee" : "Add employee"}
+        description={drawerMode === "EDIT" ? editEmployee?.name : "New team member"}
+        onClose={closeDrawer}
+      >
         <EmployeeForm
           employee={editEmployee}
           onSubmit={async (payload: EmployeePayload) => {
@@ -259,10 +272,10 @@ export function EmployeesPage() {
             } catch (err) { toast.error(editEmployee ? "Update failed" : "Create failed", getApiErrorMessage(err)); throw err; }
           }}
         />
-      </DrawerPanel>
+      </Drawer>
 
       {/* Bulk drawer */}
-      <DrawerPanel open={drawerMode === "BULK"} title="Bulk add employees" subtitle="Upload a CSV or paste rows" onClose={closeDrawer}>
+      <Drawer open={drawerMode === "BULK"} title="Bulk add employees" description="Upload a CSV or paste rows" onClose={closeDrawer}>
         <BulkEmployeeForm
           onSubmit={async (payloads: EmployeePayload[]) => {
             try {
@@ -276,26 +289,26 @@ export function EmployeesPage() {
           }}
         />
         {(bulkResult?.errors.length ?? 0) > 0 && (
-          <div style={{ marginTop: 16, background: "var(--color-danger-soft)", border: "1px solid var(--color-danger-bg)", borderRadius: 8, overflow: "hidden" }}>
-            <div style={{ padding: "10px 14px", borderBottom: "1px solid #FECACA" }}>
-              <p style={{ fontSize: 12, fontWeight: 600, color: "var(--color-danger)" }}>{bulkResult!.failureCount} rows skipped</p>
+          <div className="mt-4 overflow-hidden rounded-lg border border-danger-bg bg-danger-soft">
+            <div className="border-b border-danger-bg px-3.5 py-2.5">
+              <p className="text-xs font-semibold text-danger">{bulkResult!.failureCount} rows skipped</p>
             </div>
-            <div style={{ overflowX: "auto", maxHeight: 200, overflowY: "auto" }}>
-              <table style={{ width: "100%", fontSize: 11, borderCollapse: "collapse" }}>
+            <div className="max-h-[200px] overflow-x-auto overflow-y-auto">
+              <table className="w-full border-collapse text-2xs">
                 <thead>
-                  <tr style={{ borderBottom: "1px solid #FECACA" }}>
+                  <tr className="border-b border-danger-bg">
                     {["Row", "Code", "Email", "Error"].map(h => (
-                      <th key={h} style={{ padding: "8px 12px", textAlign: "left", fontWeight: 500, color: "var(--color-danger)" }}>{h}</th>
+                      <th key={h} className="px-3 py-2 text-left font-medium text-danger">{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
                   {bulkResult!.errors.map(e => (
-                    <tr key={`${e.row}-${e.email}`} style={{ borderBottom: "1px solid #FEE2E2" }}>
-                      <td style={{ padding: "7px 12px", color: "var(--color-danger)" }}>{e.row}</td>
-                      <td style={{ padding: "7px 12px", color: "var(--color-ink-3)" }}>{e.employeeCode || "—"}</td>
-                      <td style={{ padding: "7px 12px", color: "var(--color-ink-3)" }}>{e.email || "—"}</td>
-                      <td style={{ padding: "7px 12px", color: "var(--color-ink-3)" }}>{e.message}</td>
+                    <tr key={`${e.row}-${e.email}`} className="border-b border-danger-bg/60">
+                      <td className="px-3 py-1.5 text-danger">{e.row}</td>
+                      <td className="px-3 py-1.5 text-ink-3">{e.employeeCode || "—"}</td>
+                      <td className="px-3 py-1.5 text-ink-3">{e.email || "—"}</td>
+                      <td className="px-3 py-1.5 text-ink-3">{e.message}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -303,7 +316,7 @@ export function EmployeesPage() {
             </div>
           </div>
         )}
-      </DrawerPanel>
+      </Drawer>
     </div>
   );
 }

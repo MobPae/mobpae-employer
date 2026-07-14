@@ -3,7 +3,10 @@ export function exportToCsv<T extends Record<string, unknown>>(rows: T[], filena
 
   const headers = Object.keys(rows[0]);
   const escape  = (v: unknown) => {
-    const s = v == null ? "" : String(v);
+    let s = v == null ? "" : String(v);
+    // Neutralize CSV/formula injection: Excel/Sheets treat leading =,+,-,@,tab,CR
+    // as a formula trigger, so prefix with a benign apostrophe to force text.
+    if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
     return s.includes(",") || s.includes('"') || s.includes("\n")
       ? `"${s.replace(/"/g, '""')}"`
       : s;

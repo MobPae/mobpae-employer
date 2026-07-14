@@ -1,5 +1,6 @@
 import { CheckCircle2, Info, TriangleAlert, X, XCircle } from "lucide-react";
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useMemo, useState, type ReactNode } from "react";
+import { ToastContext } from "./toast-context";
 
 type ToastType = "success" | "error" | "info" | "warning";
 
@@ -15,14 +16,6 @@ interface ToastInput {
   title: string;
   description?: string;
 }
-
-interface ToastContextValue {
-  notify: (toast: ToastInput) => void;
-  success: (title: string, description?: string) => void;
-  error: (title: string, description?: string) => void;
-}
-
-const ToastContext = createContext<ToastContextValue | undefined>(undefined);
 
 const toastStyles: Record<ToastType, { icon: ReactNode; accent: string }> = {
   success: { icon: <CheckCircle2 size={18} />, accent: "text-brand" },
@@ -60,7 +53,12 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={value}>
       {children}
-      <div className="fixed right-4 top-4 z-[80] grid w-[calc(100vw-2rem)] max-w-sm gap-3">
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="false"
+        className="fixed right-4 top-4 z-[80] grid w-[calc(100vw-2rem)] max-w-sm gap-3"
+      >
         {toasts.map((toast) => {
           const style = toastStyles[toast.type];
           return (
@@ -81,13 +79,4 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       </div>
     </ToastContext.Provider>
   );
-}
-
-export function useToast() {
-  const context = useContext(ToastContext);
-  if (!context) {
-    throw new Error("useToast must be used inside ToastProvider");
-  }
-
-  return context;
 }

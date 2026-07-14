@@ -1,6 +1,6 @@
-import type { LoanApplication } from "../types";
-import { isForbidden } from "./api-errors";
-import { mapLoanApplication, unwrapItem, unwrapList } from "./api-mappers";
+import type { LoanApplication, LoanApplicationHistoryEvent } from "../types";
+import { isForbidden, isNotFound } from "./api-errors";
+import { mapLoanApplication, mapLoanApplicationHistoryEvent, unwrapItem, unwrapList } from "./api-mappers";
 import { httpClient } from "./http-client";
 
 export const salaryRequestService = {
@@ -31,6 +31,17 @@ export const salaryRequestService = {
   async rejectRequest(id: string, remarks: string): Promise<LoanApplication> {
     const { data } = await httpClient.post(`/loan-applications/${id}/employer-reject`, { remarks });
     return mapLoanApplication(unwrapItem(data, ["loanApplication", "salaryRequest", "request"]));
+  },
+
+  async getHistory(id: string): Promise<LoanApplicationHistoryEvent[]> {
+    try {
+      const { data } = await httpClient.get(`/loan-applications/${id}/history`);
+      return unwrapList(data, ["history", "events"]).map(mapLoanApplicationHistoryEvent);
+    } catch (error) {
+      // Endpoint may not exist yet on older backends — show nothing rather than crash.
+      if (isNotFound(error)) return [];
+      throw error;
+    }
   },
 
   async bulkAction(

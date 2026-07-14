@@ -1,16 +1,7 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { authService } from "../services/auth.service";
-import type { AuthUser, LoginCredentials } from "../types";
-
-interface AuthContextValue {
-  user: AuthUser | null;
-  loading: boolean;
-  login: (credentials: LoginCredentials) => Promise<{ passwordChanged: boolean }>;
-  logout: () => Promise<void>;
-  isAuthenticated: boolean;
-}
-
-const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+import type { AuthUser } from "../types";
+import { AuthContext, type AuthContextValue } from "./auth-context";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -34,6 +25,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("mobpae:session:expired", handleExpired);
   }, []);
 
+  // Keep tabs in sync: if the token is cleared (logout / forced logout) in one tab,
+  // localStorage's "storage" event fires in every other open tab.
+  useEffect(() => {
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === "mobpae_employer_token" && !e.newValue) {
+        setUser(null);
+        setLoading(false);
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
+
   const value = useMemo<AuthContextValue>(
     () => ({
       user,
@@ -53,14 +57,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-}
-
-export function useAuth() {
-  const context = useContext(AuthContext);
-
-  if (!context) {
-    throw new Error("useAuth must be used within AuthProvider");
-  }
-
-  return context;
 }
