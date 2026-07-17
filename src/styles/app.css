@@ -7,8 +7,8 @@
 ───────────────────────────────────────────────────────────────────────────── */
 @theme {
   /* ── Typography ── */
-  --font-sans:    "Tasa Orbiter Display", "TASA Orbiter Display Medium", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Tasa Orbiter Display", "TASA Orbiter Display Medium", ui-sans-serif, system-ui, sans-serif;
+  --font-sans:    "Manrope", ui-sans-serif, sans-serif;
+  --font-display: "Manrope", ui-sans-serif, sans-serif;
   --font-mono:    ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, monospace;
 
   /* Extra-small text (11px) — use text-2xs in components */

@@ -48,6 +48,7 @@ export function EmployeesPage() {
   const [drawerMode,   setDrawerMode]   = useState<DrawerMode>(null);
   const [editEmployee, setEditEmployee] = useState<Employee | undefined>();
   const [bulkResult,   setBulkResult]   = useState<BulkEmployeeUploadResult | null>(null);
+  const [resendId,     setResendId]     = useState<string | null>(null);
 
   // Keep filters/page in the URL so refresh, back/forward, and bookmarking
   // a filtered view all just work.
@@ -233,7 +234,16 @@ export function EmployeesPage() {
                 } catch (err) { toast.error("Update failed", getApiErrorMessage(err)); }
                 finally { setActionId(null); }
               }}
+              onResendActivation={async emp => {
+                setResendId(emp.id);
+                try {
+                  await employeeService.resendActivationEmail(emp.id);
+                  toast.success("Activation email sent", `A new login link was sent to ${emp.email}`);
+                } catch (err) { toast.error("Failed to resend", getApiErrorMessage(err)); }
+                finally { setResendId(null); }
+              }}
               actionEmployeeId={actionId}
+              resendingEmployeeId={resendId}
             />
             <div className="border-t border-edge-2 px-5 py-3">
               <Pagination page={safePage} totalPages={totalPages} total={filtered.length} limit={PAGE_SIZE} onPage={setPage} />

@@ -24,9 +24,13 @@ export type RepaymentStatus = "SCHEDULED" | "PENDING" | "PAID" | "OVERDUE";
 
 export type UserRole = "ADMIN" | "EMPLOYER" | "EMPLOYEE";
 
+export type EmployerRole = "OWNER" | "ADMIN" | "HR" | "FINANCE" | "VIEWER";
+
 export interface AuthUser {
   id: string;
   employerId?: string;
+  /** Role within the employer org — present for EMPLOYER users only. */
+  employerRole?: EmployerRole;
   name: string;
   email: string;
   role: UserRole;
@@ -65,6 +69,7 @@ export interface Employee {
   salaryInHand: number;
   employmentStatus: EmploymentStatus;
   appActivated: boolean;
+  passwordChanged?: boolean;
   department: string;
   joinedAt: string;
   employerId?: string;

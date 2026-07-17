@@ -4,6 +4,7 @@ import type {
   Employee,
   EmployeePayload,
   EmployerProfile,
+  EmployerRole,
   EmployerSettlement,
   EmploymentStatus,
   LoanApplication,
@@ -84,6 +85,12 @@ const normalizeUserRole = (value: unknown): UserRole => {
   return "EMPLOYER";
 };
 
+const normalizeEmployerRole = (value: unknown): EmployerRole | undefined => {
+  const allowed: EmployerRole[] = ["OWNER", "ADMIN", "HR", "FINANCE", "VIEWER"];
+  const normalized = String(value ?? "").toUpperCase() as EmployerRole;
+  return allowed.includes(normalized) ? normalized : undefined;
+};
+
 export const mapAuthUser = (value: unknown): AuthUser => {
   const record = asRecord(value);
   const employer = asRecord(record.employer ?? record.company);
@@ -96,6 +103,7 @@ export const mapAuthUser = (value: unknown): AuthUser => {
   return {
     id: text(record.id ?? record.userId ?? record.sub, "current-user"),
     employerId: text(record.employerId ?? record.employer_id ?? employer.id ?? record.companyId, ""),
+    employerRole: normalizeEmployerRole(record.employerRole ?? record.employer_role),
     name: text(record.name ?? record.fullName, "") || email,
     email,
     role: normalizeUserRole(record.role),
@@ -118,6 +126,7 @@ export const mapEmployee = (value: unknown): Employee => {
     salaryInHand: numberValue(record.salaryInHand ?? record.netSalary ?? record.salary),
     employmentStatus: normalizeEmploymentStatus(record.employmentStatus ?? record.employment_status ?? record.status ?? record.isActive),
     appActivated: boolValue(record.appActivated ?? record.isAppActivated ?? record.activationStatus),
+    passwordChanged: record.passwordChanged != null ? boolValue(record.passwordChanged) : undefined,
     department: text(record.department, "General"),
     joinedAt: text(record.joinedAt ?? record.createdAt, new Date().toISOString()),
     employerId: text(record.employerId ?? record.employer_id ?? employer.id ?? record.companyId) || undefined,

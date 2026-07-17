@@ -39,5 +39,10 @@ export const employeeService = {
       isAppActivated: true
     });
     return unwrapList(data, ["employees"]).map(mapEmployee);
+  },
+
+  async resendActivationEmail(id: string): Promise<{ message: string }> {
+    const { data } = await httpClient.post(`/employees/${id}/resend-activation`);
+    return data;
   }
 };

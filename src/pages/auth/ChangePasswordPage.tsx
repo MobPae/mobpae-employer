@@ -1,15 +1,15 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Eye, EyeOff, KeyRound, Lock, ShieldCheck } from "lucide-react";
+import { Eye, EyeOff, KeyRound, Lock, LogOut, ShieldCheck } from "lucide-react";
 import { authService } from "../../services/auth.service";
 import { getApiErrorMessage } from "../../services/api-errors";
 import { PasswordStrengthMeter } from "../../components/ui/PasswordStrengthMeter";
-
-
+import { useAuth } from "../../hooks/useAuth";
 
 
 export function ChangePasswordPage() {
   const navigate = useNavigate();
+  const { logout } = useAuth();
   const [current,  setCurrent]  = useState("");
   const [next,     setNext]     = useState("");
   const [confirm,  setConfirm]  = useState("");
@@ -52,6 +52,17 @@ export function ChangePasswordPage() {
 
   return (
     <div className="min-h-screen bg-canvas flex items-center justify-center px-4">
+      {/* Logout escape — top-right */}
+      {!success && (
+        <button
+          onClick={() => void logout().then(() => navigate("/login"))}
+          className="fixed top-4 right-4 flex items-center gap-1.5 text-[12px] font-[500] text-ink-3 hover:text-ink transition-colors"
+        >
+          <LogOut size={13} />
+          Log out
+        </button>
+      )}
+
       <div className="w-full max-w-[400px]">
         {/* Icon */}
         <div className="flex justify-center mb-6">

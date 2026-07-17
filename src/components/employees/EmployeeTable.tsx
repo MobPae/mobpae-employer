@@ -1,4 +1,4 @@
-import { Pencil } from "lucide-react";
+import { Mail, Pencil } from "lucide-react";
 import { useState } from "react";
 import type { Employee } from "../../types";
 import { formatCurrency } from "../../utils/formatters";
@@ -53,11 +53,14 @@ export interface EmployeeTableProps {
   onSelectAll: (selected: boolean) => void;
   onEdit: (employee: Employee) => void;
   onToggleAccess: (employee: Employee) => void;
+  onResendActivation?: (employee: Employee) => void;
   actionEmployeeId?: string | null;
+  resendingEmployeeId?: string | null;
 }
 
 export function EmployeeTable({
-  employees, selectedIds, onSelect, onSelectAll, onEdit, onToggleAccess, actionEmployeeId,
+  employees, selectedIds, onSelect, onSelectAll, onEdit, onToggleAccess, onResendActivation,
+  actionEmployeeId, resendingEmployeeId,
 }: EmployeeTableProps) {
   const [hovered, setHovered] = useState<string | null>(null);
 
@@ -151,12 +154,25 @@ export function EmployeeTable({
                     </div>
                   </td>
                   <td className="py-4 pr-5 align-middle">
-                    <button
-                      onClick={() => onEdit(emp)}
-                      className="flex h-[30px] items-center gap-1.5 rounded-lg bg-brand-soft px-3.5 text-xs font-semibold text-brand transition-colors hover:bg-brand-muted"
-                    >
-                      <Pencil size={11} />Edit
-                    </button>
+                    <div className="flex items-center gap-2">
+                      {!emp.passwordChanged && onResendActivation && (
+                        <button
+                          onClick={() => onResendActivation(emp)}
+                          disabled={resendingEmployeeId === emp.id}
+                          title="Resend activation email"
+                          className="flex h-[30px] items-center gap-1.5 rounded-lg bg-surface-muted px-3 text-xs font-semibold text-ink-3 transition-colors hover:bg-amber-50 hover:text-amber-700 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          <Mail size={11} />
+                          {resendingEmployeeId === emp.id ? "…" : "Resend"}
+                        </button>
+                      )}
+                      <button
+                        onClick={() => onEdit(emp)}
+                        className="flex h-[30px] items-center gap-1.5 rounded-lg bg-brand-soft px-3.5 text-xs font-semibold text-brand transition-colors hover:bg-brand-muted"
+                      >
+                        <Pencil size={11} />Edit
+                      </button>
+                    </div>
                   </td>
                 </tr>
               );

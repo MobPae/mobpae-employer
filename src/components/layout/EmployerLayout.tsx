@@ -1,4 +1,5 @@
 import {
+  BarChart2,
   CircleUserRound,
   ClipboardList,
   CreditCard,
@@ -7,6 +8,7 @@ import {
   LogOut,
   Menu,
   Settings,
+  Shield,
   UsersRound,
   X,
 } from "lucide-react";
@@ -23,7 +25,9 @@ const NAV = [
   { label: "Loan Applications", to: "/loan-applications", icon: ClipboardList   },
   { label: "Repayments",        to: "/repayments",        icon: CreditCard      },
   { label: "Settlements",       to: "/settlements",       icon: Landmark        },
+  { label: "Reports",           to: "/reports",           icon: BarChart2       },
   { label: "Salary Advance",    to: "/settings",          icon: Settings        },
+  { label: "Team",              to: "/team",              icon: Shield          },
   { label: "Profile",           to: "/profile",           icon: CircleUserRound },
 ];
 
@@ -33,7 +37,9 @@ const PAGE_TITLES: Record<string, string> = {
   "/loan-applications": "Loan Applications",
   "/repayments":        "Repayments",
   "/settlements":       "Settlements",
+  "/reports":           "Reports",
   "/settings":          "Salary Advance",
+  "/team":              "Team",
   "/profile":           "Profile",
   "/notifications":     "Notifications",
 };

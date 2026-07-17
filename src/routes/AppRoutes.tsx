@@ -7,6 +7,7 @@ import { LoginPage } from "../pages/auth/LoginPage";
 import { ForgotPasswordPage } from "../pages/auth/ForgotPasswordPage";
 import { ResetPasswordPage } from "../pages/auth/ResetPasswordPage";
 import { ChangePasswordPage } from "../pages/auth/ChangePasswordPage";
+import { AcceptInvitePage } from "../pages/auth/AcceptInvitePage";
 import { ProtectedRoute } from "./ProtectedRoute";
 
 // Lazy-loaded: everything behind the login wall. Keeps the initial bundle the
@@ -20,6 +21,8 @@ const SettlementsPage = lazy(() => import("../pages/settlements/SettlementsPage"
 const SettingsPage = lazy(() => import("../pages/settings/SettingsPage").then(m => ({ default: m.SettingsPage })));
 const ProfilePage = lazy(() => import("../pages/profile/ProfilePage").then(m => ({ default: m.ProfilePage })));
 const NotificationsPage = lazy(() => import("../pages/notifications/NotificationsPage").then(m => ({ default: m.NotificationsPage })));
+const TeamPage = lazy(() => import("../pages/team/TeamPage").then(m => ({ default: m.TeamPage })));
+const ReportsPage = lazy(() => import("../pages/reports/ReportsPage").then(m => ({ default: m.ReportsPage })));
 const NotFoundPage = lazy(() => import("../pages/NotFoundPage").then(m => ({ default: m.NotFoundPage })));
 
 export function AppRoutes() {
@@ -28,6 +31,7 @@ export function AppRoutes() {
       <ToastProvider>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/invite/accept" element={<AcceptInvitePage />} />
           <Route path="/change-password" element={<ProtectedRoute><ChangePasswordPage /></ProtectedRoute>} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ResetPasswordPage />} />
@@ -46,6 +50,8 @@ export function AppRoutes() {
             <Route path="/repayments"      element={<RepaymentsPage />}       />
             <Route path="/settlements"     element={<SettlementsPage />}      />
             <Route path="/settings"        element={<SettingsPage />}         />
+            <Route path="/team"            element={<TeamPage />}             />
+            <Route path="/reports"         element={<ReportsPage />}          />
             <Route path="/profile"         element={<ProfilePage />}          />
             <Route path="/notifications"   element={<NotificationsPage />}    />
             <Route path="*"                element={<NotFoundPage />}         />

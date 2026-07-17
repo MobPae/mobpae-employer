@@ -5,13 +5,13 @@ import { useSearchParams } from "react-router-dom";
 import { Pagination } from "../../components/ui/Pagination";
 import { ConfirmModal } from "../../components/ui/ConfirmModal";
 import { Button } from "../../components/ui/Button";
-
-const PAGE_SIZE = 15;
 import { useToast } from "../../hooks/useToast";
 import { getApiErrorMessage, isForbidden } from "../../services/api-errors";
 import { salaryRequestService } from "../../services/salary-request.service";
 import type { LoanApplication, LoanApplicationHistoryEvent, LoanApplicationStatus } from "../../types";
 import { formatCurrency, formatDate } from "../../utils/formatters";
+
+const PAGE_SIZE = 15;
 
 // ── status config ─────────────────────────────────────────────────────────────
 
@@ -160,7 +160,6 @@ export function SalaryRequestsPage() {
 
   // Fetch on mount (and whenever `load` identity changes) using the same
   // handler the "Retry" button reuses.
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { load(); }, [load]);
 
   const filtered = useMemo(() =>
