@@ -76,9 +76,8 @@ export function AcceptInvitePage() {
       {/* ── LEFT — Form panel ── */}
       <div className="flex w-[45%] flex-shrink-0 flex-col overflow-auto bg-surface">
         <div className="flex-shrink-0 px-10 py-7">
-          <div className="flex items-center gap-2.5">
-            <img src="/logo-icon.svg" alt="MobPae" width="44" height="28" className="flex-shrink-0 object-contain" />
-            <span className="text-[16px] font-bold tracking-tight text-ink">MobPae</span>
+          <div className="flex items-center">
+            <img src="/logo-horizontal.svg" alt="MobPae" width="322" height="40" className="flex-shrink-0 object-contain" />
           </div>
         </div>
 
@@ -240,7 +239,7 @@ export function AcceptInvitePage() {
         <div className="pointer-events-none absolute -right-[10%] -top-[15%] h-[400px] w-[400px] rounded-full bg-radial from-white/10 to-transparent" />
         <div className="pointer-events-none absolute -bottom-[10%] -left-[8%] h-[320px] w-[320px] rounded-full bg-radial from-white/8 to-transparent" />
         <div className="relative z-10 w-full max-w-[420px] text-center">
-          <img src="/logo-icon.svg" alt="MobPae" width="56" height="36" className="mx-auto mb-6 object-contain brightness-0 invert" />
+          <img src="/logo-icon-white.svg" alt="MobPae" width="56" height="36" className="mx-auto mb-6 object-contain" />
           <h2 className="mb-3 text-[32px] font-bold leading-[1.15] tracking-tight text-white">
             Welcome to the team
           </h2>

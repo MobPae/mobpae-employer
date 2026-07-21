@@ -73,9 +73,8 @@ function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
       >
         {/* Logo */}
         <div className="flex h-[60px] flex-shrink-0 items-center justify-between border-b border-edge px-5">
-          <div className="flex items-center gap-3">
-            <img src="/logo-icon.svg" alt="MobPae" width="32" height="21" className="flex-shrink-0 object-contain" />
-            <span className="text-[15px] font-bold tracking-tight text-ink">MobPae</span>
+          <div className="flex items-center">
+            <img src="/logo-horizontal.svg" alt="MobPae" width="177" height="22" className="flex-shrink-0 object-contain" />
           </div>
           <button
             aria-label="Close navigation"

@@ -24,9 +24,8 @@ export function ForgotPasswordPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-canvas px-6">
       <div className="w-full max-w-[400px]">
-        <div className="mb-10 flex items-center gap-2">
-          <img src="/logo-icon.svg" alt="MobPae" width="32" height="21" className="flex-shrink-0 object-contain" />
-          <span className="text-[15px] font-bold tracking-tight text-ink">MobPae</span>
+        <div className="mb-10 flex items-center">
+          <img src="/logo-horizontal.svg" alt="MobPae" width="225" height="28" className="flex-shrink-0 object-contain" />
         </div>
 
         {sent ? (

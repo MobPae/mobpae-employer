@@ -106,9 +106,8 @@ export function LoginPage() {
       {/* ── LEFT — Form panel ── */}
       <div className="flex w-[45%] flex-shrink-0 flex-col overflow-auto bg-surface">
         <div className="flex-shrink-0 px-10 py-7">
-          <div className="flex items-center gap-2.5">
-            <img src="/logo-icon.svg" alt="MobPae" width="44" height="28" className="flex-shrink-0 object-contain" />
-            <span className="text-[16px] font-bold tracking-tight text-ink">MobPae</span>
+          <div className="flex items-center">
+            <img src="/logo-horizontal.svg" alt="MobPae" width="322" height="40" className="flex-shrink-0 object-contain" />
           </div>
         </div>
 
